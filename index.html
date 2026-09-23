@@ -47,6 +47,12 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 .menuItem{width:100%;border:0;background:none;border-bottom:1px solid var(--line);padding:17px 2px;text-align:left;font-size:16px;color:var(--ink)}
 .menuItem small{display:block;color:var(--muted);font-size:12px;margin-top:4px}.menuClose{border:0;background:none;font-size:24px}
 .menuSection{font-size:12px;color:var(--muted);font-weight:800;margin-top:18px;padding-top:8px}
+.statusPill{display:inline-block;font-size:12px;font-weight:800;padding:6px 9px;border-radius:999px;background:var(--green-soft);color:var(--green)}
+.statusPill.private{background:#f0ece5;color:#6f746f}
+.manageBox{margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
+.manageGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.danger{width:100%;border:0;background:none;color:#a14d48;font-size:14px;font-weight:700;padding:14px;margin-top:8px}
+.responseBox{margin-top:24px;padding:16px;border-radius:16px;background:#faf7f1}.responseBox h3{margin:0 0 8px;font-size:16px}.responseBox .sub{margin:0}
 </style>
 </head>
 <body>
@@ -191,6 +197,7 @@ let currentStory=null;
 let storyReturn='feed';
 let currentRecordTab='mine';
 let feedMode='history';
+let editingRecordId=null;
 
 function nextIntro(){
   const s1=document.getElementById('introStep1'), s2=document.getElementById('introStep2');
@@ -247,6 +254,7 @@ function show(id){
 }
 
 function startWriting(){
+  editingRecordId=null;
   resetCompose();
   show('write');
 }
@@ -316,6 +324,19 @@ function stopVoice(){
 function submitWritten(){
   const text=bodyInput.value.trim();
   if(!text){bodyInput.focus();return}
+  if(editingRecordId){
+    const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
+    const idx=mine.findIndex(item=>item.id===editingRecordId);
+    if(idx>-1){
+      mine[idx].body=text;
+      mine[idx].title=generateTitle(text);
+      localStorage.setItem('teumMine',JSON.stringify(mine));
+      const id=editingRecordId;
+      editingRecordId=null;
+      openOwnRecord(id);
+      return;
+    }
+  }
   draft.body=text;
   draft.title=generateTitle(text);
   show('privacy');
@@ -448,22 +469,57 @@ function openOwnRecord(id){
   const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
   const x=mine.find(item=>item.id===id);
   if(!x)return;
+  const isPublic=x.privacy==='public';
   recordDetailContent.innerHTML=`
     <div class="detailTop">
-      <div class="recordMeta">${x.date} · ${x.privacy==='public'?'익명 공개':'나만 보기'}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div class="recordMeta" style="margin-top:0">${x.date}</div>
+        <span class="statusPill ${isPublic?'':'private'}">${isPublic?'익명 공개':'나만 보기'}</span>
+      </div>
       <h2>${x.title}</h2>
     </div>
     <div class="detailBody">${x.body}</div>
-    <button class="secondary" style="margin-top:28px" onclick="editOwnRecord(${x.id})">내용 수정하기</button>`;
+    ${isPublic?`
+      <div class="responseBox">
+        <h3>이 이야기에 온 반응</h3>
+        <p class="sub">공개 글에는 받은 공감과 댓글이 여기에 보여요.</p>
+      </div>`:''}
+    <div class="manageBox">
+      <div class="manageGrid">
+        <button class="secondary" onclick="toggleOwnRecordPrivacy(${x.id})">${isPublic?'나만 보기로 바꾸기':'익명으로 공개하기'}</button>
+        <button class="secondary" onclick="editOwnRecord(${x.id})">내용 수정하기</button>
+      </div>
+      <button class="danger" onclick="deleteOwnRecord(${x.id})">이 이야기 삭제하기</button>
+    </div>`;
   show('recordDetail');
+}
+
+function toggleOwnRecordPrivacy(id){
+  const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
+  const idx=mine.findIndex(item=>item.id===id);
+  if(idx<0)return;
+  const next=mine[idx].privacy==='public'?'private':'public';
+  mine[idx].privacy=next;
+  localStorage.setItem('teumMine',JSON.stringify(mine));
+  openOwnRecord(id);
 }
 
 function editOwnRecord(id){
   const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
   const x=mine.find(item=>item.id===id);
   if(!x)return;
+  editingRecordId=id;
   bodyInput.value=x.body;
   show('write');
+}
+
+function deleteOwnRecord(id){
+  if(!confirm('이 이야기를 삭제할까요? 삭제하면 다시 되돌릴 수 없어요.')) return;
+  let mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
+  mine=mine.filter(item=>item.id!==id);
+  localStorage.setItem('teumMine',JSON.stringify(mine));
+  currentRecordTab='mine';
+  show('records');
 }
 if(localStorage.getItem('teumSeenIntro')){
   show('home');
