@@ -10,31 +10,35 @@
   --green:#245846;--green-soft:#e6efe9;--line:#e8e1d7;--pink:#f5e8e1;--chip:#f1ece4;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
-.app{max-width:430px;margin:0 auto;min-height:100dvh;background:var(--surface);position:relative;padding-bottom:78px}
-header{padding:18px 20px 8px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-weight:800;font-size:22px}.ghost{border:0;background:none;font-size:20px;color:var(--ink)}
-.screen{display:none;padding:10px 20px 24px}.screen.active{display:block}
-h1{font-size:30px;line-height:1.25;margin:14px 0 8px}h2{font-size:24px;line-height:1.3;margin:10px 0 8px}
-.sub{color:var(--muted);font-size:14px;line-height:1.55}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
-.primary,.secondary,.actionCard{width:100%;border-radius:14px;padding:15px 16px;font-size:16px;font-weight:700;margin-top:10px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+button,input,textarea{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid rgba(36,88,70,.18);outline-offset:2px}
+.app{width:100%;max-width:430px;margin:0 auto;min-height:100dvh;background:var(--surface);position:relative;padding-bottom:82px;overflow-x:hidden}
+header{padding:17px 18px 9px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-weight:850;font-size:22px;letter-spacing:-.5px}.ghost{border:0;background:none;font-size:20px;color:var(--ink);padding:8px;border-radius:10px;line-height:1}
+.screen{display:none;padding:10px 18px 28px;min-width:0}.screen.active{display:block}
+h1{font-size:30px;line-height:1.28;margin:14px 0 8px;letter-spacing:-1px}h2{font-size:24px;line-height:1.35;margin:10px 0 8px;letter-spacing:-.6px}
+.sub{color:var(--muted);font-size:14px;line-height:1.6;margin:8px 0}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;min-width:0}
+.primary,.secondary,.actionCard{width:100%;border-radius:13px;padding:14px 15px;font-size:15px;font-weight:750;margin-top:10px;min-height:48px;line-height:1.35;white-space:normal}
 .primary{border:0;background:var(--green);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
 .actionCard{text-align:left;border:0;background:var(--green);color:#fff;padding:17px 18px}.actionCard.secondaryAction{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .actionCard small{display:block;font-weight:500;opacity:.82;margin-top:5px;line-height:1.45}
-.micwrap{display:flex;justify-content:center;margin:32px 0 24px}.mic{width:130px;height:130px;border-radius:50%;border:0;background:var(--green);color:white;font-size:42px;box-shadow:0 0 0 20px #e7efe9,0 0 0 40px #f1f5f2}
+.micwrap{display:flex;justify-content:center;margin:34px 0 28px}.mic{width:116px;height:116px;border-radius:50%;border:0;background:var(--green);color:white;display:grid;place-items:center;box-shadow:0 0 0 16px #e7efe9,0 0 0 32px #f1f5f2}.mic svg{width:36px;height:36px;display:block}.mic .pauseMark,.mic .playMark{font-size:30px;font-weight:800;line-height:1}
 .voiceHint{height:28px;text-align:center;font-size:13px;color:var(--green);font-weight:700;margin:8px 0 2px}
 textarea{width:100%;min-height:170px;border:1px solid var(--line);border-radius:16px;padding:14px;background:#fffdf9;font:inherit;resize:vertical}
 input[type=text]{width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);font:inherit}
-.segment{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f0ece5;padding:5px;border-radius:13px}
-.segment button{border:0;background:transparent;padding:10px;border-radius:10px}.segment button.on{background:white;font-weight:700}
+.segment{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;background:#f0ece5;padding:5px;border-radius:13px}
+.segment button{min-width:0;border:0;background:transparent;padding:10px 8px;border-radius:10px;font-size:13px;line-height:1.3;word-break:keep-all}.segment button.on{background:white;font-weight:800}
 .simBadge{display:inline-block;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:800;padding:6px 9px;border-radius:999px;margin-bottom:9px}
 .tag{display:inline-block;font-size:11px;color:#8d938f;background:transparent;padding:3px 0;margin-right:8px}
-.story .title{font-weight:800;font-size:17px;margin-bottom:7px;line-height:1.45}.story .excerpt{font-size:14px;color:#4f5a54;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.55}
-.recordMeta{font-size:12px;color:var(--muted);margin-top:10px}.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1;border:1px solid var(--line);background:white;border-radius:12px;padding:10px}
+.story .title{font-weight:800;font-size:17px;margin-bottom:7px;line-height:1.48;letter-spacing:-.35px}.story .excerpt{font-size:14px;color:#4f5a54;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.62}
+.recordMeta{font-size:12px;color:var(--muted);margin-top:10px}.actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:14px}.actions button{min-width:0;border:1px solid var(--line);background:white;border-radius:12px;padding:11px 8px;font-size:13px;line-height:1.35;white-space:normal}
 .notice{background:var(--pink);border-radius:18px;padding:20px 18px;color:#5d4d45;font-size:16px;line-height:1.55;font-weight:800;margin:18px 0}
 .loader{padding:80px 0;text-align:center}.dots{font-size:34px;letter-spacing:7px;color:var(--green)}
 nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:rgba(255,253,248,.95);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:8px 8px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
-nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size:12px}nav button.active{color:var(--green);font-weight:800}
+nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size:11px;line-height:1.25;display:flex;flex-direction:column;align-items:center;gap:3px}nav button.active{color:var(--green);font-weight:800}.navIcon{font-size:18px;line-height:1;height:20px}
 .comment{padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}.quick{display:flex;gap:7px;overflow:auto;padding:4px 0}.quick button{white-space:nowrap;border:1px solid var(--line);background:white;border-radius:999px;padding:8px 10px}
 .detailBody{font-size:17px;line-height:1.8;white-space:pre-wrap}.detailTop{margin:10px 0 18px}
 .introWrap{min-height:calc(100dvh - 50px);display:flex;flex-direction:column;justify-content:space-between;padding:34px 0 12px}
@@ -44,7 +48,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 .menuOverlay{display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:rgba(20,30,26,.3);z-index:50}.menuOverlay.open{display:block}
 .menuPanel{position:absolute;right:0;top:0;width:min(360px,88vw);height:100%;background:var(--surface);padding:22px 20px;overflow:auto;box-shadow:-10px 0 30px rgba(0,0,0,.08)}
 .menuHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.menuHead b{font-size:22px}
-.menuItem{width:100%;border:0;background:none;border-bottom:1px solid var(--line);padding:17px 2px;text-align:left;font-size:16px;color:var(--ink)}
+.menuItem{width:100%;border:0;background:none;border-bottom:1px solid var(--line);padding:16px 2px;text-align:left;font-size:15px;color:var(--ink);line-height:1.4}
 .menuItem small{display:block;color:var(--muted);font-size:12px;margin-top:4px}.menuClose{border:0;background:none;font-size:24px}
 .menuSection{font-size:12px;color:var(--muted);font-weight:800;margin-top:18px;padding-top:8px}
 .statusPill{display:inline-block;font-size:12px;font-weight:800;padding:6px 9px;border-radius:999px;background:var(--green-soft);color:var(--green)}
@@ -54,6 +58,11 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 .danger{width:100%;border:0;background:none;color:#a14d48;font-size:14px;font-weight:700;padding:14px;margin-top:8px}
 .responseBox{margin-top:24px;padding:16px;border-radius:16px;background:#faf7f1}.responseBox h3{margin:0 0 8px;font-size:16px}.responseBox .sub{margin:0}
 .accountBanner{display:none;margin:14px 0 16px;padding:16px;border-radius:16px;background:#eef4ef;border:1px solid #dce8df}.accountBanner.show{display:block}.accountBanner b{display:block;font-size:15px;margin-bottom:5px}.accountBanner .sub{margin:0 0 10px}.accountBanner button{margin-top:0}.accountStatus{font-size:13px;color:var(--green);font-weight:700;margin-top:10px}
+@media(max-width:360px){
+  header{padding-left:15px;padding-right:15px}.screen{padding-left:15px;padding-right:15px}
+  h1{font-size:27px}h2{font-size:22px}.introWrap h1{font-size:30px}
+  .accountBanner{padding:14px}.manageGrid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -84,7 +93,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 <section id="home" class="screen active">
   <h1>오늘 뭐 때문에<br>빡쳤어요?</h1>
   <p class="sub">친구 만나 수다 떨 시간도 없을 때.<br>말해바. 그냥 다 털어놔요.</p>
-  <div class="micwrap"><button class="mic" onclick="startVoice()">🎙</button></div>
+  <div class="micwrap"><button class="mic" onclick="startVoice()" aria-label="말로 털어놓기"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-2.08A7 7 0 0 1 5 12a1 1 0 1 1 2 0 5 5 0 0 0 10 0Z"/></svg></button></div>
   <button class="primary" onclick="startVoice()">말로 털어놓기</button>
   <button class="secondary" onclick="startWriting()">글로 쓰기</button>
 </section>
@@ -99,7 +108,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 <section id="voice" class="screen">
   <h2>그냥 말해봐요.</h2>
   <p class="sub">정리해서 말하지 않아도 괜찮아요.</p>
-  <div class="micwrap"><button id="voiceToggleBtn" class="mic" onclick="toggleVoicePause()">⏸</button></div>
+  <div class="micwrap"><button id="voiceToggleBtn" class="mic" onclick="toggleVoicePause()" aria-label="일시정지"><span class="pauseMark">Ⅱ</span></button></div>
   <div id="voiceStatus" class="voiceHint"></div>
   <button class="primary" onclick="stopVoice()">말하기 끝</button>
 </section>
@@ -191,9 +200,9 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 </div>
 
 <nav>
-  <button onclick="show('home')" id="navHome" class="active">⌂<br>홈</button>
-  <button onclick="feedMode='history';show('feed')" id="navFeed">⌕<br>둘러보기</button>
-  <button onclick="show('records')" id="navRecords">▣<br>내 기록</button>
+  <button onclick="show('home')" id="navHome" class="active"><span class="navIcon">⌂</span><span>홈</span></button>
+  <button onclick="feedMode='history';show('feed')" id="navFeed"><span class="navIcon">○</span><span>둘러보기</span></button>
+  <button onclick="show('records')" id="navRecords"><span class="navIcon">□</span><span>내 기록</span></button>
 </nav>
 </div>
 
@@ -224,18 +233,51 @@ let storyReturn='feed';
 let currentRecordTab='mine';
 let feedMode='history';
 let editingRecordId=null;
+let recentOwnStories=[];
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString('ko-KR')}
 function inferTags(text){
   const rules=[
-    ['남편',/남편|배우자/],['육아',/육아|아이|애|아기/],['등원',/등원|유치원|어린이집/],
-    ['수면',/잠|수면|재우/],['훈육',/훈육|떼|말 안/],['시댁',/시댁|시어머니|시아버지/],
-    ['친정',/친정|엄마|아빠|부모/],['복직',/복직|회사|직장|상사/],['돈',/돈|생활비|카드|대출/],
-    ['성격차이',/성격|안 맞|대화가 안/],['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],
-    ['지침',/지쳤|힘들|번아웃|피곤/],['서운함',/서운/],['화남',/화나|빡쳤|짜증/]
+    ['남편',/남편|배우자/],['아이',/아이|애|아기|딸|아들/],['육아',/육아|등원|하원|유치원|어린이집|재우|훈육/],
+    ['등원',/등원|유치원|어린이집/],['수면',/잠|수면|재우/],['훈육',/훈육|떼|말 안/],
+    ['시댁',/시댁|시어머니|시아버지/],['친정',/친정|엄마|아빠|부모/],['직장',/복직|회사|직장|상사|출근|퇴근/],
+    ['돈',/돈|생활비|카드|대출|소비/],['집안일',/집안일|설거지|청소|빨래|밥|가사/],
+    ['육아분담',/도와|분담|혼자.*육아|나만.*육아|독박/],['성격차이',/성격|안 맞|대화가 안/],
+    ['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],
+    ['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶/],['서운함',/서운/],['화남',/화나|빡쳤|짜증|열받/],['외로움',/외롭|혼자인 것 같/]
   ];
-  return rules.filter(([,r])=>r.test(text)).map(([t])=>t).slice(0,4);
+  return [...new Set(rules.filter(([,r])=>r.test(text)).map(([t])=>t))].slice(0,4);
+}
+function normalizeForMatch(text=''){
+  return String(text).toLowerCase().replace(/[^0-9a-z가-힣]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function charGrams(text,n=2){
+  const s=normalizeForMatch(text).replace(/\s/g,'');
+  const out=new Set();
+  for(let i=0;i<=s.length-n;i++) out.add(s.slice(i,i+n));
+  return out;
+}
+function jaccard(a,b){
+  if(!a.size||!b.size)return 0;
+  let inter=0; a.forEach(x=>{if(b.has(x))inter++});
+  return inter/(a.size+b.size-inter);
+}
+function tagScore(a=[],b=[]){
+  const A=new Set(a),B=new Set(b); if(!A.size||!B.size)return 0;
+  let inter=0;A.forEach(x=>{if(B.has(x))inter++});
+  return inter/Math.max(A.size,B.size);
+}
+function similarityScore(queryText,queryTags,story){
+  const text=jaccard(charGrams(queryText),charGrams((story.title||'')+' '+(story.body||'')));
+  const tags=tagScore(queryTags,story.tags||[]);
+  return Math.min(1,tags*.62+text*.38);
+}
+function similarityLabel(score){
+  if(score>=.56)return '너랑 거의 똑같아요';
+  if(score>=.36)return '어쩜, 많이 비슷해요';
+  if(score>=.20)return '빡친 포인트가 비슷해요';
+  return '비슷한 고민을 하고 있어요';
 }
 async function ensureSession(){
   try{
@@ -340,7 +382,7 @@ function startVoice(){
   show('voice');
   voicePaused=false;
   committedVoiceText='';
-  voiceToggleBtn.textContent='⏸';
+  voiceToggleBtn.innerHTML='<span class="pauseMark">Ⅱ</span>';
   beginVoiceHints();
   startRecognitionSegment();
 }
@@ -377,11 +419,11 @@ function toggleVoicePause(){
     try{recognition&&recognition.stop()}catch(e){}
     committedVoiceText=voiceTranscript.trim();
     voicePaused=true;
-    voiceToggleBtn.textContent='▶';
+    voiceToggleBtn.innerHTML='<span class="playMark">▶</span>';
     voiceStatus.textContent='잠깐 쉬어도 괜찮아요';
   }else{
     voicePaused=false;
-    voiceToggleBtn.textContent='⏸';
+    voiceToggleBtn.innerHTML='<span class="pauseMark">Ⅱ</span>';
     voiceStatus.textContent='응, 계속해요';
     beginVoiceHints();
     startRecognitionSegment();
@@ -447,23 +489,44 @@ async function saveAndMatch(privacy){
 
 async function renderFeed(){
   feedTitle.textContent='너와 비슷한 이야기';
-  let mineCount=0;
+  let queryText='', queryTags=[], mineCount=0;
+
   if(backendReady){
-    const {count}=await sb.from('posts').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id);
-    mineCount=count||0;
+    const {data:mine}=await sb.from('posts')
+      .select('id,title,body,tags,created_at')
+      .eq('user_id',currentUser.id).neq('status','deleted')
+      .order('created_at',{ascending:false}).limit(5);
+    recentOwnStories=mine||[];
+    mineCount=recentOwnStories.length;
   }
-  if(feedMode==='fresh') feedSub.textContent='방금 털어놓은 이야기와 가까운 글부터 보여줘요.';
-  else if(mineCount) feedSub.textContent='지금까지 남긴 이야기와 관심을 바탕으로 보여줘요.';
-  else feedSub.textContent='아직 쌓인 기록이 없어서, 여러 이야기를 먼저 보여줘요.';
+
+  if(feedMode==='fresh' && draft.body){
+    queryText=draft.body;
+    queryTags=inferTags(draft.body);
+    feedSub.textContent='방금 털어놓은 이야기와 닮은 내용부터 보여줘요.';
+  }else if(mineCount){
+    queryText=recentOwnStories.map(x=>x.body).join(' ');
+    queryTags=[...new Set(recentOwnStories.flatMap(x=>x.tags||[]))].slice(0,8);
+    feedSub.textContent='최근에 남긴 이야기와 닮은 내용부터 보여줘요.';
+  }else{
+    feedSub.textContent='아직 기록이 없어서 최근 공개된 이야기부터 보여줘요.';
+  }
 
   if(backendReady){
     const {data,error}=await sb.from('posts')
       .select('id,user_id,title,body,tags,created_at')
       .eq('visibility','public').eq('status','active')
-      .neq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
-    if(!error) dbStories=(data||[]).map((s,i)=>({...s,similarity:['너랑 거의 똑같아요','어쩜, 많이 비슷해요','빡친 포인트가 비슷해요','비슷한 고민을 하고 있어요'][Math.min(i,3)],comments:[],hearts:0,isDb:true}));
+      .neq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(60);
+    if(!error){
+      dbStories=(data||[]).map(s=>{
+        const score=queryText?similarityScore(queryText,queryTags,s):0;
+        return {...s,matchScore:score,similarity:queryText?similarityLabel(score):'최근 올라온 이야기',comments:[],hearts:0,isDb:true};
+      });
+      if(queryText) dbStories.sort((a,b)=>b.matchScore-a.matchScore || new Date(b.created_at)-new Date(a.created_at));
+    }
   }
-  const stories=dbStories.length?dbStories:sampleStories;
+
+  const stories=dbStories.length?dbStories:sampleStories.map(s=>({...s,similarity:'예시 이야기'}));
   storyList.innerHTML=stories.map(s=>`
     <div class="card story" onclick="openStory('${s.id}','feed')">
       <div class="simBadge">${esc(s.similarity||'비슷한 이야기예요')}</div>
