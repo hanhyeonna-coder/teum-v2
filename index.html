@@ -92,7 +92,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 <section id="voice" class="screen">
   <h2>그냥 말해봐요.</h2>
   <p class="sub">정리해서 말하지 않아도 괜찮아요.</p>
-  <div class="micwrap"><button class="mic" onclick="stopVoice()">⏹</button></div>
+  <div class="micwrap"><button id="voiceToggleBtn" class="mic" onclick="toggleVoicePause()">⏸</button></div>
   <div id="voiceStatus" class="voiceHint"></div>
   <button class="primary" onclick="stopVoice()">말하기 끝</button>
 </section>
@@ -185,6 +185,8 @@ let draft={body:'',title:'',privacy:'public'};
 let recognition=null;
 let voiceTranscript='';
 let voiceHintTimer=null;
+let voicePaused=false;
+let committedVoiceText='';
 let currentStory=null;
 let storyReturn='feed';
 let currentRecordTab='mine';
@@ -216,9 +218,12 @@ function menuGo(id,tab){
 }
 function notReady(name){closeMenu();alert(name+' 화면은 다음 제작 단계에서 만들 예정이에요.')}
 function redoVoice(){
+  clearInterval(voiceHintTimer);
+  try{recognition&&recognition.stop()}catch(e){}
   draft={body:'',title:'',privacy:'public'};
   reviewBody.value='';
   voiceTranscript='';
+  committedVoiceText='';
   startVoice();
 }
 
@@ -247,11 +252,20 @@ function startWriting(){
 function startVoice(){
   resetCompose();
   show('voice');
+  voicePaused=false;
+  committedVoiceText='';
+  voiceToggleBtn.textContent='⏸';
+  beginVoiceHints();
+  startRecognitionSegment();
+}
+function beginVoiceHints(){
   const hints=['그래, 말해봐요','듣고 있어요, 계속해요','응, 더 말해도 돼요','천천히 말해도 괜찮아요'];
   let hi=0;
   voiceStatus.textContent=hints[0];
   clearInterval(voiceHintTimer);
   voiceHintTimer=setInterval(()=>{hi=(hi+1)%hints.length;voiceStatus.textContent=hints[hi]},2400);
+}
+function startRecognitionSegment(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){clearInterval(voiceHintTimer);voiceStatus.textContent='이 브라우저에서는 음성 인식이 어려워요. 글로 써주세요.';return}
   recognition=new SR();
@@ -264,15 +278,34 @@ function startVoice(){
       if(e.results[i].isFinal) finalText+=e.results[i][0].transcript+' ';
       else interim+=e.results[i][0].transcript;
     }
-    voiceTranscript=(finalText+interim).trim();
+    voiceTranscript=(committedVoiceText+' '+finalText+interim).trim();
   };
+  recognition.onend=()=>{};
   recognition.onerror=()=>{clearInterval(voiceHintTimer);voiceStatus.textContent='음성 인식이 잠시 멈췄어요.'};
   recognition.start();
+}
+function toggleVoicePause(){
+  if(!recognition && !voicePaused) return;
+  if(!voicePaused){
+    clearInterval(voiceHintTimer);
+    try{recognition&&recognition.stop()}catch(e){}
+    committedVoiceText=voiceTranscript.trim();
+    voicePaused=true;
+    voiceToggleBtn.textContent='▶';
+    voiceStatus.textContent='잠깐 쉬어도 괜찮아요';
+  }else{
+    voicePaused=false;
+    voiceToggleBtn.textContent='⏸';
+    voiceStatus.textContent='응, 계속해요';
+    beginVoiceHints();
+    startRecognitionSegment();
+  }
 }
 
 function stopVoice(){
   clearInterval(voiceHintTimer);
   try{recognition&&recognition.stop()}catch(e){}
+  voicePaused=false;
   draft.body=voiceTranscript.trim();
   reviewBody.value=draft.body || '음성이 잘 기록되지 않았어요. 여기에 직접 수정해주세요.';
   show('review');
