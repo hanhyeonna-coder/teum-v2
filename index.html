@@ -41,7 +41,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 .introEyebrow{font-size:13px;font-weight:800;color:var(--green)}
 .introWrap h1{font-size:34px;margin:18px 0 12px}.introCopy{font-size:17px;line-height:1.7;color:#53605a}
 .introDots{display:flex;justify-content:center;gap:7px;margin:22px 0}.introDots span{width:7px;height:7px;border-radius:50%;background:#ddd5ca}.introDots span.on{background:var(--green)}
-.menuOverlay{display:none;position:fixed;inset:0;background:rgba(20,30,26,.3);z-index:50}.menuOverlay.open{display:block}
+.menuOverlay{display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:rgba(20,30,26,.3);z-index:50}.menuOverlay.open{display:block}
 .menuPanel{position:absolute;right:0;top:0;width:min(360px,88vw);height:100%;background:var(--surface);padding:22px 20px;overflow:auto;box-shadow:-10px 0 30px rgba(0,0,0,.08)}
 .menuHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.menuHead b{font-size:22px}
 .menuItem{width:100%;border:0;background:none;border-bottom:1px solid var(--line);padding:17px 2px;text-align:left;font-size:16px;color:var(--ink)}
@@ -62,8 +62,8 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
         <div class="introCopy">잘 왔어요.<br>여기다 그냥 털어놔요.</div>
       </div>
       <div id="introStep2" style="display:none">
-        <h1>말하면,<br>비슷한 엄마를 찾아줘요.</h1>
-        <div class="introCopy">말하거나 쓰면 틈이 비슷한 상황의 글을 찾아줘요.<br>공개하면 익명으로 공감과 의견도 받을 수 있어요.</div>
+        <h1>그냥 다 말해요.</h1>
+        <div class="introCopy">참았던 거, 짜증났던 거, 서운했던 거.<br>너랑 비슷한 사람들의 이야기를 찾아줄게요.</div>
       </div>
     </div>
     <div>
@@ -127,8 +127,8 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 </section>
 
 <section id="feed" class="screen">
-  <h2>오늘 너와 비슷한 이야기</h2>
-  <p class="sub">지금 네 상황과 가까운 글부터 보여줘요.</p>
+  <h2 id="feedTitle">너와 비슷한 이야기</h2>
+  <p id="feedSub" class="sub">지금까지 남긴 이야기와 관심을 바탕으로 보여줘요.</p>
   <div id="storyList"></div>
 </section>
 
@@ -140,7 +140,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 <section id="records" class="screen">
   <h2>내 기록</h2>
   <div class="segment">
-    <button id="tabMine" class="on" onclick="renderRecords('mine')">내가 쓴 글</button>
+    <button id="tabMine" class="on" onclick="renderRecords('mine')">내가 쓴 이야기</button>
     <button id="tabSaved" onclick="renderRecords('saved')">담아둔 이야기</button>
   </div>
   <div id="recordList"></div>
@@ -155,8 +155,8 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
   <div class="menuPanel" onclick="event.stopPropagation()">
     <div class="menuHead"><b>전체 메뉴</b><button class="menuClose" onclick="closeMenu()">×</button></div>
     <button class="menuItem" onclick="menuGo('home')">새 글 남기기<small>말하거나 써서 지금 마음 털어놓기</small></button>
-    <button class="menuItem" onclick="menuGo('records','mine')">내가 쓴 글<small>내가 털어놓은 이야기 모아보기</small></button>
-    <button class="menuItem" onclick="menuGo('records','saved')">담아둔 이야기<small>다시 보고 싶은 다른 엄마들의 글</small></button>
+    <button class="menuItem" onclick="menuGo('records','mine')">내가 쓴 이야기<small>내가 털어놓은 이야기 모아보기</small></button>
+    <button class="menuItem" onclick="menuGo('records','saved')">담아둔 이야기<small>다시 보고 싶은 다른 사람들의 이야기</small></button>
     <button class="menuItem" onclick="menuGo('feed')">둘러보기<small>나와 비슷한 이야기 다시 보기</small></button>
     <div class="menuSection">틈</div>
     <button class="menuItem" onclick="showIntroAgain()">틈 안내<small>틈 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
@@ -167,7 +167,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 
 <nav>
   <button onclick="show('home')" id="navHome" class="active">⌂<br>홈</button>
-  <button onclick="show('feed')" id="navFeed">⌕<br>둘러보기</button>
+  <button onclick="feedMode='history';show('feed')" id="navFeed">⌕<br>둘러보기</button>
   <button onclick="show('records')" id="navRecords">▣<br>내 기록</button>
 </nav>
 </div>
@@ -190,6 +190,7 @@ let committedVoiceText='';
 let currentStory=null;
 let storyReturn='feed';
 let currentRecordTab='mine';
+let feedMode='history';
 
 function nextIntro(){
   const s1=document.getElementById('introStep1'), s2=document.getElementById('introStep2');
@@ -214,6 +215,7 @@ function closeMenu(){document.getElementById('menuOverlay').classList.remove('op
 function menuGo(id,tab){
   closeMenu();
   if(tab) currentRecordTab=tab;
+  if(id==='feed') feedMode='history';
   show(id);
 }
 function notReady(name){closeMenu();alert(name+' 화면은 다음 제작 단계에서 만들 예정이에요.')}
@@ -341,11 +343,21 @@ function saveAndMatch(privacy){
   const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
   mine.unshift({...draft,id:Date.now(),date:new Date().toLocaleDateString('ko-KR')});
   localStorage.setItem('teumMine',JSON.stringify(mine));
+  feedMode='fresh';
   show('matching');
   setTimeout(()=>show('feed'),1000);
 }
 
 function renderFeed(){
+  const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
+  feedTitle.textContent='너와 비슷한 이야기';
+  if(feedMode==='fresh'){
+    feedSub.textContent='방금 털어놓은 이야기와 가까운 글부터 보여줘요.';
+  }else if(mine.length){
+    feedSub.textContent='지금까지 남긴 이야기와 관심을 바탕으로 보여줘요.';
+  }else{
+    feedSub.textContent='아직 쌓인 기록이 없어서, 많이 공감받은 여러 이야기를 먼저 보여줘요.';
+  }
   storyList.innerHTML=sampleStories.map(s=>`
     <div class="card story" onclick="openStory(${s.id},'feed')">
       <div class="simBadge">${s.similarity}</div>
