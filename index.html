@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>틈 Version 2</title>
+<title>말해바</title>
 <style>
 :root{
   --bg:#f7f3ec;--surface:#fffdf8;--ink:#1f2b27;--muted:#7c867f;
@@ -57,7 +57,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 </head>
 <body>
 <div class="app">
-<header><div class="logo">틈</div><button class="ghost" onclick="openMenu()">☰</button></header>
+<header><div class="logo">말해바</div><button class="ghost" onclick="openMenu()">☰</button></header>
 
 <section id="intro" class="screen">
   <div class="introWrap">
@@ -65,11 +65,11 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
       <div class="introEyebrow">친구 만나 수다 떨 시간도 없을 때</div>
       <div id="introStep1">
         <h1>또 빡쳤어요?</h1>
-        <div class="introCopy">잘 왔어요.<br>여기다 그냥 털어놔요.</div>
+        <div class="introCopy">잘 왔어요.<br>말해바. 그냥 다 털어놔요.</div>
       </div>
       <div id="introStep2" style="display:none">
-        <h1>그냥 다 말해요.</h1>
-        <div class="introCopy">참았던 거, 짜증났던 거, 서운했던 거.<br>너랑 비슷한 사람들의 이야기를 찾아줄게요.</div>
+        <h1>마구 털어놔요.</h1>
+        <div class="introCopy">참았던 거, 짜증났던 거, 서운했던 거.<br>말해바가 너랑 비슷한 이야기를 찾아줄게요.</div>
       </div>
     </div>
     <div>
@@ -82,7 +82,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 
 <section id="home" class="screen active">
   <h1>오늘 뭐 때문에<br>빡쳤어요?</h1>
-  <p class="sub">친구 만나 수다 떨 시간도 없을 때.<br>여기다 그냥 털어놔요.</p>
+  <p class="sub">친구 만나 수다 떨 시간도 없을 때.<br>말해바. 그냥 다 털어놔요.</p>
   <div class="micwrap"><button class="mic" onclick="startVoice()">🎙</button></div>
   <button class="primary" onclick="startVoice()">말로 털어놓기</button>
   <button class="secondary" onclick="startWriting()">글로 쓰기</button>
@@ -113,10 +113,10 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 
 <section id="privacy" class="screen">
   <h2>이 이야기를 어떻게 남길까요?</h2>
-  <div class="notice">공개해두면 같은 마음을 가진 엄마들이 당신의 이야기를 보고 함께 공감해줄 수 있어요.</div>
+  <div class="notice">공개해두면 같은 마음을 가진 사람들이 당신의 이야기를 보고 함께 공감해줄 수 있어요.</div>
   <button class="actionCard" onclick="saveAndMatch('public')">
     익명으로 공개하기
-    <small>비슷한 엄마들이 공감하거나 의견을 줄 수 있어요.</small>
+    <small>비슷한 사람들이 공감하거나 의견을 줄 수 있어요.</small>
   </button>
   <button class="actionCard secondaryAction" onclick="saveAndMatch('private')">
     나만 보기
@@ -128,7 +128,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
   <div class="loader">
     <div class="dots">•••</div>
     <h2>비슷한 이야기를 찾고 있어요.</h2>
-    <p class="sub">오늘 진짜 답답했겠다.<br>비슷한 일을 겪은 엄마들의 글을 모아볼게요.</p>
+    <p class="sub">오늘 진짜 답답했겠다.<br>비슷한 일을 겪은 사람들의 이야기를 모아볼게요.</p>
   </div>
 </section>
 
@@ -164,8 +164,8 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
     <button class="menuItem" onclick="menuGo('records','mine')">내가 쓴 이야기<small>내가 털어놓은 이야기 모아보기</small></button>
     <button class="menuItem" onclick="menuGo('records','saved')">담아둔 이야기<small>다시 보고 싶은 다른 사람들의 이야기</small></button>
     <button class="menuItem" onclick="menuGo('feed')">둘러보기<small>나와 비슷한 이야기 다시 보기</small></button>
-    <div class="menuSection">틈</div>
-    <button class="menuItem" onclick="showIntroAgain()">틈 안내<small>틈 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
+    <div class="menuSection">말해바</div>
+    <button class="menuItem" onclick="showIntroAgain()">말해바 안내<small>말해바 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
     <button class="menuItem" onclick="notReady('설정')">설정<small>알림, 계정, 공개 범위 관리</small></button>
     <button class="menuItem" onclick="notReady('도움말·문의')">도움말·문의<small>신고, 차단, 문의하기</small></button>
   </div>
@@ -431,7 +431,7 @@ function bookmark(id){
   let saved=JSON.parse(localStorage.getItem('teumSaved')||'[]');
   if(!saved.includes(id))saved.unshift(id);
   localStorage.setItem('teumSaved',JSON.stringify(saved));
-  alert('틈에 담아뒀어요.');
+  alert('말해바에 담아뒀어요.');
 }
 function quick(t){commentInput.value=t}
 function addComment(){
