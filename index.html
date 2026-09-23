@@ -178,7 +178,14 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 </nav>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
 <script>
+const SUPABASE_URL='https://xtshgdgpyrdlcmuqvuly.supabase.co';
+const SUPABASE_KEY='sb_publishable_oHbwOYDWK1VH0LW_EnHnmQ_vdZ6DDS5';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null;
+let backendReady=false;
+let dbStories=[];
 const sampleStories=[
  {id:1,title:'아침마다 유치원 가기 싫다고 울어요',body:'매일 아침 아이가 유치원 안 간다고 울고 떼를 써요. 출근 준비도 해야 하는데 매번 달래다 보면 진이 다 빠져요. 오늘은 결국 저도 소리를 질러버렸네요.',tags:['육아','4세','등원'],similarity:'너랑 거의 똑같아요',hearts:128,comments:['나도 비슷했어요. 아침이 제일 힘들죠.','정말 지쳤겠다. 오늘은 조금 쉬어요.']},
  {id:2,title:'도와주지 않는 남편 때문에 너무 서운해요',body:'아이 재우고 집안일 하는 동안 남편은 계속 휴대폰만 보고 있어요. 도와달라고 하면 자기도 회사에서 힘들다고 해서 더 서운해져요.',tags:['남편','육아','성격차이'],similarity:'어쩜, 많이 비슷해요',hearts:95,comments:['우리 집도 거의 똑같아요.','저는 해야 할 일을 아예 나눠서 적어봤어요.']},
@@ -198,6 +205,32 @@ let storyReturn='feed';
 let currentRecordTab='mine';
 let feedMode='history';
 let editingRecordId=null;
+
+function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function fmtDate(v){return new Date(v).toLocaleDateString('ko-KR')}
+function inferTags(text){
+  const rules=[
+    ['남편',/남편|배우자/],['육아',/육아|아이|애|아기/],['등원',/등원|유치원|어린이집/],
+    ['수면',/잠|수면|재우/],['훈육',/훈육|떼|말 안/],['시댁',/시댁|시어머니|시아버지/],
+    ['친정',/친정|엄마|아빠|부모/],['복직',/복직|회사|직장|상사/],['돈',/돈|생활비|카드|대출/],
+    ['성격차이',/성격|안 맞|대화가 안/],['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],
+    ['지침',/지쳤|힘들|번아웃|피곤/],['서운함',/서운/],['화남',/화나|빡쳤|짜증/]
+  ];
+  return rules.filter(([,r])=>r.test(text)).map(([t])=>t).slice(0,4);
+}
+async function ensureSession(){
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session){currentUser=session.user;backendReady=true;return true}
+    const {data,error}=await sb.auth.signInAnonymously();
+    if(error) throw error;
+    currentUser=data.user; backendReady=true; return true;
+  }catch(e){
+    console.error('Supabase auth setup:',e);
+    backendReady=false;
+    return false;
+  }
+}
 
 function nextIntro(){
   const s1=document.getElementById('introStep1'), s2=document.getElementById('introStep2');
@@ -325,17 +358,8 @@ function submitWritten(){
   const text=bodyInput.value.trim();
   if(!text){bodyInput.focus();return}
   if(editingRecordId){
-    const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
-    const idx=mine.findIndex(item=>item.id===editingRecordId);
-    if(idx>-1){
-      mine[idx].body=text;
-      mine[idx].title=generateTitle(text);
-      localStorage.setItem('teumMine',JSON.stringify(mine));
-      const id=editingRecordId;
-      editingRecordId=null;
-      openOwnRecord(id);
-      return;
-    }
+    updateOwnRecord(editingRecordId,text);
+    return;
   }
   draft.body=text;
   draft.title=generateTitle(text);
@@ -359,37 +383,55 @@ function generateTitle(text){
   return '오늘 하루가 유난히 버거웠어요';
 }
 
-function saveAndMatch(privacy){
+async function saveAndMatch(privacy){
   draft.privacy=privacy;
-  const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
-  mine.unshift({...draft,id:Date.now(),date:new Date().toLocaleDateString('ko-KR')});
-  localStorage.setItem('teumMine',JSON.stringify(mine));
+  if(!backendReady && !(await ensureSession())){
+    alert('말해바 서버 연결 설정이 아직 완료되지 않았어요.');
+    return;
+  }
+  const {error}=await sb.from('posts').insert({
+    user_id:currentUser.id,
+    title:draft.title,
+    body:draft.body,
+    visibility:privacy,
+    tags:inferTags(draft.body)
+  });
+  if(error){console.error(error);alert('이야기를 저장하지 못했어요.');return}
   feedMode='fresh';
   show('matching');
-  setTimeout(()=>show('feed'),1000);
+  setTimeout(()=>show('feed'),700);
 }
 
-function renderFeed(){
-  const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
+async function renderFeed(){
   feedTitle.textContent='너와 비슷한 이야기';
-  if(feedMode==='fresh'){
-    feedSub.textContent='방금 털어놓은 이야기와 가까운 글부터 보여줘요.';
-  }else if(mine.length){
-    feedSub.textContent='지금까지 남긴 이야기와 관심을 바탕으로 보여줘요.';
-  }else{
-    feedSub.textContent='아직 쌓인 기록이 없어서, 많이 공감받은 여러 이야기를 먼저 보여줘요.';
+  let mineCount=0;
+  if(backendReady){
+    const {count}=await sb.from('posts').select('id',{count:'exact',head:true}).eq('user_id',currentUser.id);
+    mineCount=count||0;
   }
-  storyList.innerHTML=sampleStories.map(s=>`
-    <div class="card story" onclick="openStory(${s.id},'feed')">
-      <div class="simBadge">${s.similarity}</div>
-      <div class="title">${s.title}</div>
-      <div class="excerpt">${s.body}</div>
-      <div style="margin-top:10px">${s.tags.map(t=>`<span class="tag">#${t}</span>`).join('')}</div>
+  if(feedMode==='fresh') feedSub.textContent='방금 털어놓은 이야기와 가까운 글부터 보여줘요.';
+  else if(mineCount) feedSub.textContent='지금까지 남긴 이야기와 관심을 바탕으로 보여줘요.';
+  else feedSub.textContent='아직 쌓인 기록이 없어서, 여러 이야기를 먼저 보여줘요.';
+
+  if(backendReady){
+    const {data,error}=await sb.from('posts')
+      .select('id,user_id,title,body,tags,created_at')
+      .eq('visibility','public').eq('status','active')
+      .neq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
+    if(!error) dbStories=(data||[]).map((s,i)=>({...s,similarity:['너랑 거의 똑같아요','어쩜, 많이 비슷해요','빡친 포인트가 비슷해요','비슷한 고민을 하고 있어요'][Math.min(i,3)],comments:[],hearts:0,isDb:true}));
+  }
+  const stories=dbStories.length?dbStories:sampleStories;
+  storyList.innerHTML=stories.map(s=>`
+    <div class="card story" onclick="openStory('${s.id}','feed')">
+      <div class="simBadge">${esc(s.similarity||'비슷한 이야기예요')}</div>
+      <div class="title">${esc(s.title)}</div>
+      <div class="excerpt">${esc(s.body)}</div>
+      <div style="margin-top:10px">${(s.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
     </div>`).join('');
 }
 
 function openStory(id,from='feed'){
-  currentStory=sampleStories.find(s=>s.id===id);
+  currentStory=dbStories.find(s=>String(s.id)===String(id))||sampleStories.find(s=>String(s.id)===String(id));
   storyReturn=from;
   renderDetail();
   show('detail');
@@ -400,18 +442,28 @@ function backFromStory(){
   else show('feed');
 }
 
-function renderDetail(){
+async function renderDetail(){
   const s=currentStory;
+  if(!s)return;
+  let comments=s.comments||[];
+  let heartCount=s.hearts||0;
+  if(s.isDb && backendReady){
+    const [{data:cs},{count:rc}]=await Promise.all([
+      sb.from('comments').select('id,user_id,body,created_at').eq('post_id',s.id).eq('status','active').order('created_at'),
+      sb.from('reactions').select('*',{count:'exact',head:true}).eq('post_id',s.id)
+    ]);
+    comments=cs||[]; heartCount=rc||0;
+  }
   detailContent.innerHTML=`
     <div class="detailTop">
-      <div class="simBadge">${s.similarity}</div>
-      <h2>${s.title}</h2>
-      <div>${s.tags.map(t=>`<span class="tag">#${t}</span>`).join('')}</div>
+      <div class="simBadge">${esc(s.similarity||'비슷한 이야기예요')}</div>
+      <h2>${esc(s.title)}</h2>
+      <div>${(s.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
     </div>
-    <div class="detailBody">${s.body}</div>
+    <div class="detailBody">${esc(s.body)}</div>
     <div class="actions">
-      <button onclick="heart()">♡ 나도 그랬어요</button>
-      <button onclick="bookmark(${s.id})">🔖 담아두기</button>
+      <button onclick="heart()">♡ 나도 그랬어요 ${heartCount||''}</button>
+      <button onclick="bookmark('${s.id}')">🔖 담아두기</button>
     </div>
     <h3 style="margin-top:28px">댓글</h3>
     <div class="quick">
@@ -419,108 +471,126 @@ function renderDetail(){
       <button onclick="quick('진짜 힘들었겠다')">진짜 힘들었겠다</button>
       <button onclick="quick('저는 이렇게 했어요')">저는 이렇게 했어요</button>
     </div>
-    <div id="comments">${s.comments.map(c=>`<div class="comment">${c}</div>`).join('')}</div>
+    <div id="comments">${comments.map(c=>`<div class="comment">${esc(typeof c==='string'?c:c.body)}</div>`).join('')}</div>
     <div style="display:flex;gap:8px;margin-top:12px">
       <input id="commentInput" type="text" placeholder="한마디 건네볼까요?">
       <button class="primary" style="width:auto;margin:0" onclick="addComment()">보내기</button>
     </div>`;
 }
 
-function heart(){alert('공감했어요.')}
-function bookmark(id){
-  let saved=JSON.parse(localStorage.getItem('teumSaved')||'[]');
-  if(!saved.includes(id))saved.unshift(id);
-  localStorage.setItem('teumSaved',JSON.stringify(saved));
-  alert('말해바에 담아뒀어요.');
+async function heart(){
+  if(!currentStory?.isDb){alert('샘플 이야기예요. 실제 글부터 공감이 저장돼요.');return}
+  const {error}=await sb.from('reactions').upsert({post_id:currentStory.id,user_id:currentUser.id,reaction:'same'});
+  if(error) console.error(error); else renderDetail();
+}
+async function bookmark(id){
+  const s=dbStories.find(x=>String(x.id)===String(id));
+  if(!s){alert('샘플 이야기예요. 실제 글부터 담아둘 수 있어요.');return}
+  const {error}=await sb.from('bookmarks').upsert({post_id:id,user_id:currentUser.id});
+  if(error) console.error(error); else alert('말해바에 담아뒀어요.');
 }
 function quick(t){commentInput.value=t}
-function addComment(){
+async function addComment(){
   const t=commentInput.value.trim();
   if(!t)return;
-  currentStory.comments.push(t);
+  if(!currentStory?.isDb){alert('샘플 이야기에는 댓글을 남길 수 없어요.');return}
+  const {error}=await sb.from('comments').insert({post_id:currentStory.id,user_id:currentUser.id,body:t});
+  if(error){console.error(error);alert('댓글을 저장하지 못했어요.');return}
   renderDetail();
 }
 
-function renderRecords(type){
+async function renderRecords(type){
   currentRecordTab=type;
   tabMine.classList.toggle('on',type==='mine');
   tabSaved.classList.toggle('on',type==='saved');
+  if(!backendReady){recordList.innerHTML='<p class="sub">서버 연결을 준비하고 있어요.</p>';return}
   if(type==='mine'){
-    const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
-    recordList.innerHTML=mine.length?mine.map(x=>`
-      <div class="card story" onclick="openOwnRecord(${x.id})">
-        <div class="title">${x.title}</div>
-        <div class="excerpt">${x.body}</div>
-        <div class="recordMeta">${x.date} · ${x.privacy==='public'?'익명 공개':'나만 보기'}</div>
+    const {data,error}=await sb.from('posts').select('*').eq('user_id',currentUser.id).neq('status','deleted').order('created_at',{ascending:false});
+    if(error){console.error(error);return}
+    recordList.innerHTML=data.length?data.map(x=>`
+      <div class="card story" onclick="openOwnRecord('${x.id}')">
+        <div class="title">${esc(x.title)}</div>
+        <div class="excerpt">${esc(x.body)}</div>
+        <div class="recordMeta">${fmtDate(x.created_at)} · ${x.visibility==='public'?'익명 공개':'나만 보기'}</div>
       </div>`).join(''):'<p class="sub">아직 남긴 기록이 없어요.</p>';
   }else{
-    const ids=JSON.parse(localStorage.getItem('teumSaved')||'[]');
-    const arr=ids.map(id=>sampleStories.find(s=>s.id===id)).filter(Boolean);
+    const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+    if(error){console.error(error);return}
+    const arr=(data||[]).map(x=>x.posts).filter(Boolean);
+    arr.forEach(s=>{if(!dbStories.some(d=>d.id===s.id))dbStories.push({...s,similarity:'담아둔 이야기',isDb:true})});
     recordList.innerHTML=arr.length?arr.map(s=>`
-      <div class="card story" onclick="openStory(${s.id},'records')">
-        <div class="title">${s.title}</div>
-        <div class="excerpt">${s.body}</div>
-        <div style="margin-top:10px">${s.tags.map(t=>`<span class="tag">#${t}</span>`).join('')}</div>
+      <div class="card story" onclick="openStory('${s.id}','records')">
+        <div class="title">${esc(s.title)}</div>
+        <div class="excerpt">${esc(s.body)}</div>
+        <div style="margin-top:10px">${(s.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
       </div>`).join(''):'<p class="sub">아직 담아둔 이야기가 없어요.</p>';
   }
 }
 
-function openOwnRecord(id){
-  const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
-  const x=mine.find(item=>item.id===id);
-  if(!x)return;
-  const isPublic=x.privacy==='public';
+async function openOwnRecord(id){
+  const {data:x,error}=await sb.from('posts').select('*').eq('id',id).single();
+  if(error||!x)return;
+  const isPublic=x.visibility==='public';
+  let reactionCount=0, commentCount=0;
+  if(isPublic){
+    const [r,c]=await Promise.all([
+      sb.from('reactions').select('*',{count:'exact',head:true}).eq('post_id',id),
+      sb.from('comments').select('*',{count:'exact',head:true}).eq('post_id',id).eq('status','active')
+    ]);
+    reactionCount=r.count||0; commentCount=c.count||0;
+  }
   recordDetailContent.innerHTML=`
     <div class="detailTop">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-        <div class="recordMeta" style="margin-top:0">${x.date}</div>
+        <div class="recordMeta" style="margin-top:0">${fmtDate(x.created_at)}</div>
         <span class="statusPill ${isPublic?'':'private'}">${isPublic?'익명 공개':'나만 보기'}</span>
       </div>
-      <h2>${x.title}</h2>
+      <h2>${esc(x.title)}</h2>
     </div>
-    <div class="detailBody">${x.body}</div>
-    ${isPublic?`
-      <div class="responseBox">
-        <h3>이 이야기에 온 반응</h3>
-        <p class="sub">공개 글에는 받은 공감과 댓글이 여기에 보여요.</p>
-      </div>`:''}
+    <div class="detailBody">${esc(x.body)}</div>
+    ${isPublic?`<div class="responseBox"><h3>이 이야기에 온 반응</h3><p class="sub">♡ 나도 그랬어요 ${reactionCount} · 댓글 ${commentCount}</p></div>`:''}
     <div class="manageBox">
       <div class="manageGrid">
-        <button class="secondary" onclick="toggleOwnRecordPrivacy(${x.id})">${isPublic?'나만 보기로 바꾸기':'익명으로 공개하기'}</button>
-        <button class="secondary" onclick="editOwnRecord(${x.id})">내용 수정하기</button>
+        <button class="secondary" onclick="toggleOwnRecordPrivacy('${x.id}')">${isPublic?'나만 보기로 바꾸기':'익명으로 공개하기'}</button>
+        <button class="secondary" onclick="editOwnRecord('${x.id}')">내용 수정하기</button>
       </div>
-      <button class="danger" onclick="deleteOwnRecord(${x.id})">이 이야기 삭제하기</button>
+      <button class="danger" onclick="deleteOwnRecord('${x.id}')">이 이야기 삭제하기</button>
     </div>`;
   show('recordDetail');
 }
 
-function toggleOwnRecordPrivacy(id){
-  const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
-  const idx=mine.findIndex(item=>item.id===id);
-  if(idx<0)return;
-  const next=mine[idx].privacy==='public'?'private':'public';
-  mine[idx].privacy=next;
-  localStorage.setItem('teumMine',JSON.stringify(mine));
-  openOwnRecord(id);
+async function toggleOwnRecordPrivacy(id){
+  const {data:x}=await sb.from('posts').select('visibility').eq('id',id).single();
+  if(!x)return;
+  const next=x.visibility==='public'?'private':'public';
+  const {error}=await sb.from('posts').update({visibility:next,updated_at:new Date().toISOString()}).eq('id',id);
+  if(error)console.error(error); else openOwnRecord(id);
 }
 
-function editOwnRecord(id){
-  const mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
-  const x=mine.find(item=>item.id===id);
+async function editOwnRecord(id){
+  const {data:x}=await sb.from('posts').select('body').eq('id',id).single();
   if(!x)return;
   editingRecordId=id;
   bodyInput.value=x.body;
   show('write');
 }
 
-function deleteOwnRecord(id){
-  if(!confirm('이 이야기를 삭제할까요? 삭제하면 다시 되돌릴 수 없어요.')) return;
-  let mine=JSON.parse(localStorage.getItem('teumMine')||'[]');
-  mine=mine.filter(item=>item.id!==id);
-  localStorage.setItem('teumMine',JSON.stringify(mine));
+async function updateOwnRecord(id,text){
+  const {error}=await sb.from('posts').update({body:text,title:generateTitle(text),tags:inferTags(text),updated_at:new Date().toISOString()}).eq('id',id);
+  if(error){console.error(error);alert('수정하지 못했어요.');return}
+  editingRecordId=null;
+  openOwnRecord(id);
+}
+
+async function deleteOwnRecord(id){
+  if(!confirm('이 이야기를 삭제할까요? 삭제하면 다시 되돌릴 수 없어요.'))return;
+  const {error}=await sb.from('posts').delete().eq('id',id);
+  if(error){console.error(error);alert('삭제하지 못했어요.');return}
   currentRecordTab='mine';
   show('records');
 }
+
+ensureSession().then(()=>{});
 if(localStorage.getItem('teumSeenIntro')){
   show('home');
 }else{
