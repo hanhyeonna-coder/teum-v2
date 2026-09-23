@@ -53,6 +53,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 .manageGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .danger{width:100%;border:0;background:none;color:#a14d48;font-size:14px;font-weight:700;padding:14px;margin-top:8px}
 .responseBox{margin-top:24px;padding:16px;border-radius:16px;background:#faf7f1}.responseBox h3{margin:0 0 8px;font-size:16px}.responseBox .sub{margin:0}
+.accountBanner{display:none;margin:14px 0 16px;padding:16px;border-radius:16px;background:#eef4ef;border:1px solid #dce8df}.accountBanner.show{display:block}.accountBanner b{display:block;font-size:15px;margin-bottom:5px}.accountBanner .sub{margin:0 0 10px}.accountBanner button{margin-top:0}.accountStatus{font-size:13px;color:var(--green);font-weight:700;margin-top:10px}
 </style>
 </head>
 <body>
@@ -145,11 +146,28 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
 
 <section id="records" class="screen">
   <h2>내 기록</h2>
+  <div id="accountBanner" class="accountBanner">
+    <b>다른 기기에서도 기록을 보고 싶다면</b>
+    <p class="sub">지금 기록은 이 브라우저의 익명 계정에 연결되어 있어요. 이메일을 연결하면 다른 기기에서도 다시 찾을 수 있어요.</p>
+    <button class="secondary" onclick="show('accountLink')">계정 연결하기</button>
+  </div>
   <div class="segment">
     <button id="tabMine" class="on" onclick="renderRecords('mine')">내가 쓴 이야기</button>
     <button id="tabSaved" onclick="renderRecords('saved')">담아둔 이야기</button>
   </div>
   <div id="recordList"></div>
+</section>
+
+<section id="accountLink" class="screen">
+  <button class="ghost" onclick="show('records')">←</button>
+  <h2>계정 연결하기</h2>
+  <p class="sub">이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.</p>
+  <div class="card">
+    <input id="accountEmail" type="text" inputmode="email" autocomplete="email" placeholder="이메일 주소">
+    <button class="primary" onclick="linkEmailAccount()">이메일 연결하기</button>
+    <div id="accountLinkStatus" class="accountStatus"></div>
+  </div>
+  <p class="sub">연결 메일을 확인한 뒤 인증을 완료하면 이 익명 계정이 그대로 유지돼요.</p>
 </section>
 
 <section id="recordDetail" class="screen">
@@ -166,6 +184,7 @@ nav button{border:0;background:none;padding:8px 2px;color:var(--muted);font-size
     <button class="menuItem" onclick="menuGo('feed')">둘러보기<small>나와 비슷한 이야기 다시 보기</small></button>
     <div class="menuSection">말해바</div>
     <button class="menuItem" onclick="showIntroAgain()">말해바 안내<small>말해바 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
+    <button id="menuAccountLink" class="menuItem" onclick="closeMenu();show('accountLink')">계정 연결<small>다른 기기에서도 내 기록 이어보기</small></button>
     <button class="menuItem" onclick="notReady('설정')">설정<small>알림, 계정, 공개 범위 관리</small></button>
     <button class="menuItem" onclick="notReady('도움말·문의')">도움말·문의<small>신고, 차단, 문의하기</small></button>
   </div>
@@ -221,15 +240,39 @@ function inferTags(text){
 async function ensureSession(){
   try{
     const {data:{session}}=await sb.auth.getSession();
-    if(session){currentUser=session.user;backendReady=true;return true}
+    if(session){
+      currentUser=session.user;backendReady=true;updateAccountUI();return true
+    }
     const {data,error}=await sb.auth.signInAnonymously();
     if(error) throw error;
-    currentUser=data.user; backendReady=true; return true;
+    currentUser=data.user; backendReady=true; updateAccountUI(); return true;
   }catch(e){
     console.error('Supabase auth setup:',e);
     backendReady=false;
     return false;
   }
+}
+function updateAccountUI(){
+  const isAnon=!!currentUser?.is_anonymous;
+  const banner=document.getElementById('accountBanner');
+  const menu=document.getElementById('menuAccountLink');
+  if(banner) banner.classList.toggle('show',isAnon);
+  if(menu) menu.style.display=isAnon?'block':'none';
+}
+async function linkEmailAccount(){
+  const email=accountEmail.value.trim();
+  accountLinkStatus.textContent='';
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    accountLinkStatus.textContent='이메일 주소를 확인해주세요.';
+    return;
+  }
+  const {error}=await sb.auth.updateUser({email});
+  if(error){
+    console.error(error);
+    accountLinkStatus.textContent='연결을 시작하지 못했어요. 잠시 후 다시 시도해주세요.';
+    return;
+  }
+  accountLinkStatus.textContent='인증 메일을 보냈어요. 메일에서 연결을 완료해주세요.';
 }
 
 function nextIntro(){
@@ -241,7 +284,7 @@ function nextIntro(){
   }else finishIntro();
 }
 function finishIntro(){
-  localStorage.setItem('teumSeenIntro','1');
+  localStorage.setItem('malhaebaSeenIntro','1');
   show('home');
 }
 function showIntroAgain(){
@@ -282,7 +325,7 @@ function show(id){
   ['Home','Feed','Records'].forEach(x=>{const n=document.getElementById('nav'+x);if(n)n.classList.remove('active')});
   if(id==='home'){navHome.classList.add('active');resetCompose()}
   if(id==='feed'){navFeed.classList.add('active');renderFeed()}
-  if(id==='records'){navRecords.classList.add('active');renderRecords(currentRecordTab)}
+  if(id==='records'){navRecords.classList.add('active');updateAccountUI();renderRecords(currentRecordTab)}
   window.scrollTo(0,0);
 }
 
@@ -591,7 +634,7 @@ async function deleteOwnRecord(id){
 }
 
 ensureSession().then(()=>{});
-if(localStorage.getItem('teumSeenIntro')){
+if(localStorage.getItem('malhaebaSeenIntro')){
   show('home');
 }else{
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
