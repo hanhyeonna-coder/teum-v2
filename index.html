@@ -21,6 +21,7 @@ header{padding:17px 18px 9px;display:flex;justify-content:space-between;align-it
 .logo{font-weight:850;font-size:22px;letter-spacing:-.7px}.ghost{border:0;background:none;font-size:20px;color:var(--ink);padding:8px;border-radius:10px;line-height:1}
 .headerActions{display:flex;align-items:center;gap:8px}.langSwitch{display:flex;padding:3px;background:#f0ece5;border-radius:999px}.langSwitch button{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800;padding:6px 8px;border-radius:999px}.langSwitch button.on{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(31,43,39,.08)}
 .menuTrigger{display:grid;place-items:center}.menuTrigger svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
+.icon{width:19px;height:19px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.iconBtn{display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .screen{display:none;padding:10px 18px 28px;min-width:0}.screen.active{display:block}
 h1{font-size:30px;line-height:1.28;margin:14px 0 8px;letter-spacing:-1px}h2{font-size:24px;line-height:1.35;margin:10px 0 8px;letter-spacing:-.6px}
 .sub{color:var(--muted);font-size:14px;line-height:1.62;margin:8px 0}.card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px;margin:12px 0;min-width:0;box-shadow:var(--shadow)}
@@ -28,7 +29,7 @@ h1{font-size:30px;line-height:1.28;margin:14px 0 8px;letter-spacing:-1px}h2{font
 .primary{border:0;background:var(--green);color:#fff;box-shadow:0 5px 14px rgba(37,92,73,.12)}.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
 .actionCard{text-align:left;border:0;background:var(--green);color:#fff;padding:17px 18px}.actionCard.secondaryAction{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .actionCard small{display:block;font-weight:500;opacity:.82;margin-top:5px;line-height:1.45}
-.micwrap{display:flex;justify-content:center;margin:34px 0 28px}.mic{width:116px;height:116px;border-radius:50%;border:0;background:var(--green);color:white;display:grid;place-items:center;box-shadow:0 0 0 16px #e7efe9,0 0 0 32px #f1f5f2}.mic svg{width:36px;height:36px;display:block}.mic .pauseMark,.mic .playMark{font-size:30px;font-weight:800;line-height:1}
+.micwrap{display:flex;justify-content:center;margin:34px 0 28px}.mic{width:116px;height:116px;border-radius:50%;border:0;background:var(--green);color:white;display:grid;place-items:center;box-shadow:0 0 0 16px #e7efe9,0 0 0 32px #f1f5f2}.mic svg{width:36px;height:36px;display:block}.pauseGlyph{display:flex;gap:7px}.pauseGlyph i{display:block;width:5px;height:28px;border-radius:3px;background:#fff}.playGlyph{width:0;height:0;border-top:15px solid transparent;border-bottom:15px solid transparent;border-left:23px solid #fff;margin-left:5px}
 .voiceHint{height:28px;text-align:center;font-size:13px;color:var(--green);font-weight:700;margin:8px 0 2px}
 textarea{width:100%;min-height:170px;border:1px solid var(--line);border-radius:16px;padding:14px;background:#fffdf9;font:inherit;resize:vertical}
 input[type=text]{width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);font:inherit}
@@ -41,7 +42,7 @@ input[type=text]{width:100%;padding:13px;border-radius:12px;border:1px solid var
 .notice{background:var(--pink);border-radius:18px;padding:20px 18px;color:#5d4d45;font-size:16px;line-height:1.55;font-weight:800;margin:18px 0}
 .loader{padding:80px 0;text-align:center}.dots{font-size:34px;letter-spacing:7px;color:var(--green)}
 nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:rgba(255,253,248,.95);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:8px 8px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
-nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size:11px;line-height:1.25;display:flex;flex-direction:column;align-items:center;gap:3px}nav button.active{color:var(--green);font-weight:800}.navIcon{font-size:18px;line-height:1;height:20px}
+nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size:11px;line-height:1.25;display:flex;flex-direction:column;align-items:center;gap:4px}nav button.active{color:var(--green);font-weight:800}.navIcon{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .comment{padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}.quick{display:flex;gap:7px;overflow:auto;padding:4px 0}.quick button{white-space:nowrap;border:1px solid var(--line);background:white;border-radius:999px;padding:8px 10px}
 .detailBody{font-size:17px;line-height:1.8;white-space:pre-wrap}.detailTop{margin:10px 0 18px}
 .introWrap{min-height:calc(100dvh - 62px);padding:42px 0 170px}
@@ -124,7 +125,7 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 <section id="voice" class="screen">
   <h2>그냥 말해봐요.</h2>
   <p class="sub">정리해서 말하지 않아도 괜찮아요.</p>
-  <div class="micwrap"><button id="voiceToggleBtn" class="mic" onclick="toggleVoicePause()" aria-label="일시정지"><span class="pauseMark">Ⅱ</span></button></div>
+  <div class="micwrap"><button id="voiceToggleBtn" class="mic" onclick="toggleVoicePause()" aria-label="Pause"><span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span></button></div>
   <div id="voiceStatus" class="voiceHint"></div>
   <button class="primary" onclick="stopVoice()">말하기 끝</button>
 </section>
@@ -216,9 +217,9 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 </div>
 
 <nav>
-  <button onclick="show('home')" id="navHome" class="active"><span class="navIcon">⌂</span><span>홈</span></button>
-  <button onclick="feedMode='history';show('feed')" id="navFeed"><span class="navIcon">○</span><span>둘러보기</span></button>
-  <button onclick="show('records')" id="navRecords"><span class="navIcon">□</span><span>내 기록</span></button>
+  <button onclick="show('home')" id="navHome" class="active"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.8l8.5 6.7v9.2a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1z"/></svg><span>홈</span></button>
+  <button onclick="feedMode='history';show('feed')" id="navFeed"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><span>둘러보기</span></button>
+  <button onclick="show('records')" id="navRecords"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>내 기록</span></button>
 </nav>
 </div>
 
@@ -254,10 +255,10 @@ const I18N={
     almost:'너랑 거의 똑같아요',very:'어쩜, 많이 비슷해요',point:'빡친 포인트가 비슷해요',similar:'비슷한 고민을 하고 있어요',
     voiceHints:['그래, 말해봐요','듣고 있어요, 계속해요','응, 더 말해도 돼요','천천히 말해도 괜찮아요'],
     pause:'잠깐 쉬어도 괜찮아요',continue:'응, 계속해요',speechStopped:'음성 인식이 잠시 멈췄어요.',speechUnsupported:'이 브라우저에서는 음성 인식이 어려워요. 글로 써주세요.',
-    savedAlert:'말해바에 담아뒀어요.',sampleReact:'예시 이야기예요. 실제 글부터 공감이 저장돼요.',sampleSave:'예시 이야기예요. 실제 글부터 담아둘 수 있어요.',sampleComment:'예시 이야기에는 댓글을 남길 수 없어요.'
+    savedAlert:'말해바에 담아뒀어요.',sampleReact:'예시 이야기예요. 실제 글부터 공감이 저장돼요.',sampleSave:'예시 이야기예요. 실제 글부터 담아둘 수 있어요.',sampleComment:'예시 이야기에는 댓글을 남길 수 없어요.',serverConnecting:'서버 연결을 준비하고 있어요.',serverUnavailable:'말해바 서버에 연결하지 못했어요.',saveFailed:'이야기를 저장하지 못했어요.',commentFailed:'댓글을 저장하지 못했어요.',editFailed:'수정하지 못했어요.',deleteFailed:'삭제하지 못했어요.',deleteConfirm:'이 이야기를 삭제할까요? 삭제하면 다시 되돌릴 수 없어요.',voiceEmpty:'음성이 잘 기록되지 않았어요. 여기에 직접 수정해주세요.',notReady:'이 화면은 다음 제작 단계에서 만들 예정이에요.',publicLabel:'익명 공개',privateLabel:'나만 보기',savedStory:'담아둔 이야기',similarFallback:'비슷한 이야기예요'
   },
   en:{
-    introEyebrow:'No time to call a friend and vent?',intro1Title:'Had enough today?',intro1Copy:'You’re in the right place.<br>Just let it out.',
+    introEyebrow:'When you just need to let it out',intro1Title:'Had enough today?',intro1Copy:'You’re in the right place.<br>Just let it out.',
     intro2Title:'Say it all.',intro2Copy:'The frustration, the resentment, the little things that piled up.<br>Malhaeba will find stories that feel like yours.',
     next:'Next',start:'Start',startNow:'Start now',
     homeTitle:'What got on your<br>nerves today?',homeSub:'No need to make it sound nice.<br>Just let it out.',talk:'Talk it out',write:'Write instead',
@@ -266,7 +267,7 @@ const I18N={
     reviewTitle:'Here’s what I heard.',reviewSub:'Fix anything the voice recognition got wrong.',reviewOk:'Yes, keep going',retry:'Try again',
     privacyTitle:'How would you like to save this story?',privacyNotice:'Share it anonymously and people with similar experiences can relate or respond.',
     shareAnon:'Share anonymously',shareAnonSub:'Others can relate or leave their thoughts.',private:'Keep it to myself',privateSub:'Only you can see it in your records.',
-    matchingTitle:'Finding stories like yours…',matchingSub:'That sounds like a lot.<br>Let’s find people who’ve been through something similar.',
+    matchingTitle:'Finding stories like yours…',matchingSub:'Looking for people who’ve been through something similar.',
     feedTitle:'Stories similar to yours',records:'My records',mine:'My stories',saved:'Saved stories',
     accountBannerTitle:'Want to keep your stories across devices?',accountBannerSub:'Your stories are linked to this anonymous browser session. Connect an email to access them elsewhere.',connect:'Connect account',
     accountTitle:'Connect account',accountSub:'Connect an email to keep the same records on another device.',emailPlaceholder:'Email address',connectEmail:'Connect email',accountFoot:'Open the verification email to finish connecting this anonymous account.',
@@ -277,7 +278,7 @@ const I18N={
     almost:'Almost exactly like yours',very:'Very similar',point:'The same kind of frustration',similar:'A similar kind of struggle',
     voiceHints:['Go on, I’m listening.','Take your time.','Keep going.','It’s okay to pause.'],
     pause:'It’s okay to pause.',continue:'Keep going.',speechStopped:'Voice recognition paused for a moment.',speechUnsupported:'Voice recognition isn’t available in this browser. Please write instead.',
-    savedAlert:'Saved to Malhaeba.',sampleReact:'This is an example story. Reactions work on real posts.',sampleSave:'This is an example story. Saving works on real posts.',sampleComment:'Comments are disabled on example stories.'
+    savedAlert:'Saved to Malhaeba.',sampleReact:'This is an example story. Reactions work on real posts.',sampleSave:'This is an example story. Saving works on real posts.',sampleComment:'Comments are disabled on example stories.',serverConnecting:'Connecting…',serverUnavailable:'Couldn’t connect to Malhaeba.',saveFailed:'Couldn’t save your story.',commentFailed:'Couldn’t save your comment.',editFailed:'Couldn’t save your changes.',deleteFailed:'Couldn’t delete this story.',deleteConfirm:'Delete this story? This can’t be undone.',voiceEmpty:'Voice recognition missed that. You can edit it here.',notReady:'This screen is coming in the next version.',publicLabel:'Anonymous',privateLabel:'Private',savedStory:'Saved story',similarFallback:'A similar story'
   }
 };
 function tr(k){return I18N[currentLang]?.[k] ?? I18N.ko[k] ?? k}
@@ -310,7 +311,7 @@ let editingRecordId=null;
 let recentOwnStories=[];
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function fmtDate(v){return new Date(v).toLocaleDateString('ko-KR')}
+function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
 function inferTags(text){
   const rules=currentLang==='en'?[
     ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],['kids',/kid|child|baby|toddler|son|daughter/i],['parenting',/parent|daycare|school|bedtime|tantrum/i],
@@ -405,6 +406,7 @@ function setLanguage(lang){
 }
 function applyLanguage(){
   document.documentElement.lang=currentLang;
+  document.title=currentLang==='en'?'Malhaeba — Just let it out':'말해바 — 그냥 다 털어놔요';
   brandLogo.textContent=currentLang==='en'?'MALHAEBA':'말해바';
   langKo.classList.toggle('on',currentLang==='ko'); langEn.classList.toggle('on',currentLang==='en');
   const q=(id)=>document.getElementById(id);
@@ -455,7 +457,7 @@ function menuGo(id,tab){
   if(id==='feed') feedMode='history';
   show(id);
 }
-function notReady(name){closeMenu();alert(name+' 화면은 다음 제작 단계에서 만들 예정이에요.')}
+function notReady(name){closeMenu();alert(name+' · '+tr('notReady'))}
 function redoVoice(){
   clearInterval(voiceHintTimer);
   try{recognition&&recognition.stop()}catch(e){}
@@ -495,7 +497,7 @@ function startVoice(){
   show('voice');
   voicePaused=false;
   committedVoiceText='';
-  voiceToggleBtn.innerHTML='<span class="pauseMark">Ⅱ</span>';
+  voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
   beginVoiceHints();
   startRecognitionSegment();
 }
@@ -532,11 +534,11 @@ function toggleVoicePause(){
     try{recognition&&recognition.stop()}catch(e){}
     committedVoiceText=voiceTranscript.trim();
     voicePaused=true;
-    voiceToggleBtn.innerHTML='<span class="playMark">▶</span>';
+    voiceToggleBtn.innerHTML='<span class="playGlyph" aria-hidden="true"></span>';
     voiceStatus.textContent=tr('pause');
   }else{
     voicePaused=false;
-    voiceToggleBtn.innerHTML='<span class="pauseMark">Ⅱ</span>';
+    voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
     voiceStatus.textContent=tr('continue');
     beginVoiceHints();
     startRecognitionSegment();
@@ -548,7 +550,7 @@ function stopVoice(){
   try{recognition&&recognition.stop()}catch(e){}
   voicePaused=false;
   draft.body=voiceTranscript.trim();
-  reviewBody.value=draft.body || '음성이 잘 기록되지 않았어요. 여기에 직접 수정해주세요.';
+  reviewBody.value=draft.body || tr('voiceEmpty');
   show('review');
 }
 
@@ -591,7 +593,7 @@ function generateTitle(text){
 async function saveAndMatch(privacy){
   draft.privacy=privacy;
   if(!backendReady && !(await ensureSession())){
-    alert('말해바 서버 연결 설정이 아직 완료되지 않았어요.');
+    alert(tr('serverUnavailable'));
     return;
   }
   const {error}=await sb.from('posts').insert({
@@ -602,14 +604,14 @@ async function saveAndMatch(privacy){
     tags:inferTags(draft.body),
     language:currentLang
   });
-  if(error){console.error(error);alert('이야기를 저장하지 못했어요.');return}
+  if(error){console.error(error);alert(tr('saveFailed'));return}
   feedMode='fresh';
   show('matching');
   setTimeout(()=>show('feed'),700);
 }
 
-async function renderFeed(){
-  feedTitle.textContent='너와 비슷한 이야기';
+async async function renderFeed(){
+  feedTitle.textContent=tr('feedTitle');
   let queryText='', queryTags=[], mineCount=0;
 
   if(backendReady){
@@ -650,7 +652,7 @@ async function renderFeed(){
   const stories=dbStories.length?dbStories:getSampleStories().map(s=>({...s,similarity:tr('example')}));
   storyList.innerHTML=stories.map(s=>`
     <div class="card story" onclick="openStory('${s.id}','feed')">
-      <div class="simBadge">${esc(s.similarity||'비슷한 이야기예요')}</div>
+      <div class="simBadge">${esc(s.similarity||tr('similarFallback'))}</div>
       <div class="title">${esc(s.title)}</div>
       <div class="excerpt">${esc(s.body)}</div>
       <div style="margin-top:10px">${(s.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
@@ -658,7 +660,7 @@ async function renderFeed(){
 }
 
 function openStory(id,from='feed'){
-  currentStory=dbStories.find(s=>String(s.id)===String(id))||sampleStories.find(s=>String(s.id)===String(id));
+  currentStory=dbStories.find(s=>String(s.id)===String(id))||getSampleStories().find(s=>String(s.id)===String(id));
   storyReturn=from;
   renderDetail();
   show('detail');
@@ -683,14 +685,14 @@ async function renderDetail(){
   }
   detailContent.innerHTML=`
     <div class="detailTop">
-      <div class="simBadge">${esc(s.similarity||'비슷한 이야기예요')}</div>
+      <div class="simBadge">${esc(s.similarity||tr('similarFallback'))}</div>
       <h2>${esc(s.title)}</h2>
       <div>${(s.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
     </div>
     <div class="detailBody">${esc(s.body)}</div>
     <div class="actions">
-      <button onclick="heart()">♡ ${tr('same')} ${heartCount||''}</button>
-      <button onclick="bookmark('${s.id}')">♡ ${tr('bookmark')}</button>
+      <button class="iconBtn" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span>${tr('same')} ${heartCount||''}</span></button>
+      <button class="iconBtn" onclick="bookmark('${s.id}')"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>${tr('bookmark')}</span></button>
     </div>
     <h3 style="margin-top:28px">${tr('comments')}</h3>
     <div class="quick">
@@ -722,7 +724,7 @@ async function addComment(){
   if(!t)return;
   if(!currentStory?.isDb){alert(tr('sampleComment'));return}
   const {error}=await sb.from('comments').insert({post_id:currentStory.id,user_id:currentUser.id,body:t});
-  if(error){console.error(error);alert('댓글을 저장하지 못했어요.');return}
+  if(error){console.error(error);alert(tr('commentFailed'));return}
   renderDetail();
 }
 
@@ -730,7 +732,7 @@ async function renderRecords(type){
   currentRecordTab=type;
   tabMine.classList.toggle('on',type==='mine');
   tabSaved.classList.toggle('on',type==='saved');
-  if(!backendReady){recordList.innerHTML='<p class="sub">서버 연결을 준비하고 있어요.</p>';return}
+  if(!backendReady){recordList.innerHTML='<p class="sub">'+esc(tr('serverConnecting'))+'</p>';return}
   if(type==='mine'){
     const {data,error}=await sb.from('posts').select('*').eq('user_id',currentUser.id).eq('language',currentLang).neq('status','deleted').order('created_at',{ascending:false});
     if(error){console.error(error);return}
@@ -738,13 +740,13 @@ async function renderRecords(type){
       <div class="card story" onclick="openOwnRecord('${x.id}')">
         <div class="title">${esc(x.title)}</div>
         <div class="excerpt">${esc(x.body)}</div>
-        <div class="recordMeta">${fmtDate(x.created_at)} · ${x.visibility==='public'?'익명 공개':'나만 보기'}</div>
+        <div class="recordMeta">${fmtDate(x.created_at)} · ${x.visibility==='public'?tr('publicLabel'):tr('privateLabel')}</div>
       </div>`).join(''): `<p class="sub">${tr('emptyRecords')}</p>`;
   }else{
     const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     if(error){console.error(error);return}
     const arr=(data||[]).map(x=>x.posts).filter(s=>s && (s.language||'ko')===currentLang);
-    arr.forEach(s=>{if(!dbStories.some(d=>d.id===s.id))dbStories.push({...s,similarity:'담아둔 이야기',isDb:true})});
+    arr.forEach(s=>{if(!dbStories.some(d=>d.id===s.id))dbStories.push({...s,similarity:tr('savedStory'),isDb:true})});
     recordList.innerHTML=arr.length?arr.map(s=>`
       <div class="card story" onclick="openStory('${s.id}','records')">
         <div class="title">${esc(s.title)}</div>
@@ -775,7 +777,7 @@ async function openOwnRecord(id){
       <h2>${esc(x.title)}</h2>
     </div>
     <div class="detailBody">${esc(x.body)}</div>
-    ${isPublic?`<div class="responseBox"><h3>${currentLang==='en'?'Responses to this story':'이 이야기에 온 반응'}</h3><p class="sub">♡ ${tr('same')} ${reactionCount} · ${tr('comments')} ${commentCount}</p></div>`:''}
+    ${isPublic?`<div class="responseBox"><h3>${currentLang==='en'?'Responses to this story':'이 이야기에 온 반응'}</h3><p class="sub">${tr('same')} ${reactionCount} · ${tr('comments')} ${commentCount}</p></div>`:''}
     <div class="manageBox">
       <div class="manageGrid">
         <button class="secondary" onclick="toggleOwnRecordPrivacy('${x.id}')">${currentLang==='en'?(isPublic?'Make private':'Share anonymously'):(isPublic?'나만 보기로 바꾸기':'익명으로 공개하기')}</button>
@@ -804,15 +806,15 @@ async function editOwnRecord(id){
 
 async function updateOwnRecord(id,text){
   const {error}=await sb.from('posts').update({body:text,title:generateTitle(text),tags:inferTags(text),updated_at:new Date().toISOString()}).eq('id',id);
-  if(error){console.error(error);alert('수정하지 못했어요.');return}
+  if(error){console.error(error);alert(tr('editFailed'));return}
   editingRecordId=null;
   openOwnRecord(id);
 }
 
 async function deleteOwnRecord(id){
-  if(!confirm('이 이야기를 삭제할까요? 삭제하면 다시 되돌릴 수 없어요.'))return;
+  if(!confirm(tr('deleteConfirm')))return;
   const {error}=await sb.from('posts').delete().eq('id',id);
-  if(error){console.error(error);alert('삭제하지 못했어요.');return}
+  if(error){console.error(error);alert(tr('deleteFailed'));return}
   currentRecordTab='mine';
   show('records');
 }
