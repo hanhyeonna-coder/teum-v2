@@ -222,6 +222,69 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
   100%{transform:scale(1) rotate(0)}
 }
 
+
+/* Requested UI corrections */
+#records .segment{
+  background:#f2f4f6!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#records .segment button{
+  border:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  color:#7b8189!important;
+}
+#records .segment button.on{
+  background:#fff!important;
+  color:var(--accent)!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#privacy .notice{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:4px 0!important;
+  margin:14px 0 18px!important;
+  color:#5f666e!important;
+  font-size:15px!important;
+  font-weight:650!important;
+}
+.listenerStage{
+  position:relative;
+  isolation:isolate;
+}
+.listenerStage::before,
+.listenerStage::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:178px;
+  height:178px;
+  border-radius:50%;
+  border:10px solid rgba(255,91,87,.075);
+  transform:translate(-50%,-50%) scale(.88);
+  opacity:0;
+  filter:blur(7px);
+  pointer-events:none;
+  z-index:0;
+}
+.listenerStage.listening::before{
+  animation:voiceRipple 4.8s ease-out infinite;
+}
+.listenerStage.listening::after{
+  animation:voiceRipple 4.8s ease-out 2.4s infinite;
+}
+.listenerFace{z-index:1}
+@keyframes voiceRipple{
+  0%{transform:translate(-50%,-50%) scale(.88);opacity:0}
+  15%{opacity:.55}
+  70%{opacity:.14}
+  100%{transform:translate(-50%,-50%) scale(1.48);opacity:0}
+}
+
 </style>
 </head>
 <body>
@@ -492,6 +555,7 @@ let listenerTimer=null;
 let listenerStep=0;
 let currentStoryReacted=false;
 let currentStoryBookmarked=false;
+let currentHeartCount=0;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
@@ -703,6 +767,7 @@ function animateListener(){
 }
 function startListenerAnimation(){
   clearTimeout(listenerTimer);
+  document.querySelector('.listenerStage')?.classList.add('listening');
   const face=document.getElementById('listenerFace');
   if(face)face.className='listenerFace';
   listenerStep=0;
@@ -710,6 +775,7 @@ function startListenerAnimation(){
 }
 function stopListenerAnimation(){
   clearTimeout(listenerTimer);
+  document.querySelector('.listenerStage')?.classList.remove('listening');
   const face=document.getElementById('listenerFace');
   if(face)face.className='listenerFace';
 }
@@ -901,6 +967,7 @@ async function renderDetail(){
   if(!s)return;
   let comments=s.comments||[];
   let heartCount=s.hearts||0;
+  currentHeartCount=heartCount;
   currentStoryReacted=false;
   currentStoryBookmarked=false;
   if(s.isDb && backendReady){
@@ -910,7 +977,7 @@ async function renderDetail(){
       sb.from('reactions').select('post_id').eq('post_id',s.id).eq('user_id',currentUser.id).maybeSingle(),
       sb.from('bookmarks').select('post_id').eq('post_id',s.id).eq('user_id',currentUser.id).maybeSingle()
     ]);
-    comments=cs||[]; heartCount=rc||0;
+    comments=cs||[]; heartCount=rc||0; currentHeartCount=heartCount;
     currentStoryReacted=!!myReaction;
     currentStoryBookmarked=!!myBookmark;
   }
@@ -922,7 +989,7 @@ async function renderDetail(){
     </div>
     <div class="detailBody">${esc(s.body)}</div>
     <div class="actions">
-      <button id="heartBtn" class="iconBtn ${currentStoryReacted?'selected':''}" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span>${tr('same')} ${heartCount||''}</span></button>
+      <button id="heartBtn" class="iconBtn ${currentStoryReacted?'selected':''}" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span id="heartLabel">${tr('same')} ${heartCount}</span></button>
       <button id="bookmarkBtn" class="iconBtn ${currentStoryBookmarked?'selected':''}" onclick="bookmark('${s.id}')"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>${tr('bookmark')}</span></button>
     </div>
     <h3 style="margin-top:28px">${tr('comments')}</h3>
@@ -947,9 +1014,13 @@ function animateActionButton(id){
 }
 async function heart(){
   const btn=document.getElementById('heartBtn');
+  const label=document.getElementById('heartLabel');
   const next=!currentStoryReacted;
+  const previousCount=currentHeartCount;
   currentStoryReacted=next;
+  currentHeartCount=Math.max(0,currentHeartCount+(next?1:-1));
   if(btn)btn.classList.toggle('selected',next);
+  if(label)label.textContent=tr('same')+' '+currentHeartCount;
   animateActionButton('heartBtn');
 
   if(!currentStory?.isDb) return;
@@ -963,7 +1034,9 @@ async function heart(){
   if(error){
     console.error(error);
     currentStoryReacted=!next;
+    currentHeartCount=previousCount;
     if(btn)btn.classList.toggle('selected',!next);
+    if(label)label.textContent=tr('same')+' '+currentHeartCount;
   }
 }
 async function bookmark(id){
