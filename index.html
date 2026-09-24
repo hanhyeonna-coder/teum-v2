@@ -63,6 +63,7 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 .responseBox{margin-top:24px;padding:16px;border-radius:16px;background:#faf7f1}.responseBox h3{margin:0 0 8px;font-size:16px}.responseBox .sub{margin:0}
 .accountBanner{display:none;margin:14px 0 16px;padding:16px;border-radius:16px;background:#eef4ef;border:1px solid #dce8df}.accountBanner.show{display:block}.accountBanner b{display:block;font-size:15px;margin-bottom:5px}.accountBanner .sub{margin:0 0 10px}.accountBanner button{margin-top:0}.accountStatus{font-size:13px;color:var(--green);font-weight:700;margin-top:10px}
 @media(max-width:360px){
+  .logo{font-size:20px}.langSwitch button{padding:6px 7px}
   header{padding-left:15px;padding-right:15px}.screen{padding-left:15px;padding-right:15px}
   h1{font-size:27px}h2{font-size:22px}.introWrap h1{font-size:30px}
   .accountBanner{padding:14px}.manageGrid{grid-template-columns:1fr}
@@ -72,7 +73,7 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 <body>
 <div class="app">
 <header>
-  <div class="logo">말해바</div>
+  <div id="brandLogo" class="logo">말해바</div>
   <div class="headerActions">
     <div class="langSwitch" aria-label="Language">
       <button id="langKo" onclick="setLanguage('ko')">KO</button>
@@ -404,6 +405,7 @@ function setLanguage(lang){
 }
 function applyLanguage(){
   document.documentElement.lang=currentLang;
+  brandLogo.textContent=currentLang==='en'?'MALHAEBA':'말해바';
   langKo.classList.toggle('on',currentLang==='ko'); langEn.classList.toggle('on',currentLang==='en');
   const q=(id)=>document.getElementById(id);
   document.querySelector('.introEyebrow').textContent=tr('introEyebrow');
@@ -472,6 +474,7 @@ function resetCompose(){
 }
 
 function show(id){
+  document.querySelector('nav').style.display=id==='intro'?'none':'grid';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   ['Home','Feed','Records'].forEach(x=>{const n=document.getElementById('nav'+x);if(n)n.classList.remove('active')});
@@ -691,9 +694,9 @@ async function renderDetail(){
     </div>
     <h3 style="margin-top:28px">${tr('comments')}</h3>
     <div class="quick">
-      <button onclick="quick('나도 비슷했어요')">나도 비슷했어요</button>
-      <button onclick="quick('진짜 힘들었겠다')">진짜 힘들었겠다</button>
-      <button onclick="quick('저는 이렇게 했어요')">저는 이렇게 했어요</button>
+      <button onclick="quick(currentLang==='en'?'I’ve been there too.':'나도 비슷했어요')">${currentLang==='en'?'I’ve been there too.':'나도 비슷했어요'}</button>
+      <button onclick="quick(currentLang==='en'?'That sounds really hard.':'진짜 힘들었겠다')">${currentLang==='en'?'That sounds really hard.':'진짜 힘들었겠다'}</button>
+      <button onclick="quick(currentLang==='en'?'Here’s what helped me.':'저는 이렇게 했어요')">${currentLang==='en'?'Here’s what helped me.':'저는 이렇게 했어요'}</button>
     </div>
     <div id="comments">${comments.map(c=>`<div class="comment">${esc(typeof c==='string'?c:c.body)}</div>`).join('')}</div>
     <div style="display:flex;gap:8px;margin-top:12px">
@@ -738,9 +741,9 @@ async function renderRecords(type){
         <div class="recordMeta">${fmtDate(x.created_at)} · ${x.visibility==='public'?'익명 공개':'나만 보기'}</div>
       </div>`).join(''): `<p class="sub">${tr('emptyRecords')}</p>`;
   }else{
-    const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+    const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     if(error){console.error(error);return}
-    const arr=(data||[]).map(x=>x.posts).filter(Boolean);
+    const arr=(data||[]).map(x=>x.posts).filter(s=>s && (s.language||'ko')===currentLang);
     arr.forEach(s=>{if(!dbStories.some(d=>d.id===s.id))dbStories.push({...s,similarity:'담아둔 이야기',isDb:true})});
     recordList.innerHTML=arr.length?arr.map(s=>`
       <div class="card story" onclick="openStory('${s.id}','records')">
@@ -767,18 +770,18 @@ async function openOwnRecord(id){
     <div class="detailTop">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <div class="recordMeta" style="margin-top:0">${fmtDate(x.created_at)}</div>
-        <span class="statusPill ${isPublic?'':'private'}">${isPublic?'익명 공개':'나만 보기'}</span>
+        <span class="statusPill ${isPublic?'':'private'}">${currentLang==='en'?(isPublic?'Anonymous':'Private'):(isPublic?'익명 공개':'나만 보기')}</span>
       </div>
       <h2>${esc(x.title)}</h2>
     </div>
     <div class="detailBody">${esc(x.body)}</div>
-    ${isPublic?`<div class="responseBox"><h3>이 이야기에 온 반응</h3><p class="sub">♡ 나도 그랬어요 ${reactionCount} · 댓글 ${commentCount}</p></div>`:''}
+    ${isPublic?`<div class="responseBox"><h3>${currentLang==='en'?'Responses to this story':'이 이야기에 온 반응'}</h3><p class="sub">♡ ${tr('same')} ${reactionCount} · ${tr('comments')} ${commentCount}</p></div>`:''}
     <div class="manageBox">
       <div class="manageGrid">
-        <button class="secondary" onclick="toggleOwnRecordPrivacy('${x.id}')">${isPublic?'나만 보기로 바꾸기':'익명으로 공개하기'}</button>
-        <button class="secondary" onclick="editOwnRecord('${x.id}')">내용 수정하기</button>
+        <button class="secondary" onclick="toggleOwnRecordPrivacy('${x.id}')">${currentLang==='en'?(isPublic?'Make private':'Share anonymously'):(isPublic?'나만 보기로 바꾸기':'익명으로 공개하기')}</button>
+        <button class="secondary" onclick="editOwnRecord('${x.id}')">${currentLang==='en'?'Edit story':'내용 수정하기'}</button>
       </div>
-      <button class="danger" onclick="deleteOwnRecord('${x.id}')">이 이야기 삭제하기</button>
+      <button class="danger" onclick="deleteOwnRecord('${x.id}')">${currentLang==='en'?'Delete this story':'이 이야기 삭제하기'}</button>
     </div>`;
   show('recordDetail');
 }
@@ -821,6 +824,7 @@ if(localStorage.getItem('malhaebaSeenIntro')){
 }else{
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('intro').classList.add('active');
+  document.querySelector('nav').style.display='none';
 }
 </script>
 </body>
