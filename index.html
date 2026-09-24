@@ -285,6 +285,51 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
   100%{transform:translate(-50%,-50%) scale(1.48);opacity:0}
 }
 
+
+/* Force listener face visibility on mobile browsers */
+#voice .listenerStage{
+  position:relative!important;
+  width:100%!important;
+  min-height:300px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:visible!important;
+  isolation:isolate!important;
+}
+#voice #listenerFace.listenerFace{
+  display:block!important;
+  position:relative!important;
+  width:174px!important;
+  height:174px!important;
+  min-width:174px!important;
+  min-height:174px!important;
+  flex:0 0 174px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  z-index:3!important;
+  background:linear-gradient(145deg,#ffd8c9 0%,#ffc79f 100%)!important;
+  border-radius:50%!important;
+  box-shadow:0 16px 36px rgba(58,47,43,.09)!important;
+}
+#voice .listenerStage::before,
+#voice .listenerStage::after{
+  z-index:1!important;
+}
+#voice #listenerFace .eye,
+#voice #listenerFace .mouth{
+  z-index:4!important;
+}
+@media(max-width:360px){
+  #voice #listenerFace.listenerFace{
+    width:154px!important;
+    height:154px!important;
+    min-width:154px!important;
+    min-height:154px!important;
+    flex-basis:154px!important;
+  }
+}
+
 </style>
 </head>
 <body>
