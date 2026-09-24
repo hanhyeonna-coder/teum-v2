@@ -149,7 +149,7 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
   .listenerFace{width:154px;height:154px}
   .listenerFace .eye{top:58px}.listenerFace .eye.left{left:45px}.listenerFace .eye.right{right:45px}.listenerFace .mouth{top:94px}
 }
-</style>
+.accountBanner{background:var(--accent-soft);border:1px solid #ffd8d6}\n.accountBanner b{color:var(--ink)}\n.accountBanner .sub{color:#6d7177}\n.accountBanner .secondary{background:var(--accent);color:#fff;border:0}\n.segment{background:#f2f4f6;border-radius:15px;padding:4px}\n.segment button{color:#7b8189;font-weight:700;transition:background .2s,color .2s,transform .2s}\n.segment button.on{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(255,91,87,.16)}\n.responseBox{background:#f8f9fa;border:1px solid #edf0f2;border-radius:18px}\n.responseStats{display:flex;gap:12px;color:#757c84;font-size:13px;margin-top:3px}\n.ownComments{margin-top:14px;border-top:1px solid #e8ebee}\n.ownComment{padding:12px 0;border-bottom:1px solid #eceff1}.ownComment:last-child{border-bottom:0}\n.ownCommentBody{font-size:14px;line-height:1.55;color:#33383e}.ownCommentDate{font-size:11px;color:#9aa0a7;margin-top:5px}\n.actions button{transition:background .2s,border-color .2s,color .2s,transform .18s}\n.actions button.selected{background:var(--accent-soft);border-color:#ffc9c6;color:var(--accent-deep);font-weight:800}\n.actions button.iconPop .icon{animation:iconPop .42s ease}\n@keyframes iconPop{0%{transform:scale(1)}45%{transform:scale(1.28) rotate(-7deg)}100%{transform:scale(1)}}\n</style>
 </head>
 <body>
 <div class="app">
@@ -182,7 +182,6 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
     <div class="introActions">
       <div class="introDots"><span id="dot1" class="on"></span><span id="dot2"></span></div>
       <button id="introBtn" class="primary" onclick="nextIntro()">다음</button>
-      <button id="introSkipBtn" class="secondary" onclick="finishIntro()">바로 시작하기</button>
     </div>
   </div>
 </section>
@@ -596,9 +595,12 @@ function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   ['Home','Feed','Records'].forEach(x=>{const n=document.getElementById('nav'+x);if(n)n.classList.remove('active')});
-  if(id==='home'){navHome.classList.add('active');resetCompose()}
-  if(id==='feed'){navFeed.classList.add('active');renderFeed()}
-  if(id==='records'){navRecords.classList.add('active');updateAccountUI();renderRecords(currentRecordTab)}
+  const parentNav={home:'Home',write:'Home',voice:'Home',review:'Home',privacy:'Home',matching:'Home',feed:'Feed',detail:storyReturn==='records'?'Records':'Feed',records:'Records',recordDetail:'Records',accountLink:'Records',accountSuccess:'Records'}[id];
+  const activeNav=parentNav&&document.getElementById('nav'+parentNav);
+  if(activeNav)activeNav.classList.add('active');
+  if(id==='home')resetCompose();
+  if(id==='feed')renderFeed();
+  if(id==='records'){updateAccountUI();renderRecords(currentRecordTab)}
   window.scrollTo(0,0);
 }
 
@@ -608,22 +610,31 @@ function startWriting(){
   show('write');
 }
 
+const listenerSequence=[
+  {state:'nod',ms:700},{state:'',ms:2300},
+  {state:'nod',ms:650},{state:'',ms:3200},
+  {state:'oh',ms:1100},{state:'',ms:2800},
+  {state:'nod',ms:650},{state:'',ms:3900},
+  {state:'concern',ms:1050},{state:'',ms:2600},
+  {state:'nod',ms:650},{state:'',ms:3400}
+];
 function animateListener(){
   const face=document.getElementById('listenerFace');
   if(!face)return;
-  const states=['nod','oh','nod','soft','nod','concern','nod','oh'];
-  listenerStep=(listenerStep+1)%states.length;
-  face.className='listenerFace '+states[listenerStep];
+  const step=listenerSequence[listenerStep%listenerSequence.length];
+  face.className='listenerFace'+(step.state?' '+step.state:'');
+  listenerStep=(listenerStep+1)%listenerSequence.length;
+  listenerTimer=setTimeout(animateListener,step.ms);
 }
 function startListenerAnimation(){
-  clearInterval(listenerTimer);
+  clearTimeout(listenerTimer);
   const face=document.getElementById('listenerFace');
   if(face)face.className='listenerFace';
   listenerStep=0;
-  listenerTimer=setInterval(animateListener,1450);
+  listenerTimer=setTimeout(animateListener,2200);
 }
 function stopListenerAnimation(){
-  clearInterval(listenerTimer);
+  clearTimeout(listenerTimer);
   const face=document.getElementById('listenerFace');
   if(face)face.className='listenerFace';
 }
