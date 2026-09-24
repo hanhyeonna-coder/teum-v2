@@ -6,8 +6,9 @@
 <title>말해바</title>
 <style>
 :root{
-  --bg:#f7f3ec;--surface:#fffdf8;--ink:#1f2b27;--muted:#7c867f;
-  --green:#245846;--green-soft:#e6efe9;--line:#e8e1d7;--pink:#f5e8e1;--chip:#f1ece4;
+  --bg:#f5f2ec;--surface:#fffdf9;--ink:#1d2824;--muted:#748078;
+  --green:#255c49;--green-soft:#e8f0eb;--line:#e7e0d6;--pink:#f5e7df;--chip:#f1ece4;
+  --shadow:0 8px 30px rgba(46,55,50,.055);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -17,12 +18,14 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid rgba(36,88,70,.18);outline-offset:2px}
 .app{width:100%;max-width:430px;margin:0 auto;min-height:100dvh;background:var(--surface);position:relative;padding-bottom:82px;overflow-x:hidden}
 header{padding:17px 18px 9px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.logo{font-weight:850;font-size:22px;letter-spacing:-.5px}.ghost{border:0;background:none;font-size:20px;color:var(--ink);padding:8px;border-radius:10px;line-height:1}
+.logo{font-weight:850;font-size:22px;letter-spacing:-.7px}.ghost{border:0;background:none;font-size:20px;color:var(--ink);padding:8px;border-radius:10px;line-height:1}
+.headerActions{display:flex;align-items:center;gap:8px}.langSwitch{display:flex;padding:3px;background:#f0ece5;border-radius:999px}.langSwitch button{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800;padding:6px 8px;border-radius:999px}.langSwitch button.on{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(31,43,39,.08)}
+.menuTrigger{display:grid;place-items:center}.menuTrigger svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
 .screen{display:none;padding:10px 18px 28px;min-width:0}.screen.active{display:block}
 h1{font-size:30px;line-height:1.28;margin:14px 0 8px;letter-spacing:-1px}h2{font-size:24px;line-height:1.35;margin:10px 0 8px;letter-spacing:-.6px}
-.sub{color:var(--muted);font-size:14px;line-height:1.6;margin:8px 0}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;min-width:0}
+.sub{color:var(--muted);font-size:14px;line-height:1.62;margin:8px 0}.card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px;margin:12px 0;min-width:0;box-shadow:var(--shadow)}
 .primary,.secondary,.actionCard{width:100%;border-radius:13px;padding:14px 15px;font-size:15px;font-weight:750;margin-top:10px;min-height:48px;line-height:1.35;white-space:normal}
-.primary{border:0;background:var(--green);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.primary{border:0;background:var(--green);color:#fff;box-shadow:0 5px 14px rgba(37,92,73,.12)}.secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
 .actionCard{text-align:left;border:0;background:var(--green);color:#fff;padding:17px 18px}.actionCard.secondaryAction{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .actionCard small{display:block;font-weight:500;opacity:.82;margin-top:5px;line-height:1.45}
 .micwrap{display:flex;justify-content:center;margin:34px 0 28px}.mic{width:116px;height:116px;border-radius:50%;border:0;background:var(--green);color:white;display:grid;place-items:center;box-shadow:0 0 0 16px #e7efe9,0 0 0 32px #f1f5f2}.mic svg{width:36px;height:36px;display:block}.mic .pauseMark,.mic .playMark{font-size:30px;font-weight:800;line-height:1}
@@ -41,10 +44,11 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,
 nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size:11px;line-height:1.25;display:flex;flex-direction:column;align-items:center;gap:3px}nav button.active{color:var(--green);font-weight:800}.navIcon{font-size:18px;line-height:1;height:20px}
 .comment{padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}.quick{display:flex;gap:7px;overflow:auto;padding:4px 0}.quick button{white-space:nowrap;border:1px solid var(--line);background:white;border-radius:999px;padding:8px 10px}
 .detailBody{font-size:17px;line-height:1.8;white-space:pre-wrap}.detailTop{margin:10px 0 18px}
-.introWrap{min-height:calc(100dvh - 50px);display:flex;flex-direction:column;justify-content:space-between;padding:34px 0 12px}
-.introEyebrow{font-size:13px;font-weight:800;color:var(--green)}
-.introWrap h1{font-size:34px;margin:18px 0 12px}.introCopy{font-size:17px;line-height:1.7;color:#53605a}
-.introDots{display:flex;justify-content:center;gap:7px;margin:22px 0}.introDots span{width:7px;height:7px;border-radius:50%;background:#ddd5ca}.introDots span.on{background:var(--green)}
+.introWrap{min-height:calc(100dvh - 62px);padding:42px 0 170px}
+.introEyebrow{font-size:13px;font-weight:800;color:var(--green);letter-spacing:-.1px}
+.introWrap h1{font-size:34px;margin:18px 0 12px}.introCopy{font-size:17px;line-height:1.72;color:#53605a;max-width:340px}
+.introActions{position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);width:min(430px,100%);padding:12px 18px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(255,253,249,.82),#fffdf9 25%);border-top:1px solid rgba(231,224,214,.88);backdrop-filter:blur(14px)}
+.introDots{display:flex;justify-content:center;gap:7px;margin:0 0 9px}.introDots span{width:7px;height:7px;border-radius:50%;background:#ddd5ca}.introDots span.on{background:var(--green)}
 .menuOverlay{display:none;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:rgba(20,30,26,.3);z-index:50}.menuOverlay.open{display:block}
 .menuPanel{position:absolute;right:0;top:0;width:min(360px,88vw);height:100%;background:var(--surface);padding:22px 20px;overflow:auto;box-shadow:-10px 0 30px rgba(0,0,0,.08)}
 .menuHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.menuHead b{font-size:22px}
@@ -67,7 +71,18 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 </head>
 <body>
 <div class="app">
-<header><div class="logo">말해바</div><button class="ghost" onclick="openMenu()">☰</button></header>
+<header>
+  <div class="logo">말해바</div>
+  <div class="headerActions">
+    <div class="langSwitch" aria-label="Language">
+      <button id="langKo" onclick="setLanguage('ko')">KO</button>
+      <button id="langEn" onclick="setLanguage('en')">EN</button>
+    </div>
+    <button class="ghost menuTrigger" onclick="openMenu()" aria-label="Menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
 
 <section id="intro" class="screen">
   <div class="introWrap">
@@ -82,10 +97,10 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
         <div class="introCopy">참았던 거, 짜증났던 거, 서운했던 거.<br>말해바가 너랑 비슷한 이야기를 찾아줄게요.</div>
       </div>
     </div>
-    <div>
+    <div class="introActions">
       <div class="introDots"><span id="dot1" class="on"></span><span id="dot2"></span></div>
       <button id="introBtn" class="primary" onclick="nextIntro()">다음</button>
-      <button class="secondary" onclick="finishIntro()">바로 시작하기</button>
+      <button id="introSkipBtn" class="secondary" onclick="finishIntro()">바로 시작하기</button>
     </div>
   </div>
 </section>
@@ -214,6 +229,57 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null;
 let backendReady=false;
 let dbStories=[];
+let currentLang=localStorage.getItem('malhaebaLang') || ((navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en');
+
+const I18N={
+  ko:{
+    introEyebrow:'친구 만나 수다 떨 시간도 없을 때',intro1Title:'또 빡쳤어요?',intro1Copy:'잘 왔어요.<br>말해바. 그냥 다 털어놔요.',
+    intro2Title:'마구 털어놔요.',intro2Copy:'참았던 거, 짜증났던 거, 서운했던 거.<br>말해바가 너랑 비슷한 이야기를 찾아줄게요.',
+    next:'다음',start:'시작하기',startNow:'바로 시작하기',
+    homeTitle:'오늘 뭐 때문에<br>빡쳤어요?',homeSub:'친구 만나 수다 떨 시간도 없을 때.<br>말해바. 그냥 다 털어놔요.',talk:'말로 털어놓기',write:'글로 쓰기',
+    writeTitle:'무슨 일 있었어요?',writeSub:'정리하지 않아도 돼요. 있었던 그대로 써주세요.',writePlaceholder:'오늘 있었던 일을 편하게 적어보세요.',done:'다 썼어요',
+    voiceTitle:'그냥 말해봐요.',voiceSub:'정리해서 말하지 않아도 괜찮아요.',finishSpeaking:'말하기 끝',
+    reviewTitle:'이렇게 들었어요.',reviewSub:'음성 인식이 잘못된 부분만 고쳐주세요.',reviewOk:'맞아요, 계속하기',retry:'다시 말하기',
+    privacyTitle:'이 이야기를 어떻게 남길까요?',privacyNotice:'공개해두면 같은 마음을 가진 사람들이 당신의 이야기를 보고 함께 공감해줄 수 있어요.',
+    shareAnon:'익명으로 공개하기',shareAnonSub:'비슷한 사람들이 공감하거나 의견을 줄 수 있어요.',private:'나만 보기',privateSub:'다른 사람에게는 보이지 않고 내 기록에만 남아요.',
+    matchingTitle:'비슷한 이야기를 찾고 있어요.',matchingSub:'오늘 진짜 답답했겠다.<br>비슷한 일을 겪은 사람들의 이야기를 모아볼게요.',
+    feedTitle:'너와 비슷한 이야기',records:'내 기록',mine:'내가 쓴 이야기',saved:'담아둔 이야기',
+    accountBannerTitle:'다른 기기에서도 기록을 보고 싶다면',accountBannerSub:'지금 기록은 이 브라우저의 익명 계정에 연결되어 있어요. 이메일을 연결하면 다른 기기에서도 다시 찾을 수 있어요.',connect:'계정 연결하기',
+    accountTitle:'계정 연결하기',accountSub:'이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.',emailPlaceholder:'이메일 주소',connectEmail:'이메일 연결하기',accountFoot:'연결 메일을 확인한 뒤 인증을 완료하면 이 익명 계정이 그대로 유지돼요.',
+    menu:'전체 메뉴',menuNew:'새 글 남기기',menuNewSub:'말하거나 써서 지금 마음 털어놓기',menuMine:'내가 쓴 이야기',menuMineSub:'내가 털어놓은 이야기 모아보기',menuSaved:'담아둔 이야기',menuSavedSub:'다시 보고 싶은 다른 사람들의 이야기',browse:'둘러보기',browseSub:'나와 비슷한 이야기 다시 보기',guide:'말해바 안내',guideSub:'말해바 소개와 공개·비공개, 댓글·공감 이용 방법',accountMenu:'계정 연결',accountMenuSub:'다른 기기에서도 내 기록 이어보기',settings:'설정',settingsSub:'알림, 계정, 공개 범위 관리',help:'도움말·문의',helpSub:'신고, 차단, 문의하기',
+    home:'홈',comments:'댓글',send:'보내기',commentPlaceholder:'한마디 건네볼까요?',same:'나도 그랬어요',bookmark:'담아두기',
+    recent:'최근 올라온 이야기',example:'예시 이야기',emptyRecords:'아직 남긴 기록이 없어요.',emptySaved:'아직 담아둔 이야기가 없어요.',
+    feedFresh:'방금 털어놓은 이야기와 닮은 내용부터 보여줘요.',feedHistory:'최근에 남긴 이야기와 닮은 내용부터 보여줘요.',feedEmpty:'아직 기록이 없어서 최근 공개된 이야기부터 보여줘요.',
+    almost:'너랑 거의 똑같아요',very:'어쩜, 많이 비슷해요',point:'빡친 포인트가 비슷해요',similar:'비슷한 고민을 하고 있어요',
+    voiceHints:['그래, 말해봐요','듣고 있어요, 계속해요','응, 더 말해도 돼요','천천히 말해도 괜찮아요'],
+    pause:'잠깐 쉬어도 괜찮아요',continue:'응, 계속해요',speechStopped:'음성 인식이 잠시 멈췄어요.',speechUnsupported:'이 브라우저에서는 음성 인식이 어려워요. 글로 써주세요.',
+    savedAlert:'말해바에 담아뒀어요.',sampleReact:'예시 이야기예요. 실제 글부터 공감이 저장돼요.',sampleSave:'예시 이야기예요. 실제 글부터 담아둘 수 있어요.',sampleComment:'예시 이야기에는 댓글을 남길 수 없어요.'
+  },
+  en:{
+    introEyebrow:'No time to call a friend and vent?',intro1Title:'Had enough today?',intro1Copy:'You’re in the right place.<br>Just let it out.',
+    intro2Title:'Say it all.',intro2Copy:'The frustration, the resentment, the little things that piled up.<br>Malhaeba will find stories that feel like yours.',
+    next:'Next',start:'Start',startNow:'Start now',
+    homeTitle:'What got on your<br>nerves today?',homeSub:'No need to make it sound nice.<br>Just let it out.',talk:'Talk it out',write:'Write instead',
+    writeTitle:'What happened?',writeSub:'You don’t need to explain it perfectly. Just write what happened.',writePlaceholder:'Write what happened today…',done:'I’m done',
+    voiceTitle:'Just say it.',voiceSub:'You don’t have to organize your thoughts.',finishSpeaking:'Finish speaking',
+    reviewTitle:'Here’s what I heard.',reviewSub:'Fix anything the voice recognition got wrong.',reviewOk:'Yes, keep going',retry:'Try again',
+    privacyTitle:'How would you like to save this story?',privacyNotice:'Share it anonymously and people with similar experiences can relate or respond.',
+    shareAnon:'Share anonymously',shareAnonSub:'Others can relate or leave their thoughts.',private:'Keep it to myself',privateSub:'Only you can see it in your records.',
+    matchingTitle:'Finding stories like yours…',matchingSub:'That sounds like a lot.<br>Let’s find people who’ve been through something similar.',
+    feedTitle:'Stories similar to yours',records:'My records',mine:'My stories',saved:'Saved stories',
+    accountBannerTitle:'Want to keep your stories across devices?',accountBannerSub:'Your stories are linked to this anonymous browser session. Connect an email to access them elsewhere.',connect:'Connect account',
+    accountTitle:'Connect account',accountSub:'Connect an email to keep the same records on another device.',emailPlaceholder:'Email address',connectEmail:'Connect email',accountFoot:'Open the verification email to finish connecting this anonymous account.',
+    menu:'Menu',menuNew:'Share a story',menuNewSub:'Talk or write about what happened',menuMine:'My stories',menuMineSub:'See the stories you shared',menuSaved:'Saved stories',menuSavedSub:'Stories you want to come back to',browse:'Browse',browseSub:'See stories similar to yours',guide:'About Malhaeba',guideSub:'How anonymous sharing, reactions and comments work',accountMenu:'Connect account',accountMenuSub:'Keep your records across devices',settings:'Settings',settingsSub:'Notifications, account and visibility',help:'Help & contact',helpSub:'Report, block or contact us',
+    home:'Home',comments:'Comments',send:'Send',commentPlaceholder:'Leave a kind word…',same:'Me too',bookmark:'Save',
+    recent:'Recent story',example:'Example story',emptyRecords:'You haven’t shared anything yet.',emptySaved:'You haven’t saved any stories yet.',
+    feedFresh:'Here are stories closest to what you just shared.',feedHistory:'Here are stories based on your recent stories.',feedEmpty:'You haven’t shared anything yet, so here are recent stories.',
+    almost:'Almost exactly like yours',very:'Very similar',point:'The same kind of frustration',similar:'A similar kind of struggle',
+    voiceHints:['Go on, I’m listening.','Take your time.','Keep going.','It’s okay to pause.'],
+    pause:'It’s okay to pause.',continue:'Keep going.',speechStopped:'Voice recognition paused for a moment.',speechUnsupported:'Voice recognition isn’t available in this browser. Please write instead.',
+    savedAlert:'Saved to Malhaeba.',sampleReact:'This is an example story. Reactions work on real posts.',sampleSave:'This is an example story. Saving works on real posts.',sampleComment:'Comments are disabled on example stories.'
+  }
+};
+function tr(k){return I18N[currentLang]?.[k] ?? I18N.ko[k] ?? k}
 const sampleStories=[
  {id:1,title:'아침마다 유치원 가기 싫다고 울어요',body:'매일 아침 아이가 유치원 안 간다고 울고 떼를 써요. 출근 준비도 해야 하는데 매번 달래다 보면 진이 다 빠져요. 오늘은 결국 저도 소리를 질러버렸네요.',tags:['육아','4세','등원'],similarity:'너랑 거의 똑같아요',hearts:128,comments:['나도 비슷했어요. 아침이 제일 힘들죠.','정말 지쳤겠다. 오늘은 조금 쉬어요.']},
  {id:2,title:'도와주지 않는 남편 때문에 너무 서운해요',body:'아이 재우고 집안일 하는 동안 남편은 계속 휴대폰만 보고 있어요. 도와달라고 하면 자기도 회사에서 힘들다고 해서 더 서운해져요.',tags:['남편','육아','성격차이'],similarity:'어쩜, 많이 비슷해요',hearts:95,comments:['우리 집도 거의 똑같아요.','저는 해야 할 일을 아예 나눠서 적어봤어요.']},
@@ -221,6 +287,13 @@ const sampleStories=[
  {id:4,title:'복직 생각만 해도 마음이 무거워요',body:'아이를 어린이집에 오래 맡기고 복직하려니 죄책감이 들어요. 그런데 일을 포기하고 싶지도 않아서 마음이 계속 왔다 갔다 해요.',tags:['복직','워킹맘'],similarity:'빡친 포인트가 비슷해요',hearts:84,comments:['나도 그랬어요.','둘 다 소중해서 더 어려운 것 같아요.']},
  {id:5,title:'엄마한테 전화만 오면 숨이 막혀요',body:'친정엄마가 아이 키우는 방식에 계속 한마디씩 해요. 걱정해서 그러는 건 알겠는데 전화만 오면 또 무슨 말을 들을까 긴장돼요.',tags:['친정','부모'],similarity:'비슷한 고민을 하고 있어요',hearts:63,comments:['그 마음 알아요.','가까운 사람이라 더 상처가 되더라고요.']}
 ];
+const sampleStoriesEn=[
+ {id:'en1',title:'I feel like I do everything at home',body:'I finish work and somehow the dishes, laundry, dinner and bedtime are still all mine. I asked for help and somehow we ended up arguing again.',tags:['partner','housework','exhausted'],similarity:'Very similar',hearts:0,comments:['I’ve been there too.']},
+ {id:'en2',title:'Every morning before daycare is a battle',body:'My kid cries and refuses to get dressed every morning. By the time we leave I already feel like I’ve lived a whole day.',tags:['kids','parenting','daycare'],similarity:'A similar kind of struggle',hearts:0,comments:['Mornings can be brutal.']},
+ {id:'en3',title:'I feel guilty about going back to work',body:'I want my career, but I also feel awful leaving my child for such a long day. I keep wondering if I’m making the wrong choice.',tags:['work','parenting','guilt'],similarity:'The same kind of frustration',hearts:0,comments:['Both things can matter at once.']},
+ {id:'en4',title:'My family keeps commenting on my parenting',body:'Every call turns into advice I didn’t ask for. I know they mean well, but I’m tired of feeling judged.',tags:['family','parenting','frustrated'],similarity:'A similar kind of struggle',hearts:0,comments:['That would wear me out too.']}
+];
+function getSampleStories(){return currentLang==='en'?sampleStoriesEn:sampleStories}
 
 let draft={body:'',title:'',privacy:'public'};
 let recognition=null;
@@ -238,14 +311,18 @@ let recentOwnStories=[];
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString('ko-KR')}
 function inferTags(text){
-  const rules=[
+  const rules=currentLang==='en'?[
+    ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],['kids',/kid|child|baby|toddler|son|daughter/i],['parenting',/parent|daycare|school|bedtime|tantrum/i],
+    ['daycare',/daycare|preschool|school drop.?off/i],['sleep',/sleep|bedtime|wake|night/i],['family',/mother|father|parents|in.?laws|family/i],
+    ['work',/work|office|boss|career|job|return to work/i],['money',/money|bills|debt|spending|budget/i],['housework',/dishes|laundry|clean|housework|chores|cooking/i],
+    ['exhausted',/tired|exhausted|burnt out|burned out|overwhelmed/i],['hurt',/hurt|resent|upset|unappreciated/i],['angry',/angry|mad|furious|annoyed|pissed/i],['lonely',/lonely|alone/i]
+  ]:[
     ['남편',/남편|배우자/],['아이',/아이|애|아기|딸|아들/],['육아',/육아|등원|하원|유치원|어린이집|재우|훈육/],
-    ['등원',/등원|유치원|어린이집/],['수면',/잠|수면|재우/],['훈육',/훈육|떼|말 안/],
-    ['시댁',/시댁|시어머니|시아버지/],['친정',/친정|엄마|아빠|부모/],['직장',/복직|회사|직장|상사|출근|퇴근/],
-    ['돈',/돈|생활비|카드|대출|소비/],['집안일',/집안일|설거지|청소|빨래|밥|가사/],
-    ['육아분담',/도와|분담|혼자.*육아|나만.*육아|독박/],['성격차이',/성격|안 맞|대화가 안/],
-    ['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],
-    ['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶/],['서운함',/서운/],['화남',/화나|빡쳤|짜증|열받/],['외로움',/외롭|혼자인 것 같/]
+    ['등원',/등원|유치원|어린이집/],['수면',/잠|수면|재우/],['훈육',/훈육|떼|말 안/],['시댁',/시댁|시어머니|시아버지/],
+    ['친정',/친정|엄마|아빠|부모/],['직장',/복직|회사|직장|상사|출근|퇴근/],['돈',/돈|생활비|카드|대출|소비/],
+    ['집안일',/집안일|설거지|청소|빨래|밥|가사/],['육아분담',/도와|분담|혼자.*육아|나만.*육아|독박/],['성격차이',/성격|안 맞|대화가 안/],
+    ['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶/],
+    ['서운함',/서운/],['화남',/화나|빡쳤|짜증|열받/],['외로움',/외롭|혼자인 것 같/]
   ];
   return [...new Set(rules.filter(([,r])=>r.test(text)).map(([t])=>t))].slice(0,4);
 }
@@ -274,10 +351,10 @@ function similarityScore(queryText,queryTags,story){
   return Math.min(1,tags*.62+text*.38);
 }
 function similarityLabel(score){
-  if(score>=.56)return '너랑 거의 똑같아요';
-  if(score>=.36)return '어쩜, 많이 비슷해요';
-  if(score>=.20)return '빡친 포인트가 비슷해요';
-  return '비슷한 고민을 하고 있어요';
+  if(score>=.56)return tr('almost');
+  if(score>=.36)return tr('very');
+  if(score>=.20)return tr('point');
+  return tr('similar');
 }
 async function ensureSession(){
   try{
@@ -305,24 +382,57 @@ async function linkEmailAccount(){
   const email=accountEmail.value.trim();
   accountLinkStatus.textContent='';
   if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    accountLinkStatus.textContent='이메일 주소를 확인해주세요.';
+    accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';
     return;
   }
   const {error}=await sb.auth.updateUser({email});
   if(error){
     console.error(error);
-    accountLinkStatus.textContent='연결을 시작하지 못했어요. 잠시 후 다시 시도해주세요.';
+    accountLinkStatus.textContent=currentLang==='en'?'Couldn’t start account linking. Please try again.':'연결을 시작하지 못했어요. 잠시 후 다시 시도해주세요.';
     return;
   }
-  accountLinkStatus.textContent='인증 메일을 보냈어요. 메일에서 연결을 완료해주세요.';
+  accountLinkStatus.textContent=currentLang==='en'?'Verification email sent. Open it to finish connecting your account.':'인증 메일을 보냈어요. 메일에서 연결을 완료해주세요.';
 }
 
+function setLanguage(lang){
+  if(!['ko','en'].includes(lang)) return;
+  currentLang=lang;
+  localStorage.setItem('malhaebaLang',lang);
+  applyLanguage();
+  if(document.getElementById('feed')?.classList.contains('active')) renderFeed();
+  if(document.getElementById('records')?.classList.contains('active')) renderRecords(currentRecordTab);
+}
+function applyLanguage(){
+  document.documentElement.lang=currentLang;
+  langKo.classList.toggle('on',currentLang==='ko'); langEn.classList.toggle('on',currentLang==='en');
+  const q=(id)=>document.getElementById(id);
+  document.querySelector('.introEyebrow').textContent=tr('introEyebrow');
+  q('introStep1').querySelector('h1').textContent=tr('intro1Title'); q('introStep1').querySelector('.introCopy').innerHTML=tr('intro1Copy');
+  q('introStep2').querySelector('h1').textContent=tr('intro2Title'); q('introStep2').querySelector('.introCopy').innerHTML=tr('intro2Copy');
+  q('introBtn').textContent=q('introStep2').style.display!=='none'?tr('start'):tr('next'); q('introSkipBtn').textContent=tr('startNow');
+  q('home').querySelector('h1').innerHTML=tr('homeTitle'); q('home').querySelector('.sub').innerHTML=tr('homeSub');
+  q('home').querySelectorAll('button.primary')[0].textContent=tr('talk'); q('home').querySelectorAll('button.secondary')[0].textContent=tr('write');
+  q('write').querySelector('h2').textContent=tr('writeTitle'); q('write').querySelector('.sub').textContent=tr('writeSub'); bodyInput.placeholder=tr('writePlaceholder'); q('write').querySelector('.primary').textContent=tr('done');
+  q('voice').querySelector('h2').textContent=tr('voiceTitle'); q('voice').querySelector('.sub').textContent=tr('voiceSub'); q('voice').querySelector('.primary').textContent=tr('finishSpeaking');
+  q('review').querySelector('h2').textContent=tr('reviewTitle'); q('review').querySelector('.sub').textContent=tr('reviewSub'); q('review').querySelector('.primary').textContent=tr('reviewOk'); q('review').querySelector('.secondary').textContent=tr('retry');
+  q('privacy').querySelector('h2').textContent=tr('privacyTitle'); q('privacy').querySelector('.notice').textContent=tr('privacyNotice');
+  const pa=q('privacy').querySelectorAll('.actionCard'); pa[0].childNodes[0].nodeValue=' '+tr('shareAnon')+' '; pa[0].querySelector('small').textContent=tr('shareAnonSub'); pa[1].childNodes[0].nodeValue=' '+tr('private')+' '; pa[1].querySelector('small').textContent=tr('privateSub');
+  q('matching').querySelector('h2').textContent=tr('matchingTitle'); q('matching').querySelector('.sub').innerHTML=tr('matchingSub');
+  feedTitle.textContent=tr('feedTitle'); q('records').querySelector('h2').textContent=tr('records'); tabMine.textContent=tr('mine'); tabSaved.textContent=tr('saved');
+  q('accountBanner').querySelector('b').textContent=tr('accountBannerTitle'); q('accountBanner').querySelector('.sub').textContent=tr('accountBannerSub'); q('accountBanner').querySelector('button').textContent=tr('connect');
+  q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLink').querySelector('.primary').textContent=tr('connectEmail'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
+  const mi=q('menuOverlay').querySelectorAll('.menuItem'); q('menuOverlay').querySelector('.menuHead b').textContent=tr('menu');
+  const menuVals=[['menuNew','menuNewSub'],['menuMine','menuMineSub'],['menuSaved','menuSavedSub'],['browse','browseSub'],['guide','guideSub'],['accountMenu','accountMenuSub'],['settings','settingsSub'],['help','helpSub']];
+  mi.forEach((el,i)=>{if(menuVals[i]){el.childNodes[0].nodeValue=tr(menuVals[i][0]); const s=el.querySelector('small'); if(s)s.textContent=tr(menuVals[i][1]);}});
+  document.querySelector('.menuSection').textContent='MALHAEBA';
+  navHome.querySelector('span:last-child').textContent=tr('home'); navFeed.querySelector('span:last-child').textContent=tr('browse'); navRecords.querySelector('span:last-child').textContent=tr('records');
+}
 function nextIntro(){
   const s1=document.getElementById('introStep1'), s2=document.getElementById('introStep2');
   if(s1.style.display!=='none'){
     s1.style.display='none'; s2.style.display='block';
     dot1.classList.remove('on'); dot2.classList.add('on');
-    introBtn.textContent='시작하기';
+    introBtn.textContent=tr('start');
   }else finishIntro();
 }
 function finishIntro(){
@@ -332,7 +442,7 @@ function finishIntro(){
 function showIntroAgain(){
   closeMenu();
   introStep1.style.display='block'; introStep2.style.display='none';
-  dot1.classList.add('on'); dot2.classList.remove('on'); introBtn.textContent='다음';
+  dot1.classList.add('on'); dot2.classList.remove('on'); introBtn.textContent=tr('next');
   show('intro');
 }
 function openMenu(){document.getElementById('menuOverlay').classList.add('open')}
@@ -387,7 +497,7 @@ function startVoice(){
   startRecognitionSegment();
 }
 function beginVoiceHints(){
-  const hints=['그래, 말해봐요','듣고 있어요, 계속해요','응, 더 말해도 돼요','천천히 말해도 괜찮아요'];
+  const hints=tr('voiceHints');
   let hi=0;
   voiceStatus.textContent=hints[0];
   clearInterval(voiceHintTimer);
@@ -395,9 +505,9 @@ function beginVoiceHints(){
 }
 function startRecognitionSegment(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){clearInterval(voiceHintTimer);voiceStatus.textContent='이 브라우저에서는 음성 인식이 어려워요. 글로 써주세요.';return}
+  if(!SR){clearInterval(voiceHintTimer);voiceStatus.textContent=tr('speechUnsupported');return}
   recognition=new SR();
-  recognition.lang='ko-KR';
+  recognition.lang=currentLang==='en'?'en-US':'ko-KR';
   recognition.continuous=true;
   recognition.interimResults=true;
   recognition.onresult=e=>{
@@ -409,7 +519,7 @@ function startRecognitionSegment(){
     voiceTranscript=(committedVoiceText+' '+finalText+interim).trim();
   };
   recognition.onend=()=>{};
-  recognition.onerror=()=>{clearInterval(voiceHintTimer);voiceStatus.textContent='음성 인식이 잠시 멈췄어요.'};
+  recognition.onerror=()=>{clearInterval(voiceHintTimer);voiceStatus.textContent=tr('speechStopped')};
   recognition.start();
 }
 function toggleVoicePause(){
@@ -420,11 +530,11 @@ function toggleVoicePause(){
     committedVoiceText=voiceTranscript.trim();
     voicePaused=true;
     voiceToggleBtn.innerHTML='<span class="playMark">▶</span>';
-    voiceStatus.textContent='잠깐 쉬어도 괜찮아요';
+    voiceStatus.textContent=tr('pause');
   }else{
     voicePaused=false;
     voiceToggleBtn.innerHTML='<span class="pauseMark">Ⅱ</span>';
-    voiceStatus.textContent='응, 계속해요';
+    voiceStatus.textContent=tr('continue');
     beginVoiceHints();
     startRecognitionSegment();
   }
@@ -460,6 +570,13 @@ function confirmVoice(){
 }
 
 function generateTitle(text){
+  if(currentLang==='en'){
+    if(/husband|wife|partner|spouse/i.test(text)) return 'I’m frustrated with my partner today';
+    if(/kid|child|baby|toddler|daycare|school/i.test(text)) return 'Parenting felt especially hard today';
+    if(/mother|father|parents|in.?laws|family/i.test(text)) return 'Family has been weighing on me';
+    if(/work|office|boss|career|job/i.test(text)) return 'Work feels like too much right now';
+    return 'Today felt especially heavy';
+  }
   if(/남편|남자|아빠/.test(text)) return '도와주지 않는 남편 때문에 너무 지쳤어요';
   if(/아이|애|유치원|어린이집/.test(text)) return '아이 때문에 오늘 정말 마음이 복잡했어요';
   if(/시댁|시어머니/.test(text)) return '시댁 때문에 마음이 너무 답답해요';
@@ -479,7 +596,8 @@ async function saveAndMatch(privacy){
     title:draft.title,
     body:draft.body,
     visibility:privacy,
-    tags:inferTags(draft.body)
+    tags:inferTags(draft.body),
+    language:currentLang
   });
   if(error){console.error(error);alert('이야기를 저장하지 못했어요.');return}
   feedMode='fresh';
@@ -493,8 +611,8 @@ async function renderFeed(){
 
   if(backendReady){
     const {data:mine}=await sb.from('posts')
-      .select('id,title,body,tags,created_at')
-      .eq('user_id',currentUser.id).neq('status','deleted')
+      .select('id,title,body,tags,created_at,language')
+      .eq('user_id',currentUser.id).eq('language',currentLang).neq('status','deleted')
       .order('created_at',{ascending:false}).limit(5);
     recentOwnStories=mine||[];
     mineCount=recentOwnStories.length;
@@ -503,30 +621,30 @@ async function renderFeed(){
   if(feedMode==='fresh' && draft.body){
     queryText=draft.body;
     queryTags=inferTags(draft.body);
-    feedSub.textContent='방금 털어놓은 이야기와 닮은 내용부터 보여줘요.';
+    feedSub.textContent=tr('feedFresh');
   }else if(mineCount){
     queryText=recentOwnStories.map(x=>x.body).join(' ');
     queryTags=[...new Set(recentOwnStories.flatMap(x=>x.tags||[]))].slice(0,8);
-    feedSub.textContent='최근에 남긴 이야기와 닮은 내용부터 보여줘요.';
+    feedSub.textContent=tr('feedHistory');
   }else{
-    feedSub.textContent='아직 기록이 없어서 최근 공개된 이야기부터 보여줘요.';
+    feedSub.textContent=tr('feedEmpty');
   }
 
   if(backendReady){
     const {data,error}=await sb.from('posts')
-      .select('id,user_id,title,body,tags,created_at')
-      .eq('visibility','public').eq('status','active')
+      .select('id,user_id,title,body,tags,created_at,language')
+      .eq('visibility','public').eq('status','active').eq('language',currentLang)
       .neq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(60);
     if(!error){
       dbStories=(data||[]).map(s=>{
         const score=queryText?similarityScore(queryText,queryTags,s):0;
-        return {...s,matchScore:score,similarity:queryText?similarityLabel(score):'최근 올라온 이야기',comments:[],hearts:0,isDb:true};
+        return {...s,matchScore:score,similarity:queryText?similarityLabel(score):tr('recent'),comments:[],hearts:0,isDb:true};
       });
       if(queryText) dbStories.sort((a,b)=>b.matchScore-a.matchScore || new Date(b.created_at)-new Date(a.created_at));
     }
   }
 
-  const stories=dbStories.length?dbStories:sampleStories.map(s=>({...s,similarity:'예시 이야기'}));
+  const stories=dbStories.length?dbStories:getSampleStories().map(s=>({...s,similarity:tr('example')}));
   storyList.innerHTML=stories.map(s=>`
     <div class="card story" onclick="openStory('${s.id}','feed')">
       <div class="simBadge">${esc(s.similarity||'비슷한 이야기예요')}</div>
@@ -568,10 +686,10 @@ async function renderDetail(){
     </div>
     <div class="detailBody">${esc(s.body)}</div>
     <div class="actions">
-      <button onclick="heart()">♡ 나도 그랬어요 ${heartCount||''}</button>
-      <button onclick="bookmark('${s.id}')">🔖 담아두기</button>
+      <button onclick="heart()">♡ ${tr('same')} ${heartCount||''}</button>
+      <button onclick="bookmark('${s.id}')">♡ ${tr('bookmark')}</button>
     </div>
-    <h3 style="margin-top:28px">댓글</h3>
+    <h3 style="margin-top:28px">${tr('comments')}</h3>
     <div class="quick">
       <button onclick="quick('나도 비슷했어요')">나도 비슷했어요</button>
       <button onclick="quick('진짜 힘들었겠다')">진짜 힘들었겠다</button>
@@ -579,27 +697,27 @@ async function renderDetail(){
     </div>
     <div id="comments">${comments.map(c=>`<div class="comment">${esc(typeof c==='string'?c:c.body)}</div>`).join('')}</div>
     <div style="display:flex;gap:8px;margin-top:12px">
-      <input id="commentInput" type="text" placeholder="한마디 건네볼까요?">
-      <button class="primary" style="width:auto;margin:0" onclick="addComment()">보내기</button>
+      <input id="commentInput" type="text" placeholder="${tr('commentPlaceholder')}">
+      <button class="primary" style="width:auto;margin:0" onclick="addComment()">${tr('send')}</button>
     </div>`;
 }
 
 async function heart(){
-  if(!currentStory?.isDb){alert('샘플 이야기예요. 실제 글부터 공감이 저장돼요.');return}
+  if(!currentStory?.isDb){alert(tr('sampleReact'));return}
   const {error}=await sb.from('reactions').upsert({post_id:currentStory.id,user_id:currentUser.id,reaction:'same'});
   if(error) console.error(error); else renderDetail();
 }
 async function bookmark(id){
   const s=dbStories.find(x=>String(x.id)===String(id));
-  if(!s){alert('샘플 이야기예요. 실제 글부터 담아둘 수 있어요.');return}
+  if(!s){alert(tr('sampleSave'));return}
   const {error}=await sb.from('bookmarks').upsert({post_id:id,user_id:currentUser.id});
-  if(error) console.error(error); else alert('말해바에 담아뒀어요.');
+  if(error) console.error(error); else alert(tr('savedAlert'));
 }
 function quick(t){commentInput.value=t}
 async function addComment(){
   const t=commentInput.value.trim();
   if(!t)return;
-  if(!currentStory?.isDb){alert('샘플 이야기에는 댓글을 남길 수 없어요.');return}
+  if(!currentStory?.isDb){alert(tr('sampleComment'));return}
   const {error}=await sb.from('comments').insert({post_id:currentStory.id,user_id:currentUser.id,body:t});
   if(error){console.error(error);alert('댓글을 저장하지 못했어요.');return}
   renderDetail();
@@ -611,14 +729,14 @@ async function renderRecords(type){
   tabSaved.classList.toggle('on',type==='saved');
   if(!backendReady){recordList.innerHTML='<p class="sub">서버 연결을 준비하고 있어요.</p>';return}
   if(type==='mine'){
-    const {data,error}=await sb.from('posts').select('*').eq('user_id',currentUser.id).neq('status','deleted').order('created_at',{ascending:false});
+    const {data,error}=await sb.from('posts').select('*').eq('user_id',currentUser.id).eq('language',currentLang).neq('status','deleted').order('created_at',{ascending:false});
     if(error){console.error(error);return}
     recordList.innerHTML=data.length?data.map(x=>`
       <div class="card story" onclick="openOwnRecord('${x.id}')">
         <div class="title">${esc(x.title)}</div>
         <div class="excerpt">${esc(x.body)}</div>
         <div class="recordMeta">${fmtDate(x.created_at)} · ${x.visibility==='public'?'익명 공개':'나만 보기'}</div>
-      </div>`).join(''):'<p class="sub">아직 남긴 기록이 없어요.</p>';
+      </div>`).join(''): `<p class="sub">${tr('emptyRecords')}</p>`;
   }else{
     const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     if(error){console.error(error);return}
@@ -629,7 +747,7 @@ async function renderRecords(type){
         <div class="title">${esc(s.title)}</div>
         <div class="excerpt">${esc(s.body)}</div>
         <div style="margin-top:10px">${(s.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
-      </div>`).join(''):'<p class="sub">아직 담아둔 이야기가 없어요.</p>';
+      </div>`).join(''): `<p class="sub">${tr('emptySaved')}</p>`;
   }
 }
 
@@ -696,6 +814,7 @@ async function deleteOwnRecord(id){
   show('records');
 }
 
+applyLanguage();
 ensureSession().then(()=>{});
 if(localStorage.getItem('malhaebaSeenIntro')){
   show('home');
