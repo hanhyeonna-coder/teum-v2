@@ -6,9 +6,10 @@
 <title>말해바</title>
 <style>
 :root{
-  --bg:#f5f2ec;--surface:#fffdf9;--ink:#1d2824;--muted:#748078;
-  --green:#255c49;--green-soft:#e8f0eb;--line:#e7e0d6;--pink:#f5e7df;--chip:#f1ece4;
-  --shadow:0 8px 30px rgba(46,55,50,.055);
+  --bg:#f3f5f7;--surface:#ffffff;--ink:#17191c;--muted:#747b84;
+  --green:#ff5b57;--green-soft:#fff0ef;--line:#e5e9ee;--pink:#fff2f1;--chip:#f1f3f5;
+  --accent:#ff5b57;--accent-deep:#e74b48;--accent-soft:#fff0ef;--charcoal:#272c32;
+  --shadow:0 10px 32px rgba(27,33,39,.06);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -69,6 +70,85 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
   h1{font-size:27px}h2{font-size:22px}.introWrap h1{font-size:30px}
   .accountBanner{padding:14px}.manageGrid{grid-template-columns:1fr}
 }
+
+/* Malhaeba v3 — clean product UI */
+body{background:#e9edf1;color:var(--ink)}
+.app{background:var(--surface)}
+header{padding:20px 20px 8px;background:rgba(255,255,255,.9);backdrop-filter:blur(14px)}
+.logo{font-size:20px;font-weight:780;letter-spacing:-1.25px;color:#3f454c}
+.langSwitch{background:#f2f4f6}.langSwitch button.on{color:var(--ink);box-shadow:none}
+.screen{padding:18px 20px 30px}
+h1,h2{color:var(--ink)}
+.primary{background:var(--accent);box-shadow:none}
+.primary:active{background:var(--accent-deep)}
+.secondary{background:#f5f6f7;border-color:transparent}
+.card{border-color:#edf0f2;border-radius:20px;box-shadow:0 5px 18px rgba(26,32,38,.045)}
+.actionCard{background:var(--accent);border-radius:18px}
+.actionCard.secondaryAction{background:#f6f7f8;border:0}
+.simBadge{background:var(--accent-soft);color:var(--accent-deep)}
+.statusPill{background:var(--accent-soft);color:var(--accent-deep)}
+.accountBanner{background:#f7f8fa;border-color:#edf0f2}
+nav{background:rgba(255,255,255,.94);border-top-color:#edf0f2}
+nav button.active{color:var(--accent)}
+textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
+.notice{background:#f8f9fa;color:#4d545d;font-weight:650}
+
+/* Intro: typography first, no decorative image */
+.introWrap{min-height:calc(100dvh - 64px);padding:8vh 0 165px;display:flex;flex-direction:column}
+.introEyebrow{color:#9aa1a9;font-size:12px;font-weight:700;letter-spacing:.01em}
+.introWrap h1{font-size:clamp(44px,13vw,58px);line-height:.98;letter-spacing:-3.2px;margin:30px 0 24px;font-weight:900;color:var(--accent);max-width:330px}
+.introCopy{font-size:18px;line-height:1.62;color:#636a73;max-width:310px}
+.introActions{background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 24%);border-top:0;padding-top:30px}
+.introDots span{background:#d9dde1}.introDots span.on{background:var(--accent)}
+
+/* Home */
+#home h1{font-size:38px;line-height:1.08;letter-spacing:-2px;margin-top:26px}
+#home .sub{font-size:16px;line-height:1.65;margin-bottom:28px}
+.homeActions{display:grid;gap:12px;margin-top:26px}
+.homeChoice{border:0;border-radius:20px;padding:20px;display:flex;align-items:center;text-align:left;gap:15px;min-height:92px}
+.homeChoice.primaryChoice{background:var(--accent-soft);color:var(--ink)}
+.homeChoice.secondaryChoice{background:#f5f6f7;color:var(--ink)}
+.choiceIcon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto;background:#fff;color:var(--accent)}
+.choiceIcon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.choiceText b{display:block;font-size:17px;letter-spacing:-.35px}
+.choiceText small{display:block;color:var(--muted);font-size:12px;margin-top:5px;line-height:1.45;font-weight:550}
+
+/* Voice: one listening face only */
+#voice{text-align:center;padding-top:28px}
+#voice h2{font-size:29px;letter-spacing:-1.2px;margin-top:14px}
+.listenerStage{min-height:310px;display:grid;place-items:center;padding:25px 0 14px}
+.listenerFace{position:relative;width:174px;height:174px;border-radius:50%;background:linear-gradient(145deg,#ffd8c9,#ffc79f);box-shadow:0 18px 40px rgba(78,55,45,.08);transition:transform .38s ease,background .5s ease}
+.listenerFace .eye{position:absolute;top:66px;width:12px;height:12px;background:#5b5e62;border-radius:50%;transition:all .28s ease}
+.listenerFace .eye.left{left:51px}.listenerFace .eye.right{right:51px}
+.listenerFace .mouth{position:absolute;left:50%;top:104px;transform:translateX(-50%);width:30px;height:7px;border-radius:9px;background:#5b5e62;transition:all .28s ease}
+.listenerFace.nod{transform:translateY(8px) rotate(1.5deg)}
+.listenerFace.oh .mouth{width:14px;height:20px;border-radius:50%;top:98px}
+.listenerFace.soft .eye{height:6px;border-radius:0 0 12px 12px;background:transparent;border-bottom:3px solid #5b5e62}
+.listenerFace.soft .mouth{height:15px;width:30px;background:transparent;border-bottom:4px solid #5b5e62;border-radius:50%;top:96px}
+.listenerFace.concern{background:linear-gradient(145deg,#ffd4ca,#ffc4a8)}
+.listenerFace.concern .eye.left{transform:rotate(15deg);border-radius:8px 8px 2px 2px}
+.listenerFace.concern .eye.right{transform:rotate(-15deg);border-radius:8px 8px 2px 2px}
+.listenerFace.concern .mouth{background:transparent;border-top:4px solid #5b5e62;height:14px;width:28px;border-radius:50%;top:108px}
+.voiceHint{color:#7c838b;height:28px;font-size:13px}
+.voiceControls{margin-top:6px;display:grid;gap:9px}
+#voice .primary,#voice .secondary{margin-top:0}
+#voiceToggleBtn{width:48px;height:48px;border-radius:50%;margin:0 auto 8px;background:#f3f4f6;color:#333;box-shadow:none}
+#voiceToggleBtn .pauseGlyph i{background:#4e5359;height:19px;width:4px}
+#voiceToggleBtn .playGlyph{border-left-color:#4e5359;border-top-width:10px;border-bottom-width:10px;border-left-width:16px}
+
+/* Auth completion: text only */
+.authSuccess{min-height:calc(100dvh - 140px);display:flex;flex-direction:column;justify-content:center;padding-bottom:100px}
+.authSuccess .check{font-size:15px;font-weight:800;color:var(--accent);margin-bottom:14px}
+.authSuccess h2{font-size:31px;line-height:1.18;letter-spacing:-1.6px;margin:0 0 15px}
+.authSuccess .sub{font-size:15px;line-height:1.7;max-width:330px}
+.authSuccessActions{margin-top:24px}
+
+@media(max-width:360px){
+  .introWrap h1{font-size:43px;letter-spacing:-2.7px}
+  #home h1{font-size:34px}
+  .listenerFace{width:154px;height:154px}
+  .listenerFace .eye{top:58px}.listenerFace .eye.left{left:45px}.listenerFace .eye.right{right:45px}.listenerFace .mouth{top:94px}
+}
 </style>
 </head>
 <body>
@@ -89,7 +169,7 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 <section id="intro" class="screen">
   <div class="introWrap">
     <div>
-      <div class="introEyebrow">친구 만나 수다 떨 시간도 없을 때</div>
+      <div class="introEyebrow">지금 이 순간, 그냥 말해도 돼요</div>
       <div id="introStep1">
         <h1>또 빡쳤어요?</h1>
         <div class="introCopy">잘 왔어요.<br>말해바. 그냥 다 털어놔요.</div>
@@ -110,9 +190,16 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 <section id="home" class="screen active">
   <h1>오늘 뭐 때문에<br>빡쳤어요?</h1>
   <p class="sub">친구 만나 수다 떨 시간도 없을 때.<br>말해바. 그냥 다 털어놔요.</p>
-  <div class="micwrap"><button class="mic" onclick="startVoice()" aria-label="말로 털어놓기"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-2.08A7 7 0 0 1 5 12a1 1 0 1 1 2 0 5 5 0 0 0 10 0Z"/></svg></button></div>
-  <button class="primary" onclick="startVoice()">말로 털어놓기</button>
-  <button class="secondary" onclick="startWriting()">글로 쓰기</button>
+  <div class="homeActions">
+    <button class="homeChoice primaryChoice" onclick="startVoice()">
+      <span class="choiceIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Z"/><path d="M18 12a6 6 0 0 1-12 0M12 18v3"/></svg></span>
+      <span class="choiceText"><b>말로 털어놓기</b><small>지금 바로, 생각나는 대로 말해요.</small></span>
+    </button>
+    <button class="homeChoice secondaryChoice" onclick="startWriting()">
+      <span class="choiceIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></span>
+      <span class="choiceText"><b>글로 쓰기</b><small>천천히 적고 싶을 때.</small></span>
+    </button>
+  </div>
 </section>
 
 <section id="write" class="screen">
@@ -125,9 +212,17 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 <section id="voice" class="screen">
   <h2>그냥 말해봐요.</h2>
   <p class="sub">정리해서 말하지 않아도 괜찮아요.</p>
-  <div class="micwrap"><button id="voiceToggleBtn" class="mic" onclick="toggleVoicePause()" aria-label="Pause"><span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span></button></div>
+  <div class="listenerStage">
+    <div id="listenerFace" class="listenerFace" aria-hidden="true">
+      <span class="eye left"></span><span class="eye right"></span><span class="mouth"></span>
+    </div>
+  </div>
   <div id="voiceStatus" class="voiceHint"></div>
-  <button class="primary" onclick="stopVoice()">말하기 끝</button>
+  <button id="voiceToggleBtn" class="mic" onclick="toggleVoicePause()" aria-label="Pause"><span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span></button>
+  <div class="voiceControls">
+    <button class="primary" onclick="stopVoice()">말하기 끝</button>
+    <button class="secondary" onclick="redoVoice()">처음부터 다시 말하기</button>
+  </div>
 </section>
 
 <section id="review" class="screen">
@@ -196,6 +291,18 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
   <p class="sub">연결 메일을 확인한 뒤 인증을 완료하면 이 익명 계정이 그대로 유지돼요.</p>
 </section>
 
+<section id="accountSuccess" class="screen">
+  <div class="authSuccess">
+    <div class="check">✓ ACCOUNT CONNECTED</div>
+    <h2>이메일 연결이 완료됐어요</h2>
+    <p class="sub">이제 다른 기기에서도 내 이야기를 이어볼 수 있어요.<br>지금까지 남긴 기록은 그대로 유지돼요.</p>
+    <div class="authSuccessActions">
+      <button class="primary" onclick="currentRecordTab='mine';show('records')">내 기록 보기</button>
+      <button class="secondary" onclick="feedMode='history';show('feed')">비슷한 이야기 둘러보기</button>
+    </div>
+  </div>
+</section>
+
 <section id="recordDetail" class="screen">
   <button class="ghost" onclick="show('records')">←</button>
   <div id="recordDetailContent"></div>
@@ -235,7 +342,7 @@ let currentLang=localStorage.getItem('malhaebaLang') || ((navigator.language||'k
 
 const I18N={
   ko:{
-    introEyebrow:'친구 만나 수다 떨 시간도 없을 때',intro1Title:'또 빡쳤어요?',intro1Copy:'잘 왔어요.<br>말해바. 그냥 다 털어놔요.',
+    introEyebrow:'지금 이 순간, 그냥 말해도 돼요',intro1Title:'또 빡쳤어요?',intro1Copy:'그냥 다 털어놔요.<br>말해바가 비슷한 이야기를 찾아줄게요.',
     intro2Title:'마구 털어놔요.',intro2Copy:'참았던 거, 짜증났던 거, 서운했던 거.<br>말해바가 너랑 비슷한 이야기를 찾아줄게요.',
     next:'다음',start:'시작하기',startNow:'바로 시작하기',
     homeTitle:'오늘 뭐 때문에<br>빡쳤어요?',homeSub:'친구 만나 수다 떨 시간도 없을 때.<br>말해바. 그냥 다 털어놔요.',talk:'말로 털어놓기',write:'글로 쓰기',
@@ -258,7 +365,7 @@ const I18N={
     savedAlert:'말해바에 담아뒀어요.',sampleReact:'예시 이야기예요. 실제 글부터 공감이 저장돼요.',sampleSave:'예시 이야기예요. 실제 글부터 담아둘 수 있어요.',sampleComment:'예시 이야기에는 댓글을 남길 수 없어요.',serverConnecting:'서버 연결을 준비하고 있어요.',serverUnavailable:'말해바 서버에 연결하지 못했어요.',saveFailed:'이야기를 저장하지 못했어요.',commentFailed:'댓글을 저장하지 못했어요.',editFailed:'수정하지 못했어요.',deleteFailed:'삭제하지 못했어요.',deleteConfirm:'이 이야기를 삭제할까요? 삭제하면 다시 되돌릴 수 없어요.',voiceEmpty:'음성이 잘 기록되지 않았어요. 여기에 직접 수정해주세요.',notReady:'이 화면은 다음 제작 단계에서 만들 예정이에요.',publicLabel:'익명 공개',privateLabel:'나만 보기',savedStory:'담아둔 이야기',similarFallback:'비슷한 이야기예요'
   },
   en:{
-    introEyebrow:'When you just need to let it out',intro1Title:'Had enough today?',intro1Copy:'You’re in the right place.<br>Just let it out.',
+    introEyebrow:'You can just say it here',intro1Title:'Had enough today?',intro1Copy:'Just let it out.<br>Malhaeba will find stories that feel like yours.',
     intro2Title:'Say it all.',intro2Copy:'The frustration, the resentment, the little things that piled up.<br>Malhaeba will find stories that feel like yours.',
     next:'Next',start:'Start',startNow:'Start now',
     homeTitle:'What got on your<br>nerves today?',homeSub:'No need to make it sound nice.<br>Just let it out.',talk:'Talk it out',write:'Write instead',
@@ -309,6 +416,8 @@ let currentRecordTab='mine';
 let feedMode='history';
 let editingRecordId=null;
 let recentOwnStories=[];
+let listenerTimer=null;
+let listenerStep=0;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
@@ -362,7 +471,12 @@ async function ensureSession(){
   try{
     const {data:{session}}=await sb.auth.getSession();
     if(session){
-      currentUser=session.user;backendReady=true;updateAccountUI();return true
+      currentUser=session.user;backendReady=true;updateAccountUI();
+      if(localStorage.getItem('malhaebaAwaitingEmailLink')==='1' && !currentUser.is_anonymous){
+        localStorage.removeItem('malhaebaAwaitingEmailLink');
+        setTimeout(()=>show('accountSuccess'),0);
+      }
+      return true
     }
     const {data,error}=await sb.auth.signInAnonymously();
     if(error) throw error;
@@ -387,9 +501,11 @@ async function linkEmailAccount(){
     accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';
     return;
   }
+  localStorage.setItem('malhaebaAwaitingEmailLink','1');
   const {error}=await sb.auth.updateUser({email});
   if(error){
     console.error(error);
+    localStorage.removeItem('malhaebaAwaitingEmailLink');
     accountLinkStatus.textContent=currentLang==='en'?'Couldn’t start account linking. Please try again.':'연결을 시작하지 못했어요. 잠시 후 다시 시도해주세요.';
     return;
   }
@@ -407,7 +523,7 @@ function setLanguage(lang){
 function applyLanguage(){
   document.documentElement.lang=currentLang;
   document.title=currentLang==='en'?'Malhaeba — Just let it out':'말해바 — 그냥 다 털어놔요';
-  brandLogo.textContent=currentLang==='en'?'MALHAEBA':'말해바';
+  brandLogo.textContent=currentLang==='en'?'Malhaeba':'말해바';
   langKo.classList.toggle('on',currentLang==='ko'); langEn.classList.toggle('on',currentLang==='en');
   const q=(id)=>document.getElementById(id);
   document.querySelector('.introEyebrow').textContent=tr('introEyebrow');
@@ -415,9 +531,9 @@ function applyLanguage(){
   q('introStep2').querySelector('h1').textContent=tr('intro2Title'); q('introStep2').querySelector('.introCopy').innerHTML=tr('intro2Copy');
   q('introBtn').textContent=q('introStep2').style.display!=='none'?tr('start'):tr('next'); q('introSkipBtn').textContent=tr('startNow');
   q('home').querySelector('h1').innerHTML=tr('homeTitle'); q('home').querySelector('.sub').innerHTML=tr('homeSub');
-  q('home').querySelectorAll('button.primary')[0].textContent=tr('talk'); q('home').querySelectorAll('button.secondary')[0].textContent=tr('write');
+  const hc=q('home').querySelectorAll('.homeChoice'); if(hc[0]){hc[0].querySelector('b').textContent=tr('talk');hc[0].querySelector('small').textContent=currentLang==='en'?'Say whatever comes to mind.':'지금 바로, 생각나는 대로 말해요.'} if(hc[1]){hc[1].querySelector('b').textContent=tr('write');hc[1].querySelector('small').textContent=currentLang==='en'?'When you want to take it slow.':'천천히 적고 싶을 때.'}
   q('write').querySelector('h2').textContent=tr('writeTitle'); q('write').querySelector('.sub').textContent=tr('writeSub'); bodyInput.placeholder=tr('writePlaceholder'); q('write').querySelector('.primary').textContent=tr('done');
-  q('voice').querySelector('h2').textContent=tr('voiceTitle'); q('voice').querySelector('.sub').textContent=tr('voiceSub'); q('voice').querySelector('.primary').textContent=tr('finishSpeaking');
+  q('voice').querySelector('h2').textContent=tr('voiceTitle'); q('voice').querySelector('.sub').textContent=tr('voiceSub'); q('voice').querySelector('.primary').textContent=tr('finishSpeaking'); q('voice').querySelector('.voiceControls .secondary').textContent=currentLang==='en'?'Start over':'처음부터 다시 말하기';
   q('review').querySelector('h2').textContent=tr('reviewTitle'); q('review').querySelector('.sub').textContent=tr('reviewSub'); q('review').querySelector('.primary').textContent=tr('reviewOk'); q('review').querySelector('.secondary').textContent=tr('retry');
   q('privacy').querySelector('h2').textContent=tr('privacyTitle'); q('privacy').querySelector('.notice').textContent=tr('privacyNotice');
   const pa=q('privacy').querySelectorAll('.actionCard'); pa[0].childNodes[0].nodeValue=' '+tr('shareAnon')+' '; pa[0].querySelector('small').textContent=tr('shareAnonSub'); pa[1].childNodes[0].nodeValue=' '+tr('private')+' '; pa[1].querySelector('small').textContent=tr('privateSub');
@@ -492,6 +608,25 @@ function startWriting(){
   show('write');
 }
 
+function animateListener(){
+  const face=document.getElementById('listenerFace');
+  if(!face)return;
+  const states=['nod','oh','nod','soft','nod','concern','nod','oh'];
+  listenerStep=(listenerStep+1)%states.length;
+  face.className='listenerFace '+states[listenerStep];
+}
+function startListenerAnimation(){
+  clearInterval(listenerTimer);
+  const face=document.getElementById('listenerFace');
+  if(face)face.className='listenerFace';
+  listenerStep=0;
+  listenerTimer=setInterval(animateListener,1450);
+}
+function stopListenerAnimation(){
+  clearInterval(listenerTimer);
+  const face=document.getElementById('listenerFace');
+  if(face)face.className='listenerFace';
+}
 function startVoice(){
   resetCompose();
   show('voice');
@@ -499,6 +634,7 @@ function startVoice(){
   committedVoiceText='';
   voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
   beginVoiceHints();
+  startListenerAnimation();
   startRecognitionSegment();
 }
 function beginVoiceHints(){
@@ -531,6 +667,7 @@ function toggleVoicePause(){
   if(!recognition && !voicePaused) return;
   if(!voicePaused){
     clearInterval(voiceHintTimer);
+    stopListenerAnimation();
     try{recognition&&recognition.stop()}catch(e){}
     committedVoiceText=voiceTranscript.trim();
     voicePaused=true;
@@ -541,12 +678,14 @@ function toggleVoicePause(){
     voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
     voiceStatus.textContent=tr('continue');
     beginVoiceHints();
+    startListenerAnimation();
     startRecognitionSegment();
   }
 }
 
 function stopVoice(){
   clearInterval(voiceHintTimer);
+  stopListenerAnimation();
   try{recognition&&recognition.stop()}catch(e){}
   voicePaused=false;
   draft.body=voiceTranscript.trim();
@@ -819,6 +958,15 @@ async function deleteOwnRecord(id){
   show('records');
 }
 
+sb.auth.onAuthStateChange((_event,session)=>{
+  if(session?.user){
+    currentUser=session.user;backendReady=true;updateAccountUI();
+    if(localStorage.getItem('malhaebaAwaitingEmailLink')==='1' && !currentUser.is_anonymous){
+      localStorage.removeItem('malhaebaAwaitingEmailLink');
+      show('accountSuccess');
+    }
+  }
+});
 applyLanguage();
 ensureSession().then(()=>{});
 if(localStorage.getItem('malhaebaSeenIntro')){
