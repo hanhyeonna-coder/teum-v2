@@ -330,6 +330,21 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
   }
 }
 
+/* Launch safety */
+.safetyActions{display:flex;justify-content:flex-end;gap:14px;margin-top:12px}
+.safetyActions button{border:0;background:transparent;color:#9aa0a7;font-size:12px;padding:5px 0}
+.safetyActions button:hover{color:#62686f}
+.reportOverlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(20,24,28,.34);align-items:flex-end;justify-content:center}
+.reportOverlay.open{display:flex}
+.reportSheet{width:min(430px,100%);background:#fff;border-radius:22px 22px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(20,24,28,.12)}
+.reportHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.reportHead b{font-size:19px}.reportClose{border:0;background:none;font-size:24px;color:#737981}
+.reportReasons{display:grid;gap:8px;margin-top:14px}
+.reportReasons button{border:0;background:#f5f6f7;border-radius:12px;padding:13px 14px;text-align:left;font-size:14px;color:#34393f}
+.reportReasons button:active{background:var(--accent-soft);color:var(--accent-deep)}
+.toast{position:fixed;left:50%;bottom:94px;transform:translate(-50%,12px);z-index:120;max-width:calc(100% - 36px);background:#252a30;color:#fff;padding:11px 14px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.22s ease}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.safetyPage h3{font-size:16px;margin:24px 0 8px}.safetyPage p,.safetyPage li{color:#5f666e;font-size:14px;line-height:1.65}.safetyPage ul{padding-left:20px}
 </style>
 </head>
 <body>
@@ -488,6 +503,29 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
   <div id="recordDetailContent"></div>
 </section>
 
+<section id="safety" class="screen safetyPage">
+  <button class="ghost" onclick="show('home')">←</button>
+  <h2>안전하게 이용하기</h2>
+  <p>말해바는 익명으로 마음을 털어놓는 공간이에요. 다른 사람의 안전과 사생활을 해치는 내용은 허용하지 않아요.</p>
+  <h3>올리면 안 되는 내용</h3>
+  <ul>
+    <li>특정인을 위협하거나 괴롭히는 내용</li>
+    <li>혐오·차별·성적 착취성 내용</li>
+    <li>이름, 연락처, 주소 등 타인의 개인정보</li>
+    <li>불법행위 조장, 반복 스팸이나 광고</li>
+  </ul>
+  <h3>문제가 있는 글을 봤다면</h3>
+  <p>이야기 상세 화면의 ‘신고’ 또는 ‘작성자 차단’을 이용해주세요. 문의가 필요하면 Instagram @malhaeba.today 로 알려주세요.</p>
+</section>
+
+<div id="reportOverlay" class="reportOverlay" onclick="closeReport(event)">
+  <div class="reportSheet" onclick="event.stopPropagation()">
+    <div class="reportHead"><b id="reportTitle">이 이야기를 신고할까요?</b><button class="reportClose" onclick="closeReport()">×</button></div>
+    <p id="reportSub" class="sub">가장 가까운 이유를 골라주세요.</p>
+    <div id="reportReasons" class="reportReasons"></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
 <div id="menuOverlay" class="menuOverlay" onclick="closeMenu(event)">
   <div class="menuPanel" onclick="event.stopPropagation()">
     <div class="menuHead"><b>전체 메뉴</b><button class="menuClose" onclick="closeMenu()">×</button></div>
@@ -499,7 +537,7 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
     <button class="menuItem" onclick="showIntroAgain()">말해바 안내<small>말해바 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
     <button id="menuAccountLink" class="menuItem" onclick="closeMenu();show('accountLink')">계정 연결<small>다른 기기에서도 내 기록 이어보기</small></button>
     <button class="menuItem" onclick="notReady('설정')">설정<small>알림, 계정, 공개 범위 관리</small></button>
-    <button class="menuItem" onclick="notReady('도움말·문의')">도움말·문의<small>신고, 차단, 문의하기</small></button>
+    <button class="menuItem" onclick="closeMenu();show('safety')">도움말·문의<small>신고, 차단, 이용 규칙과 문의</small></button>
   </div>
 </div>
 
@@ -519,6 +557,9 @@ let currentUser=null;
 let backendReady=false;
 let dbStories=[];
 let currentLang=localStorage.getItem('malhaebaLang') || ((navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en');
+const sourceParam=(new URLSearchParams(location.search).get('src')||'').toLowerCase();
+if(/^[a-z0-9_-]{1,32}$/.test(sourceParam)) localStorage.setItem('malhaebaSource',sourceParam);
+const acquisitionSource=localStorage.getItem('malhaebaSource')||'direct';
 
 const I18N={
   ko:{
@@ -650,11 +691,31 @@ function similarityLabel(score){
   if(score>=.20)return tr('point');
   return tr('similar');
 }
+async function trackEvent(eventName){
+  if(!currentUser || !backendReady)return;
+  try{
+    await sb.from('analytics_events').insert({user_id:currentUser.id,event_name:eventName,source:acquisitionSource,language:currentLang});
+  }catch(e){console.error('analytics event:',e)}
+}
+async function trackVisitOnce(){
+  const key='malhaebaVisitTracked:'+acquisitionSource;
+  if(sessionStorage.getItem(key))return;
+  sessionStorage.setItem(key,'1');
+  await trackEvent('visit');
+}
+function showToast(message){
+  const el=document.getElementById('toast');
+  if(!el)return;
+  el.textContent=message;
+  el.classList.add('show');
+  clearTimeout(showToast.t);
+  showToast.t=setTimeout(()=>el.classList.remove('show'),2200);
+}
 async function ensureSession(){
   try{
     const {data:{session}}=await sb.auth.getSession();
     if(session){
-      currentUser=session.user;backendReady=true;updateAccountUI();
+      currentUser=session.user;backendReady=true;updateAccountUI();trackVisitOnce();
       if(localStorage.getItem('malhaebaAwaitingEmailLink')==='1' && !currentUser.is_anonymous){
         localStorage.removeItem('malhaebaAwaitingEmailLink');
         setTimeout(()=>show('accountSuccess'),0);
@@ -663,7 +724,7 @@ async function ensureSession(){
     }
     const {data,error}=await sb.auth.signInAnonymously();
     if(error) throw error;
-    currentUser=data.user; backendReady=true; updateAccountUI(); return true;
+    currentUser=data.user; backendReady=true; updateAccountUI(); trackVisitOnce(); return true;
   }catch(e){
     console.error('Supabase auth setup:',e);
     backendReady=false;
@@ -779,7 +840,7 @@ function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   ['Home','Feed','Records'].forEach(x=>{const n=document.getElementById('nav'+x);if(n)n.classList.remove('active')});
-  const parentNav={home:'Home',write:'Home',voice:'Home',review:'Home',privacy:'Home',matching:'Home',feed:'Feed',detail:storyReturn==='records'?'Records':'Feed',records:'Records',recordDetail:'Records',accountLink:'Records',accountSuccess:'Records'}[id];
+  const parentNav={home:'Home',write:'Home',voice:'Home',review:'Home',privacy:'Home',matching:'Home',feed:'Feed',detail:storyReturn==='records'?'Records':'Feed',records:'Records',recordDetail:'Records',accountLink:'Records',accountSuccess:'Records',safety:'Home'}[id];
   const activeNav=parentNav&&document.getElementById('nav'+parentNav);
   if(activeNav)activeNav.classList.add('active');
   if(id==='home')resetCompose();
@@ -941,6 +1002,7 @@ async function saveAndMatch(privacy){
     language:currentLang
   });
   if(error){console.error(error);alert(tr('saveFailed'));return}
+  trackEvent('story_created');
   feedMode='fresh';
   show('matching');
   setTimeout(()=>show('feed'),700);
@@ -1037,6 +1099,7 @@ async function renderDetail(){
       <button id="heartBtn" class="iconBtn ${currentStoryReacted?'selected':''}" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span id="heartLabel">${tr('same')} ${heartCount}</span></button>
       <button id="bookmarkBtn" class="iconBtn ${currentStoryBookmarked?'selected':''}" onclick="bookmark('${s.id}')"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>${tr('bookmark')}</span></button>
     </div>
+    ${s.isDb && s.user_id && s.user_id!==currentUser?.id?`<div class="safetyActions"><button onclick="openReport()">${currentLang==='en'?'Report':'신고'}</button><button onclick="blockStoryAuthor()">${currentLang==='en'?'Block author':'작성자 차단'}</button></div>`:''}
     <h3 style="margin-top:28px">${tr('comments')}</h3>
     <div class="quick">
       <button onclick="quick(currentLang==='en'?'I’ve been there too.':'나도 비슷했어요')">${currentLang==='en'?'I’ve been there too.':'나도 비슷했어요'}</button>
@@ -1105,6 +1168,37 @@ async function bookmark(id){
     currentStoryBookmarked=!next;
     if(btn)btn.classList.toggle('selected',!next);
   }
+}
+function openReport(){
+  if(!currentStory?.isDb)return;
+  const labels=currentLang==='en'
+    ?[['harassment','Harassment'],['violence','Threats or violence'],['sexual','Sexual content'],['hate','Hate or discrimination'],['privacy','Personal information'],['spam','Spam'],['other','Other']]
+    :[['harassment','괴롭힘'],['violence','위협 또는 폭력'],['sexual','성적인 내용'],['hate','혐오 또는 차별'],['privacy','개인정보 노출'],['spam','스팸·광고'],['other','기타']];
+  document.getElementById('reportTitle').textContent=currentLang==='en'?'Report this story?':'이 이야기를 신고할까요?';
+  document.getElementById('reportSub').textContent=currentLang==='en'?'Choose the closest reason.':'가장 가까운 이유를 골라주세요.';
+  document.getElementById('reportReasons').innerHTML=labels.map(([v,l])=>'<button onclick="submitReport(\''+v+'\')">'+l+'</button>').join('');
+  document.getElementById('reportOverlay').classList.add('open');
+}
+function closeReport(e){
+  if(e && e.target!==document.getElementById('reportOverlay'))return;
+  document.getElementById('reportOverlay').classList.remove('open');
+}
+async function submitReport(reason){
+  if(!currentStory?.isDb || !currentUser)return;
+  const {error}=await sb.from('reports').insert({reporter_id:currentUser.id,post_id:currentStory.id,reason});
+  if(error){console.error(error);showToast(currentLang==='en'?'Could not send report.':'신고를 보내지 못했어요.');return}
+  closeReport();
+  showToast(currentLang==='en'?'Report sent. Thank you.':'신고했어요. 확인할게요.');
+}
+async function blockStoryAuthor(){
+  if(!currentStory?.isDb || !currentStory.user_id || !currentUser)return;
+  const msg=currentLang==='en'?'Block this author? Their stories and comments will no longer be shown to you.':'이 작성자를 차단할까요? 이 사람의 이야기와 댓글은 더 이상 보이지 않아요.';
+  if(!confirm(msg))return;
+  const {error}=await sb.from('blocks').upsert({blocker_id:currentUser.id,blocked_user_id:currentStory.user_id});
+  if(error){console.error(error);showToast(currentLang==='en'?'Could not block this author.':'차단하지 못했어요.');return}
+  showToast(currentLang==='en'?'Author blocked.':'작성자를 차단했어요.');
+  feedMode='history';
+  show('feed');
 }
 function quick(t){commentInput.value=t}
 async function addComment(){
