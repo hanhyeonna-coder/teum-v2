@@ -417,6 +417,8 @@ let editingRecordId=null;
 let recentOwnStories=[];
 let listenerTimer=null;
 let listenerStep=0;
+let currentStoryReacted=false;
+let currentStoryBookmarked=false;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
@@ -826,12 +828,18 @@ async function renderDetail(){
   if(!s)return;
   let comments=s.comments||[];
   let heartCount=s.hearts||0;
+  currentStoryReacted=false;
+  currentStoryBookmarked=false;
   if(s.isDb && backendReady){
-    const [{data:cs},{count:rc}]=await Promise.all([
+    const [{data:cs},{count:rc},{data:myReaction},{data:myBookmark}]=await Promise.all([
       sb.from('comments').select('id,user_id,body,created_at').eq('post_id',s.id).eq('status','active').order('created_at'),
-      sb.from('reactions').select('*',{count:'exact',head:true}).eq('post_id',s.id)
+      sb.from('reactions').select('*',{count:'exact',head:true}).eq('post_id',s.id),
+      sb.from('reactions').select('post_id').eq('post_id',s.id).eq('user_id',currentUser.id).maybeSingle(),
+      sb.from('bookmarks').select('post_id').eq('post_id',s.id).eq('user_id',currentUser.id).maybeSingle()
     ]);
     comments=cs||[]; heartCount=rc||0;
+    currentStoryReacted=!!myReaction;
+    currentStoryBookmarked=!!myBookmark;
   }
   detailContent.innerHTML=`
     <div class="detailTop">
@@ -841,8 +849,8 @@ async function renderDetail(){
     </div>
     <div class="detailBody">${esc(s.body)}</div>
     <div class="actions">
-      <button class="iconBtn" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span>${tr('same')} ${heartCount||''}</span></button>
-      <button class="iconBtn" onclick="bookmark('${s.id}')"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>${tr('bookmark')}</span></button>
+      <button id="heartBtn" class="iconBtn ${currentStoryReacted?'selected':''}" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span>${tr('same')} ${heartCount||''}</span></button>
+      <button id="bookmarkBtn" class="iconBtn ${currentStoryBookmarked?'selected':''}" onclick="bookmark('${s.id}')"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>${tr('bookmark')}</span></button>
     </div>
     <h3 style="margin-top:28px">${tr('comments')}</h3>
     <div class="quick">
@@ -856,17 +864,43 @@ async function renderDetail(){
       <button class="primary" style="width:auto;margin:0" onclick="addComment()">${tr('send')}</button>
     </div>`;
 }
-
+function animateActionButton(id){
+  const btn=document.getElementById(id);
+  if(!btn)return;
+  btn.classList.remove('iconPop');
+  void btn.offsetWidth;
+  btn.classList.add('iconPop');
+  setTimeout(()=>btn.classList.remove('iconPop'),460);
+}
 async function heart(){
-  if(!currentStory?.isDb){alert(tr('sampleReact'));return}
-  const {error}=await sb.from('reactions').upsert({post_id:currentStory.id,user_id:currentUser.id,reaction:'same'});
-  if(error) console.error(error); else renderDetail();
+  if(!currentStory?.isDb){animateActionButton('heartBtn');return}
+  let error=null;
+  if(currentStoryReacted){
+    ({error}=await sb.from('reactions').delete().eq('post_id',currentStory.id).eq('user_id',currentUser.id));
+  }else{
+    ({error}=await sb.from('reactions').upsert({post_id:currentStory.id,user_id:currentUser.id,reaction:'same'}));
+  }
+  if(error){console.error(error);return}
+  currentStoryReacted=!currentStoryReacted;
+  const btn=document.getElementById('heartBtn');
+  if(btn)btn.classList.toggle('selected',currentStoryReacted);
+  animateActionButton('heartBtn');
+  setTimeout(()=>renderDetail(),320);
 }
 async function bookmark(id){
   const s=dbStories.find(x=>String(x.id)===String(id));
-  if(!s){alert(tr('sampleSave'));return}
-  const {error}=await sb.from('bookmarks').upsert({post_id:id,user_id:currentUser.id});
-  if(error) console.error(error); else alert(tr('savedAlert'));
+  if(!s){animateActionButton('bookmarkBtn');return}
+  let error=null;
+  if(currentStoryBookmarked){
+    ({error}=await sb.from('bookmarks').delete().eq('post_id',id).eq('user_id',currentUser.id));
+  }else{
+    ({error}=await sb.from('bookmarks').upsert({post_id:id,user_id:currentUser.id}));
+  }
+  if(error){console.error(error);return}
+  currentStoryBookmarked=!currentStoryBookmarked;
+  const btn=document.getElementById('bookmarkBtn');
+  if(btn)btn.classList.toggle('selected',currentStoryBookmarked);
+  animateActionButton('bookmarkBtn');
 }
 function quick(t){commentInput.value=t}
 async function addComment(){
@@ -910,13 +944,15 @@ async function openOwnRecord(id){
   const {data:x,error}=await sb.from('posts').select('*').eq('id',id).single();
   if(error||!x)return;
   const isPublic=x.visibility==='public';
-  let reactionCount=0, commentCount=0;
+  let reactionCount=0, commentCount=0, ownComments=[];
   if(isPublic){
     const [r,c]=await Promise.all([
       sb.from('reactions').select('*',{count:'exact',head:true}).eq('post_id',id),
-      sb.from('comments').select('*',{count:'exact',head:true}).eq('post_id',id).eq('status','active')
+      sb.from('comments').select('id,body,created_at').eq('post_id',id).eq('status','active').order('created_at',{ascending:true})
     ]);
-    reactionCount=r.count||0; commentCount=c.count||0;
+    reactionCount=r.count||0;
+    ownComments=c.data||[];
+    commentCount=ownComments.length;
   }
   recordDetailContent.innerHTML=`
     <div class="detailTop">
@@ -927,7 +963,11 @@ async function openOwnRecord(id){
       <h2>${esc(x.title)}</h2>
     </div>
     <div class="detailBody">${esc(x.body)}</div>
-    ${isPublic?`<div class="responseBox"><h3>${currentLang==='en'?'Responses to this story':'이 이야기에 온 반응'}</h3><p class="sub">${tr('same')} ${reactionCount} · ${tr('comments')} ${commentCount}</p></div>`:''}
+    ${isPublic?`<div class="responseBox">
+      <h3>${currentLang==='en'?'Responses to this story':'이 이야기에 온 반응'}</h3>
+      <div class="responseStats"><span>${tr('same')} ${reactionCount}</span><span>${tr('comments')} ${commentCount}</span></div>
+      ${ownComments.length?`<div class="ownComments">${ownComments.map(c=>`<div class="ownComment"><div class="ownCommentBody">${esc(c.body)}</div><div class="ownCommentDate">${fmtDate(c.created_at)}</div></div>`).join('')}</div>`:`<p class="sub" style="margin-top:12px">${currentLang==='en'?'No comments yet.':'아직 댓글은 없어요.'}</p>`}
+    </div>`:''}
     <div class="manageBox">
       <div class="manageGrid">
         <button class="secondary" onclick="toggleOwnRecordPrivacy('${x.id}')">${currentLang==='en'?(isPublic?'Make private':'Share anonymously'):(isPublic?'나만 보기로 바꾸기':'익명으로 공개하기')}</button>
@@ -937,7 +977,6 @@ async function openOwnRecord(id){
     </div>`;
   show('recordDetail');
 }
-
 async function toggleOwnRecordPrivacy(id){
   const {data:x}=await sb.from('posts').select('visibility').eq('id',id).single();
   if(!x)return;
