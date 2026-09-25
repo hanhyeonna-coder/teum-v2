@@ -942,6 +942,7 @@ let voiceWarningTimer=null;
 let voiceWarned=false;
 let voiceHintSwapTimer=null;
 let accountRequestInFlight=false;
+let storySaveInFlight=false;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
@@ -1109,6 +1110,12 @@ async function ensureSession(){
     backendReady=false;
     return false;
   }
+}
+function clearAuthQueryFlag(){
+  const u=new URL(location.href);
+  if(!u.searchParams.has('account_login'))return;
+  u.searchParams.delete('account_login');
+  history.replaceState(null,'',u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
 }
 function isEmailAccountLinked(user=currentUser){
   if(!user)return false;
@@ -1335,6 +1342,8 @@ function redoVoice(){
 
 function resetCompose(){
   draft={body:'',title:'',privacy:'public'};
+  editingRecordId=null;
+  localStorage.removeItem('malhaebaEditingRecordId');
   bodyInput.value='';
   localStorage.removeItem('malhaebaWriteDraft');
   reviewBody.value='';
@@ -1357,7 +1366,6 @@ function show(id){
 }
 
 function startWriting(){
-  editingRecordId=null;
   resetCompose();
   show('write');
 }
@@ -1566,25 +1574,34 @@ function generateTitle(text){
   return '오늘 하루가 유난히 버거웠어요';
 }
 async function saveAndMatch(privacy){
+  if(storySaveInFlight)return;
   draft.privacy=privacy;
   if(!backendReady && !(await ensureSession())){
     alert(tr('serverUnavailable'));
     return;
   }
-  const {error}=await sb.from('posts').insert({
-    user_id:currentUser.id,
-    title:draft.title,
-    body:draft.body,
-    visibility:privacy,
-    tags:inferTags(draft.body),
-    language:currentLang
-  });
-  if(error){console.error(error);alert(tr('saveFailed'));return}
-  await trackEvent('story_created');
-  localStorage.removeItem('malhaebaWriteDraft');
-  feedMode='fresh';
-  show('matching');
-  setTimeout(()=>show('feed'),700);
+  storySaveInFlight=true;
+  const choiceButtons=[...document.querySelectorAll('#privacy .actionCard')];
+  choiceButtons.forEach(b=>b.disabled=true);
+  try{
+    const {error}=await sb.from('posts').insert({
+      user_id:currentUser.id,
+      title:draft.title,
+      body:draft.body,
+      visibility:privacy,
+      tags:inferTags(draft.body),
+      language:currentLang
+    });
+    if(error){console.error(error);alert(tr('saveFailed'));return}
+    await trackEvent('story_created');
+    localStorage.removeItem('malhaebaWriteDraft');
+    feedMode='fresh';
+    show('matching');
+    setTimeout(()=>show('feed'),700);
+  }finally{
+    storySaveInFlight=false;
+    choiceButtons.forEach(b=>b.disabled=false);
+  }
 }
 
 async function renderFeed(){
@@ -1904,7 +1921,9 @@ async function editOwnRecord(id){
   const {data:x}=await sb.from('posts').select('body').eq('id',id).single();
   if(!x)return;
   editingRecordId=id;
+  localStorage.setItem('malhaebaEditingRecordId',id);
   bodyInput.value=x.body;
+  localStorage.setItem('malhaebaWriteDraft',x.body);
   show('write');
 }
 
@@ -1912,6 +1931,8 @@ async function updateOwnRecord(id,text){
   const {error}=await sb.from('posts').update({body:text,title:generateTitle(text),tags:inferTags(text),updated_at:new Date().toISOString()}).eq('id',id);
   if(error){console.error(error);alert(tr('editFailed'));return}
   editingRecordId=null;
+  localStorage.removeItem('malhaebaEditingRecordId');
+  localStorage.removeItem('malhaebaWriteDraft');
   openOwnRecord(id);
 }
 
@@ -1935,7 +1956,7 @@ sb.auth.onAuthStateChange((event,session)=>{
       if(document.getElementById('feed')?.classList.contains('active')) renderFeed();
       if(isEmailAccountLinked(currentUser)){
         localStorage.removeItem('malhaebaAwaitingEmailLink');
-        if(location.search.includes('account_login=1')) setTimeout(()=>show('accountSuccess'),0);
+        if(location.search.includes('account_login=1')){ clearAuthQueryFlag(); setTimeout(()=>show('accountSuccess'),0); }
       }
     }else{
       ensureSession();
@@ -1949,12 +1970,14 @@ sb.auth.onAuthStateChange((event,session)=>{
     if((event==='USER_UPDATED'||event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && isEmailAccountLinked(currentUser)){
       const awaiting=localStorage.getItem('malhaebaAwaitingEmailLink')==='1';
       localStorage.removeItem('malhaebaAwaitingEmailLink');
-      if(awaiting || location.search.includes('account_login=1')) setTimeout(()=>show('accountSuccess'),0);
+      if(awaiting || location.search.includes('account_login=1')){ clearAuthQueryFlag(); setTimeout(()=>show('accountSuccess'),0); }
     }
   }
 });
 applyLanguage();
 const savedComposeText=localStorage.getItem('malhaebaWriteDraft')||'';
+const savedEditingId=localStorage.getItem('malhaebaEditingRecordId');
+if(savedEditingId) editingRecordId=savedEditingId;
 bodyInput.value=savedComposeText;
 bodyInput.addEventListener('input',()=>localStorage.setItem('malhaebaWriteDraft',bodyInput.value));
 if(savedComposeText){
