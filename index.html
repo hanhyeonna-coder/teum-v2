@@ -1167,9 +1167,38 @@ async function refreshAccountFromServer(showSuccess=false){
     return false;
   }
 }
+function suggestEmailCorrection(email=''){
+  const value=String(email).trim().toLowerCase();
+  const at=value.lastIndexOf('@');
+  if(at<1)return '';
+  const local=value.slice(0,at), domain=value.slice(at+1);
+  const commonTypos={
+    'fmail.com':'gmail.com','gamil.com':'gmail.com','gmial.com':'gmail.com','gmai.com':'gmail.com','gmail.co':'gmail.com',
+    'naver.con':'naver.com','naver.co':'naver.com','nvaer.com':'naver.com',
+    'daum.con':'daum.net','daum.com':'daum.net',
+    'hanmail.con':'hanmail.net','hanmail.com':'hanmail.net',
+    'outlok.com':'outlook.com','outllok.com':'outlook.com','outlook.co':'outlook.com',
+    'hotmial.com':'hotmail.com','hotmail.co':'hotmail.com',
+    'yaho.com':'yahoo.com','yahoo.co':'yahoo.com'
+  };
+  const corrected=commonTypos[domain];
+  return corrected?local+'@'+corrected:'';
+}
+function confirmEmailCorrection(email){
+  const suggestion=suggestEmailCorrection(email);
+  if(!suggestion)return email;
+  const useSuggestion=confirm(currentLang==='en'
+    ? 'Did you mean '+suggestion+'?\n\nOK: use '+suggestion+'\nCancel: keep '+email
+    : suggestion+'을(를) 입력하려던 건가요?\n\n확인: '+suggestion+'으로 수정\n취소: '+email+' 그대로 사용');
+  if(useSuggestion){
+    accountEmail.value=suggestion;
+    return suggestion;
+  }
+  return email;
+}
 async function linkEmailAccount(){
   if(accountRequestInFlight)return;
-  const email=accountEmail.value.trim();
+  let email=accountEmail.value.trim();
   accountLinkStatus.textContent='';
   if(await refreshAccountFromServer(false)){
     show('accountSuccess');
@@ -1179,6 +1208,7 @@ async function linkEmailAccount(){
     accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';
     return;
   }
+  email=confirmEmailCorrection(email);
   localStorage.setItem('malhaebaAwaitingEmailLink','1');
   accountRequestInFlight=true;
   const connectBtn=document.getElementById('accountConnectBtn');
@@ -1216,12 +1246,13 @@ async function linkEmailAccount(){
 }
 async function signInExistingEmail(){
   if(accountRequestInFlight)return;
-  const email=accountEmail.value.trim();
+  let email=accountEmail.value.trim();
   accountLinkStatus.textContent='';
   if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';
     return;
   }
+  email=confirmEmailCorrection(email);
   accountRequestInFlight=true;
   const loginBtn=document.getElementById('accountLoginBtn');
   if(loginBtn) loginBtn.disabled=true;
