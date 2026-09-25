@@ -1126,9 +1126,18 @@ async function linkEmailAccount(){
     if(error){
       console.error(error);
       localStorage.removeItem('malhaebaAwaitingEmailLink');
-      accountLinkStatus.textContent=currentLang==='en'
-        ?'Couldn’t start email connection. Please try again once.'
-        :'이메일 연결을 시작하지 못했어요. 잠시 후 한 번만 다시 시도해주세요.';
+      const rateLimited=error.code==='over_email_send_rate_limit' || error.status===429;
+      accountLinkStatus.textContent=rateLimited
+        ? (currentLang==='en'
+            ?'The test email limit has been reached. Please try again in about an hour.'
+            :'현재 테스트용 이메일 발송 한도에 걸렸어요. 약 1시간 뒤 다시 시도해주세요.')
+        : (currentLang==='en'
+            ?'Couldn’t start email connection. Please try again once.'
+            :'이메일 연결을 시작하지 못했어요. 잠시 후 한 번만 다시 시도해주세요.');
+      if(rateLimited && connectBtn){
+        connectBtn.disabled=true;
+        setTimeout(()=>{connectBtn.disabled=false},60000);
+      }
       return;
     }
     accountLinkStatus.textContent=currentLang==='en'
@@ -1160,13 +1169,22 @@ async function signInExistingEmail(){
     });
     if(error){
       console.error(error);
-      accountLinkStatus.textContent=(error.code==='otp_disabled' || error.status===422)
+      const rateLimited=error.code==='over_email_send_rate_limit' || error.status===429;
+      accountLinkStatus.textContent=rateLimited
         ? (currentLang==='en'
-            ?'This email is not connected yet. Use “Connect this email” first.'
-            :'아직 연결이 완료된 이메일이 아니에요. 먼저 ‘이메일로 연결하기’를 완료해주세요.')
-        : (currentLang==='en'
-            ?'Couldn’t send the sign-in email. Please try again.'
-            :'로그인 메일을 보내지 못했어요. 잠시 후 다시 시도해주세요.');
+            ?'The test email limit has been reached. Please try again in about an hour.'
+            :'현재 테스트용 이메일 발송 한도에 걸렸어요. 약 1시간 뒤 다시 시도해주세요.')
+        : ((error.code==='otp_disabled' || error.status===422)
+            ? (currentLang==='en'
+                ?'This email is not connected yet. Use “Connect this email” first.'
+                :'아직 연결이 완료된 이메일이 아니에요. 먼저 ‘이메일로 연결하기’를 완료해주세요.')
+            : (currentLang==='en'
+                ?'Couldn’t send the sign-in email. Please try again.'
+                :'로그인 메일을 보내지 못했어요. 잠시 후 다시 시도해주세요.'));
+      if(rateLimited && loginBtn){
+        loginBtn.disabled=true;
+        setTimeout(()=>{loginBtn.disabled=false},60000);
+      }
       return;
     }
     accountLinkStatus.textContent=currentLang==='en'
