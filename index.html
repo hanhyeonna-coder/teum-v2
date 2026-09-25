@@ -1048,12 +1048,30 @@ async function ensureSession(){
     return false;
   }
 }
+function isEmailAccountLinked(user=currentUser){
+  if(!user)return false;
+  const hasConfirmedEmail=!!(user.email && (user.email_confirmed_at || user.confirmed_at));
+  const hasEmailIdentity=Array.isArray(user.identities) && user.identities.some(i=>i?.provider==='email');
+  return !user.is_anonymous || hasConfirmedEmail || hasEmailIdentity;
+}
 function updateAccountUI(){
-  const isAnon=!!currentUser?.is_anonymous;
+  const linked=isEmailAccountLinked(currentUser);
   const banner=document.getElementById('accountBanner');
   const menu=document.getElementById('menuAccountLink');
-  if(banner) banner.classList.toggle('show',isAnon);
-  if(menu) menu.style.display=isAnon?'block':'none';
+  if(banner) banner.classList.toggle('show',!linked);
+  if(menu){
+    menu.style.display='block';
+    menu.disabled=linked;
+    menu.style.pointerEvents=linked?'none':'auto';
+    menu.style.opacity=linked?'.72':'1';
+    menu.innerHTML=linked
+      ? (currentLang==='en'
+          ? 'Email connected<small>Your records are available across devices</small>'
+          : '이메일 연결됨<small>다른 기기에서도 내 기록을 이어볼 수 있어요</small>')
+      : (currentLang==='en'
+          ? 'Connect account<small>Keep your records across devices</small>'
+          : '계정 연결<small>다른 기기에서도 내 기록 이어보기</small>');
+  }
 }
 async function linkEmailAccount(){
   const email=accountEmail.value.trim();
@@ -1080,6 +1098,7 @@ function setLanguage(lang){
   applyLanguage();
   if(document.getElementById('feed')?.classList.contains('active')) renderFeed();
   if(document.getElementById('records')?.classList.contains('active')) renderRecords(currentRecordTab);
+  updateAccountUI();
 }
 function applyLanguage(){
   document.documentElement.lang=currentLang;
