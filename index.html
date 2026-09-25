@@ -948,7 +948,61 @@ function similarityScore(queryText,queryTags,story){
   const tags=tagScore(queryTags,story.tags||[]);
   return Math.min(1,tags*.62+text*.38);
 }
-function similarityLabel(score){
+function similarityLabel(score,queryTags=[],storyTags=[]){
+  const storySet=new Set(storyTags||[]);
+  const overlap=(queryTags||[]).filter(t=>storySet.has(t));
+
+  if(currentLang==='en'){
+    const topic={
+      parenting:'Parenting stress feels similar',
+      kids:'The parenting situation feels similar',
+      partner:'Partner frustration feels similar',
+      work:'Work stress feels similar',
+      daycare:'Daycare stress feels similar',
+      school:'School-related stress feels similar',
+      housework:'The household load feels similar',
+      sleep:'The sleep struggle feels similar',
+      family:'Family stress feels similar',
+      money:'Money stress feels similar',
+      exhausted:'You both sound worn out',
+      overwhelmed:'The overwhelm feels similar',
+      hurt:'The hurt feels similar',
+      angry:'The frustration feels similar',
+      annoyed:'The irritation feels similar',
+      lonely:'The loneliness feels similar'
+    };
+    const priority=['partner','parenting','kids','work','daycare','school','housework','sleep','family','money','overwhelmed','exhausted','hurt','angry','annoyed','lonely'];
+    const key=priority.find(t=>overlap.includes(t));
+    if(key && topic[key])return topic[key];
+  }else{
+    const topic={
+      '남편':'남편 때문에 답답했던 포인트가 비슷해요',
+      '육아':'육아로 지친 포인트가 비슷해요',
+      '아이':'아이 때문에 힘들었던 마음이 비슷해요',
+      '직장':'직장에서 받은 스트레스가 비슷해요',
+      '회사':'회사 때문에 답답했던 포인트가 비슷해요',
+      '등원':'등원 때문에 지친 상황이 비슷해요',
+      '하원':'하원 때문에 쫓기는 상황이 비슷해요',
+      '어린이집':'어린이집 때문에 신경 쓰인 포인트가 비슷해요',
+      '유치원':'유치원 때문에 신경 쓰인 포인트가 비슷해요',
+      '집안일':'집안일 때문에 지친 포인트가 비슷해요',
+      '육아분담':'육아 분담 때문에 답답했던 포인트가 비슷해요',
+      '수면':'잠 때문에 지친 상황이 비슷해요',
+      '가족':'가족 때문에 마음 쓰인 포인트가 비슷해요',
+      '친정':'친정 때문에 마음 쓰인 포인트가 비슷해요',
+      '시댁':'시댁 때문에 답답했던 포인트가 비슷해요',
+      '돈':'돈 때문에 신경 쓰인 포인트가 비슷해요',
+      '복직':'복직하며 느낀 부담이 비슷해요',
+      '지침':'지쳐 있는 마음이 비슷해요',
+      '서운함':'서운했던 마음이 비슷해요',
+      '화남':'화가 난 포인트가 비슷해요',
+      '외로움':'혼자라고 느낀 마음이 비슷해요'
+    };
+    const priority=['남편','육아분담','육아','아이','직장','회사','복직','등원','하원','어린이집','유치원','집안일','수면','시댁','친정','가족','돈','서운함','화남','지침','외로움'];
+    const key=priority.find(t=>overlap.includes(t));
+    if(key && topic[key])return topic[key];
+  }
+
   if(score>=.56)return tr('almost');
   if(score>=.36)return tr('very');
   if(score>=.20)return tr('point');
@@ -1377,7 +1431,7 @@ async function renderFeed(){
     if(!error){
       dbStories=(data||[]).map(s=>{
         const score=queryText?similarityScore(queryText,queryTags,s):0;
-        return {...s,matchScore:score,similarity:queryText?similarityLabel(score):tr('recent'),comments:[],hearts:0,isDb:true};
+        return {...s,matchScore:score,similarity:queryText?similarityLabel(score,queryTags,s.tags||[]):tr('recent'),comments:[],hearts:0,isDb:true};
       });
       if(queryText) dbStories.sort((a,b)=>b.matchScore-a.matchScore || new Date(b.created_at)-new Date(a.created_at));
     }
