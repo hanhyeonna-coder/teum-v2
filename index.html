@@ -472,6 +472,70 @@ header{
   }
 }
 
+
+/* Voice UX refinements */
+#voice > .sub{
+  font-size:16px!important;
+  line-height:1.65!important;
+}
+.voiceHint{
+  min-height:30px!important;
+  height:auto!important;
+  font-size:15px!important;
+  line-height:1.45!important;
+  transition:opacity .38s ease, transform .38s ease!important;
+  opacity:1;
+  transform:translateY(0);
+}
+.voiceHint.changing{
+  opacity:0;
+  transform:translateY(3px);
+}
+.voiceControls{
+  margin-top:18px!important;
+  gap:10px!important;
+}
+#voiceToggleBtn{
+  margin-bottom:18px!important;
+}
+.recordGlyph{
+  width:17px;
+  height:17px;
+  border-radius:50%;
+  background:var(--accent);
+  display:block;
+}
+.listenerFace .eye{
+  background:#fff!important;
+}
+.listenerFace .mouth{
+  background:#fff!important;
+}
+.listenerFace.nod{
+  transform:none!important;
+}
+.listenerFace.nod .eye{
+  transform:translateY(5px)!important;
+}
+.listenerFace.nod .mouth{
+  transform:translate(-50%,5px)!important;
+}
+.listenerFace.soft .eye{
+  background:transparent!important;
+  border-bottom-color:#fff!important;
+}
+.listenerFace.soft .mouth{
+  background:transparent!important;
+  border-bottom-color:#fff!important;
+}
+.listenerFace.concern .eye{
+  background:#fff!important;
+}
+.listenerFace.concern .mouth{
+  background:transparent!important;
+  border-top-color:#fff!important;
+}
+
 </style>
 </head>
 <body>
@@ -769,6 +833,11 @@ let listenerStep=0;
 let currentStoryReacted=false;
 let currentStoryBookmarked=false;
 let currentHeartCount=0;
+const MAX_VOICE_MS=5*60*1000;
+let voiceElapsedMs=0;
+let voiceSegmentStartedAt=0;
+let voiceLimitTimer=null;
+let voiceHintSwapTimer=null;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
@@ -953,6 +1022,8 @@ function menuGo(id,tab){
 function notReady(name){closeMenu();alert(name+' · '+tr('notReady'))}
 function redoVoice(){
   clearInterval(voiceHintTimer);
+  clearTimeout(voiceHintSwapTimer);
+  pauseVoiceLimitSegment();
   try{recognition&&recognition.stop()}catch(e){}
   draft={body:'',title:'',privacy:'public'};
   reviewBody.value='';
@@ -1023,17 +1094,56 @@ function startVoice(){
   show('voice');
   voicePaused=false;
   committedVoiceText='';
+  voiceElapsedMs=0;
+  voiceSegmentStartedAt=0;
+  clearVoiceLimitTimer();
   voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
   beginVoiceHints();
   startListenerAnimation();
   startRecognitionSegment();
 }
+function setVoiceHint(text){
+  clearTimeout(voiceHintSwapTimer);
+  voiceStatus.classList.add('changing');
+  voiceHintSwapTimer=setTimeout(()=>{
+    voiceStatus.textContent=text;
+    voiceStatus.classList.remove('changing');
+  },260);
+}
 function beginVoiceHints(){
   const hints=tr('voiceHints');
   let hi=0;
-  voiceStatus.textContent=hints[0];
   clearInterval(voiceHintTimer);
-  voiceHintTimer=setInterval(()=>{hi=(hi+1)%hints.length;voiceStatus.textContent=hints[hi]},2400);
+  voiceStatus.textContent=hints[0];
+  voiceStatus.classList.remove('changing');
+  voiceHintTimer=setInterval(()=>{
+    hi=(hi+1)%hints.length;
+    setVoiceHint(hints[hi]);
+  },5600);
+}
+function clearVoiceLimitTimer(){
+  clearTimeout(voiceLimitTimer);
+  voiceLimitTimer=null;
+}
+function startVoiceLimitSegment(){
+  clearVoiceLimitTimer();
+  voiceSegmentStartedAt=Date.now();
+  const remaining=Math.max(0,MAX_VOICE_MS-voiceElapsedMs);
+  if(remaining<=0){finishVoiceAtLimit();return}
+  voiceLimitTimer=setTimeout(finishVoiceAtLimit,remaining);
+}
+function pauseVoiceLimitSegment(){
+  if(voiceSegmentStartedAt){
+    voiceElapsedMs+=Date.now()-voiceSegmentStartedAt;
+    voiceSegmentStartedAt=0;
+  }
+  clearVoiceLimitTimer();
+}
+function finishVoiceAtLimit(){
+  if(!document.getElementById('voice')?.classList.contains('active'))return;
+  pauseVoiceLimitSegment();
+  voiceElapsedMs=MAX_VOICE_MS;
+  stopVoice(true);
 }
 function startRecognitionSegment(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -1051,37 +1161,44 @@ function startRecognitionSegment(){
     voiceTranscript=(committedVoiceText+' '+finalText+interim).trim();
   };
   recognition.onend=()=>{};
-  recognition.onerror=()=>{clearInterval(voiceHintTimer);voiceStatus.textContent=tr('speechStopped')};
+  recognition.onerror=()=>{clearInterval(voiceHintTimer);pauseVoiceLimitSegment();setVoiceHint(tr('speechStopped'))};
   recognition.start();
+  startVoiceLimitSegment();
 }
 function toggleVoicePause(){
   if(!recognition && !voicePaused) return;
   if(!voicePaused){
     clearInterval(voiceHintTimer);
     stopListenerAnimation();
+    pauseVoiceLimitSegment();
     try{recognition&&recognition.stop()}catch(e){}
     committedVoiceText=voiceTranscript.trim();
     voicePaused=true;
-    voiceToggleBtn.innerHTML='<span class="playGlyph" aria-hidden="true"></span>';
-    voiceStatus.textContent=tr('pause');
+    voiceToggleBtn.innerHTML='<span class="recordGlyph" aria-hidden="true"></span>';
+    setVoiceHint(tr('pause'));
   }else{
     voicePaused=false;
     voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
-    voiceStatus.textContent=tr('continue');
-    beginVoiceHints();
+    setVoiceHint(tr('continue'));
+    setTimeout(()=>beginVoiceHints(),900);
     startListenerAnimation();
     startRecognitionSegment();
   }
 }
 
-function stopVoice(){
+function stopVoice(reachedLimit=false){
   clearInterval(voiceHintTimer);
+  clearTimeout(voiceHintSwapTimer);
+  pauseVoiceLimitSegment();
   stopListenerAnimation();
   try{recognition&&recognition.stop()}catch(e){}
   voicePaused=false;
   draft.body=voiceTranscript.trim();
   reviewBody.value=draft.body || tr('voiceEmpty');
   show('review');
+  if(reachedLimit){
+    setTimeout(()=>showToast(currentLang==='en'?'Maximum recording time is 5 minutes.':'최대 녹음 시간은 5분이에요.'),120);
+  }
 }
 
 function submitWritten(){
