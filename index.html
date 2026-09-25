@@ -809,7 +809,13 @@ header{
 <script>
 const SUPABASE_URL='https://xtshgdgpyrdlcmuqvuly.supabase.co';
 const SUPABASE_KEY='sb_publishable_oHbwOYDWK1VH0LW_EnHnmQ_vdZ6DDS5';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+  auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true
+  }
+});
 let currentUser=null;
 let backendReady=false;
 let dbStories=[];
@@ -907,6 +913,7 @@ let voiceLimitTimer=null;
 let voiceWarningTimer=null;
 let voiceWarned=false;
 let voiceHintSwapTimer=null;
+let accountRequestInFlight=false;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
@@ -1099,6 +1106,7 @@ async function refreshAccountFromServer(showSuccess=false){
   }
 }
 async function linkEmailAccount(){
+  if(accountRequestInFlight)return;
   const email=accountEmail.value.trim();
   accountLinkStatus.textContent='';
   if(await refreshAccountFromServer(false)){
@@ -1110,41 +1118,64 @@ async function linkEmailAccount(){
     return;
   }
   localStorage.setItem('malhaebaAwaitingEmailLink','1');
-  const {error}=await sb.auth.updateUser({email});
-  if(error){
-    console.error(error);
-    localStorage.removeItem('malhaebaAwaitingEmailLink');
+  accountRequestInFlight=true;
+  const connectBtn=document.getElementById('accountConnectBtn');
+  if(connectBtn) connectBtn.disabled=true;
+  try{
+    const {error}=await sb.auth.updateUser({email});
+    if(error){
+      console.error(error);
+      localStorage.removeItem('malhaebaAwaitingEmailLink');
+      accountLinkStatus.textContent=currentLang==='en'
+        ?'Couldn’t start email connection. Please try again once.'
+        :'이메일 연결을 시작하지 못했어요. 잠시 후 한 번만 다시 시도해주세요.';
+      return;
+    }
     accountLinkStatus.textContent=currentLang==='en'
-      ?'If this email is already connected, use “Email sign in” below.'
-      :'이미 연결한 이메일이라면 아래 ‘이메일로 로그인’을 이용해주세요.';
-    return;
+      ?'One verification email was sent. Use the newest email only.'
+      :'인증 메일을 한 번 보냈어요. 가장 최근에 받은 메일만 열어주세요.';
+  }finally{
+    accountRequestInFlight=false;
+    if(connectBtn) connectBtn.disabled=false;
   }
-  accountLinkStatus.textContent=currentLang==='en'
-    ?'Verification email sent. After confirming it, return to this device.'
-    :'인증 메일을 보냈어요. 메일에서 확인한 뒤 이 기기로 돌아오면 연결 상태를 자동으로 확인해요.';
 }
 async function signInExistingEmail(){
+  if(accountRequestInFlight)return;
   const email=accountEmail.value.trim();
   accountLinkStatus.textContent='';
   if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';
     return;
   }
-  const {error}=await sb.auth.signInWithOtp({
-    email,
-    options:{
-      shouldCreateUser:false,
-      emailRedirectTo:location.origin+'/?account_login=1'
+  accountRequestInFlight=true;
+  const loginBtn=document.getElementById('accountLoginBtn');
+  if(loginBtn) loginBtn.disabled=true;
+  try{
+    const {error}=await sb.auth.signInWithOtp({
+      email,
+      options:{
+        shouldCreateUser:false,
+        emailRedirectTo:location.origin+'/?account_login=1'
+      }
+    });
+    if(error){
+      console.error(error);
+      accountLinkStatus.textContent=(error.code==='otp_disabled' || error.status===422)
+        ? (currentLang==='en'
+            ?'This email is not connected yet. Use “Connect this email” first.'
+            :'아직 연결이 완료된 이메일이 아니에요. 먼저 ‘이메일로 연결하기’를 완료해주세요.')
+        : (currentLang==='en'
+            ?'Couldn’t send the sign-in email. Please try again.'
+            :'로그인 메일을 보내지 못했어요. 잠시 후 다시 시도해주세요.');
+      return;
     }
-  });
-  if(error){
-    console.error(error);
-    accountLinkStatus.textContent=currentLang==='en'?'Couldn’t send the sign-in email. Please try again.':'로그인 메일을 보내지 못했어요. 잠시 후 다시 시도해주세요.';
-    return;
+    accountLinkStatus.textContent=currentLang==='en'
+      ?'Sign-in email sent. After signing in once on this browser, you’ll stay signed in here.'
+      :'로그인 메일을 보냈어요. 이 브라우저에서 한 번 로그인하면 이후에는 로그인 상태가 유지돼요.';
+  }finally{
+    accountRequestInFlight=false;
+    if(loginBtn) loginBtn.disabled=false;
   }
-  accountLinkStatus.textContent=currentLang==='en'
-    ?'Sign-in email sent. Open the link on the device you want to use.'
-    :'로그인 메일을 보냈어요. 사용할 기기에서 메일의 링크를 열어주세요.';
 }
 
 function setLanguage(lang){
