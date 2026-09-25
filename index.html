@@ -745,12 +745,12 @@ header{
 
 <section id="accountSuccess" class="screen">
   <div class="authSuccess">
-    <div class="check">✓ ACCOUNT CONNECTED</div>
-    <h2>이메일 연결이 완료됐어요</h2>
-    <p class="sub">이제 다른 기기에서도 내 이야기를 이어볼 수 있어요.<br>지금까지 남긴 기록은 그대로 유지돼요.</p>
+    <div id="accountSuccessCheck" class="check">✓ ACCOUNT CONNECTED</div>
+    <h2 id="accountSuccessTitle">이메일 연결이 완료됐어요</h2>
+    <p id="accountSuccessSub" class="sub">이제 다른 기기에서도 내 이야기를 이어볼 수 있어요.<br>지금까지 남긴 기록은 그대로 유지돼요.</p>
     <div class="authSuccessActions">
-      <button class="primary" onclick="currentRecordTab='mine';show('records')">내 기록 보기</button>
-      <button class="secondary" onclick="feedMode='history';show('feed')">비슷한 이야기 둘러보기</button>
+      <button id="accountSuccessRecords" class="primary" onclick="currentRecordTab='mine';show('records')">내 기록 보기</button>
+      <button id="accountSuccessFeed" class="secondary" onclick="feedMode='history';show('feed')">비슷한 이야기 둘러보기</button>
     </div>
   </div>
 </section>
@@ -762,17 +762,17 @@ header{
 
 <section id="safety" class="screen safetyPage">
   <button class="ghost" onclick="show('home')">←</button>
-  <h2>안전하게 이용하기</h2>
-  <p>말해바는 익명으로 마음을 털어놓는 공간이에요. 다른 사람의 안전과 사생활을 해치는 내용은 허용하지 않아요.</p>
-  <h3>올리면 안 되는 내용</h3>
-  <ul>
+  <h2 id="safetyTitle">안전하게 이용하기</h2>
+  <p id="safetyIntro">말해바는 익명으로 마음을 털어놓는 공간이에요. 다른 사람의 안전과 사생활을 해치는 내용은 허용하지 않아요.</p>
+  <h3 id="safetyRulesTitle">올리면 안 되는 내용</h3>
+  <ul id="safetyRules">
     <li>특정인을 위협하거나 괴롭히는 내용</li>
     <li>혐오·차별·성적 착취성 내용</li>
     <li>이름, 연락처, 주소 등 타인의 개인정보</li>
     <li>불법행위 조장, 반복 스팸이나 광고</li>
   </ul>
-  <h3>문제가 있는 글을 봤다면</h3>
-  <p>이야기 상세 화면의 ‘신고’ 또는 ‘작성자 차단’을 이용해주세요. 문의가 필요하면 Instagram @malhaeba.today 로 알려주세요.</p>
+  <h3 id="safetyProblemTitle">문제가 있는 글을 봤다면</h3>
+  <p id="safetyProblemText">이야기 상세 화면의 ‘신고’ 또는 ‘작성자 차단’을 이용해주세요. 문의가 필요하면 Instagram @malhaeba.today 로 알려주세요.</p>
 </section>
 
 <div id="reportOverlay" class="reportOverlay" onclick="closeReport(event)">
@@ -793,7 +793,6 @@ header{
     <div class="menuSection">말해바</div>
     <button class="menuItem" onclick="showIntroAgain()">말해바 안내<small>말해바 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
     <button id="menuAccountLink" class="menuItem" onclick="closeMenu();show('accountLink')">계정 연결<small>다른 기기에서도 내 기록 이어보기</small></button>
-    <button class="menuItem" onclick="notReady('설정')">설정<small>알림, 계정, 공개 범위 관리</small></button>
     <button class="menuItem" onclick="closeMenu();show('safety')">도움말·문의<small>신고, 차단, 이용 규칙과 문의</small></button>
   </div>
 </div>
@@ -839,6 +838,8 @@ const I18N={
     feedTitle:'너와 비슷한 이야기',records:'내 기록',mine:'내가 쓴 이야기',saved:'담아둔 이야기',
     accountBannerTitle:'다른 기기에서도 기록을 보고 싶다면',accountBannerSub:'지금 기록은 이 브라우저의 익명 계정에 연결되어 있어요. 이메일을 연결하면 다른 기기에서도 다시 찾을 수 있어요.',connect:'계정 연결하기',
     accountTitle:'계정 연결하기',accountSub:'이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.',emailPlaceholder:'이메일 주소',loginExisting:'로그인',connectEmail:'이메일로 연결하기',accountFoot:'처음 연결하는 경우 인증 메일을 확인해주세요. 이미 연결한 이메일이라면 로그인하면 다른 기기에서도 같은 기록을 불러올 수 있어요.',
+    accountSuccessTitle:'이메일 연결이 완료됐어요',accountSuccessSub:'이제 다른 기기에서도 내 이야기를 이어볼 수 있어요.<br>지금까지 남긴 기록은 그대로 유지돼요.',accountSuccessRecords:'내 기록 보기',accountSuccessFeed:'비슷한 이야기 둘러보기',
+    safetyTitle:'안전하게 이용하기',safetyIntro:'말해바는 익명으로 마음을 털어놓는 공간이에요. 다른 사람의 안전과 사생활을 해치는 내용은 허용하지 않아요.',safetyRulesTitle:'올리면 안 되는 내용',safetyRules:['특정인을 위협하거나 괴롭히는 내용','혐오·차별·성적 착취성 내용','이름, 연락처, 주소 등 타인의 개인정보','불법행위 조장, 반복 스팸이나 광고'],safetyProblemTitle:'문제가 있는 글을 봤다면',safetyProblemText:'이야기 상세 화면의 ‘신고’ 또는 ‘작성자 차단’을 이용해주세요. 문의가 필요하면 Instagram @malhaeba.today 로 알려주세요.',
     menu:'전체 메뉴',menuNew:'새 글 남기기',menuNewSub:'말하거나 써서 지금 마음 털어놓기',menuMine:'내가 쓴 이야기',menuMineSub:'내가 털어놓은 이야기 모아보기',menuSaved:'담아둔 이야기',menuSavedSub:'다시 보고 싶은 다른 사람들의 이야기',browse:'둘러보기',browseSub:'나와 비슷한 이야기 다시 보기',guide:'말해바 안내',guideSub:'말해바 소개와 공개·비공개, 댓글·공감 이용 방법',accountMenu:'계정 연결',accountMenuSub:'다른 기기에서도 내 기록 이어보기',settings:'설정',settingsSub:'알림, 계정, 공개 범위 관리',help:'도움말·문의',helpSub:'신고, 차단, 문의하기',
     home:'홈',comments:'댓글',send:'보내기',commentPlaceholder:'한마디 건네볼까요?',same:'나도 그랬어요',bookmark:'담아두기',
     recent:'최근 올라온 이야기',example:'예시 이야기',emptyRecords:'아직 남긴 기록이 없어요.',emptySaved:'아직 담아둔 이야기가 없어요.',
@@ -862,6 +863,8 @@ const I18N={
     feedTitle:'Stories similar to yours',records:'My records',mine:'My stories',saved:'Saved stories',
     accountBannerTitle:'Want to keep your stories across devices?',accountBannerSub:'Your stories are linked to this anonymous browser session. Connect an email to access them elsewhere.',connect:'Connect account',
     accountTitle:'Connect account',accountSub:'Connect an email to keep the same records on another device.',emailPlaceholder:'Email address',loginExisting:'Log in',connectEmail:'Connect this email',accountFoot:'If this is your first time, verify the email to connect it. If it is already connected, log in to load the same records on this device.',
+    accountSuccessTitle:'Email connected',accountSuccessSub:'You can now continue with the same stories on another device.<br>Your existing records stay with this account.',accountSuccessRecords:'View my records',accountSuccessFeed:'Browse similar stories',
+    safetyTitle:'Use Malhaeba safely',safetyIntro:'Malhaeba is an anonymous space to let things out. Content that harms someone’s safety or privacy is not allowed.',safetyRulesTitle:'Do not post',safetyRules:['Threats or harassment toward a specific person','Hateful, discriminatory, or sexually exploitative content','Another person’s private information such as a name, phone number, or address','Content promoting illegal activity, repeated spam, or advertising'],safetyProblemTitle:'If you see a problem',safetyProblemText:'Use “Report” or “Block author” on the story screen. For help, contact us on Instagram @malhaeba.today.',
     menu:'Menu',menuNew:'Share a story',menuNewSub:'Talk or write about what happened',menuMine:'My stories',menuMineSub:'See the stories you shared',menuSaved:'Saved stories',menuSavedSub:'Stories you want to come back to',browse:'Browse',browseSub:'See stories similar to yours',guide:'About Malhaeba',guideSub:'How anonymous sharing, reactions and comments work',accountMenu:'Connect account',accountMenuSub:'Keep your records across devices',settings:'Settings',settingsSub:'Notifications, account and visibility',help:'Help & contact',helpSub:'Report, block or contact us',
     home:'Home',comments:'Comments',send:'Send',commentPlaceholder:'Leave a kind word…',same:'Me too',bookmark:'Save',
     recent:'Recent story',example:'Example story',emptyRecords:'You haven’t shared anything yet.',emptySaved:'You haven’t saved any stories yet.',
@@ -898,7 +901,7 @@ let currentStory=null;
 let storyReturn='feed';
 let currentRecordTab=localStorage.getItem('malhaebaRecordTab')==='saved'?'saved':'mine';
 let feedMode='history';
-const RESTORABLE_SCREENS=new Set(['intro','home','write','feed','records','accountLink','accountSuccess','safety']);
+const RESTORABLE_SCREENS=new Set(['intro','home','write','review','privacy','feed','records','accountLink','accountSuccess','safety']);
 let editingRecordId=null;
 let recentOwnStories=[];
 let listenerTimer=null;
@@ -919,19 +922,36 @@ function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
 function inferTags(text){
   const rules=currentLang==='en'?[
-    ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],['kids',/kid|child|baby|toddler|son|daughter/i],['parenting',/parent|daycare|school|bedtime|tantrum/i],
-    ['daycare',/daycare|preschool|school drop.?off/i],['sleep',/sleep|bedtime|wake|night/i],['family',/mother|father|parents|in.?laws|family/i],
-    ['work',/work|office|boss|career|job|return to work/i],['money',/money|bills|debt|spending|budget/i],['housework',/dishes|laundry|clean|housework|chores|cooking/i],
-    ['exhausted',/tired|exhausted|burnt out|burned out|overwhelmed/i],['hurt',/hurt|resent|upset|unappreciated/i],['angry',/angry|mad|furious|annoyed|pissed/i],['lonely',/lonely|alone/i]
+    ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],
+    ['parenting',/parent|kid|child|baby|toddler|son|daughter|daycare|preschool|school|bedtime|tantrum/i],
+    ['daycare',/daycare|preschool|school drop.?off|pick.?up/i],
+    ['sleep',/sleep|bedtime|wake|woke|night/i],
+    ['family',/mother|father|parents|in.?laws|family/i],
+    ['work',/work|office|boss|career|job|return to work/i],
+    ['money',/money|bills|debt|spending|budget/i],
+    ['housework',/dishes|laundry|clean|housework|chores|cooking/i],
+    ['overwhelmed',/overwhelmed|too much|can.?t handle/i],
+    ['exhausted',/tired|exhausted|burnt out|burned out|worn out/i],
+    ['hurt',/hurt|resent|upset|unappreciated/i],
+    ['annoyed',/annoyed|irritated/i],
+    ['angry',/angry|mad|furious|pissed/i],
+    ['lonely',/lonely|alone/i]
   ]:[
-    ['남편',/남편|배우자/],['아이',/아이|애|아기|딸|아들/],['육아',/육아|등원|하원|유치원|어린이집|재우|훈육/],
-    ['등원',/등원|유치원|어린이집/],['수면',/잠|수면|재우/],['훈육',/훈육|떼|말 안/],['시댁',/시댁|시어머니|시아버지/],
-    ['친정',/친정|엄마|아빠|부모/],['직장',/복직|회사|직장|상사|출근|퇴근/],['돈',/돈|생활비|카드|대출|소비/],
-    ['집안일',/집안일|설거지|청소|빨래|밥|가사/],['육아분담',/도와|분담|혼자.*육아|나만.*육아|독박/],['성격차이',/성격|안 맞|대화가 안/],
-    ['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶/],
-    ['서운함',/서운/],['화남',/화나|빡쳤|짜증|열받/],['외로움',/외롭|혼자인 것 같/]
+    ['남편',/남편|배우자|신랑|아내/],
+    ['육아',/육아|아이|애|아기|딸|아들|등원|하원|유치원|어린이집|재우|훈육/],
+    ['등원',/등원/],['하원',/하원/],['유치원',/유치원/],['어린이집',/어린이집/],
+    ['수면',/잠|수면|재우|밤잠|새벽/],
+    ['가족',/가족/],['시댁',/시댁|시어머니|시아버지/],['친정',/친정|친정엄마|친정아빠|부모님/],
+    ['직장',/회사|직장|상사|출근|퇴근|업무/],['복직',/복직/],
+    ['돈',/돈|생활비|카드|대출|소비|예산/],
+    ['집안일',/집안일|설거지|청소|빨래|밥|가사/],
+    ['육아분담',/육아.*분담|분담|독박|혼자.*육아|나만.*육아|도와주지/],
+    ['성격차이',/성격|안 맞|대화가 안/],
+    ['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],
+    ['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶|버겁/],
+    ['서운함',/서운|섭섭/],['화남',/화나|빡쳤|짜증|열받|분노/],['외로움',/외롭|혼자인 것 같|혼자라는 생각/]
   ];
-  return [...new Set(rules.filter(([,r])=>r.test(text)).map(([t])=>t))].slice(0,4);
+  return [...new Set(rules.filter(([,r])=>r.test(text)).map(([t])=>t))].slice(0,6);
 }
 function normalizeForMatch(text=''){
   return String(text).toLowerCase().replace(/[^0-9a-z가-힣]+/g,' ').replace(/\s+/g,' ').trim();
@@ -955,7 +975,16 @@ function tagScore(a=[],b=[]){
 function similarityScore(queryText,queryTags,story){
   const text=jaccard(charGrams(queryText),charGrams((story.title||'')+' '+(story.body||'')));
   const tags=tagScore(queryTags,story.tags||[]);
-  return Math.min(1,tags*.62+text*.38);
+  return Math.min(1,tags*.65+text*.35);
+}
+function bestHistoryMatch(story,ownStories=[]){
+  let best={score:0,tags:[]};
+  ownStories.forEach(own=>{
+    const ownTags=(own.tags&&own.tags.length)?own.tags:inferTags(own.body||'');
+    const score=similarityScore(own.body||'',ownTags,story);
+    if(score>best.score) best={score,tags:ownTags};
+  });
+  return best;
 }
 function similarityLabel(score,queryTags=[],storyTags=[]){
   const storySet=new Set(storyTags||[]);
@@ -1018,16 +1047,17 @@ function similarityLabel(score,queryTags=[],storyTags=[]){
   return tr('similar');
 }
 async function trackEvent(eventName){
-  if(!currentUser || !backendReady)return;
+  if(!currentUser || !backendReady)return false;
   try{
-    await sb.from('analytics_events').insert({user_id:currentUser.id,event_name:eventName,source:acquisitionSource,language:currentLang});
-  }catch(e){console.error('analytics event:',e)}
+    const {error}=await sb.from('analytics_events').insert({user_id:currentUser.id,event_name:eventName,source:acquisitionSource,language:currentLang});
+    if(error){console.error('analytics event:',error);return false}
+    return true;
+  }catch(e){console.error('analytics event:',e);return false}
 }
 async function trackVisitOnce(){
   const key='malhaebaVisitTracked:'+acquisitionSource;
   if(sessionStorage.getItem(key))return;
-  sessionStorage.setItem(key,'1');
-  await trackEvent('visit');
+  if(await trackEvent('visit')) sessionStorage.setItem(key,'1');
 }
 function showToast(message){
   const el=document.getElementById('toast');
@@ -1060,8 +1090,7 @@ async function ensureSession(){
 function isEmailAccountLinked(user=currentUser){
   if(!user)return false;
   const hasConfirmedEmail=!!(user.email && (user.email_confirmed_at || user.confirmed_at));
-  const hasEmailIdentity=Array.isArray(user.identities) && user.identities.some(i=>i?.provider==='email');
-  return user.is_anonymous===false || hasConfirmedEmail || hasEmailIdentity;
+  return user.is_anonymous===false && hasConfirmedEmail;
 }
 function updateAccountUI(){
   const linked=isEmailAccountLinked(currentUser);
@@ -1226,8 +1255,10 @@ function applyLanguage(){
   feedTitle.textContent=tr('feedTitle'); q('records').querySelector('h2').textContent=tr('records'); tabMine.textContent=tr('mine'); tabSaved.textContent=tr('saved');
   q('accountBanner').querySelector('b').textContent=tr('accountBannerTitle'); q('accountBanner').querySelector('.sub').textContent=tr('accountBannerSub'); q('accountBanner').querySelector('button').textContent=tr('connect');
   q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
+  q('accountSuccessTitle').textContent=tr('accountSuccessTitle'); q('accountSuccessSub').innerHTML=tr('accountSuccessSub'); q('accountSuccessRecords').textContent=tr('accountSuccessRecords'); q('accountSuccessFeed').textContent=tr('accountSuccessFeed');
+  q('safetyTitle').textContent=tr('safetyTitle'); q('safetyIntro').textContent=tr('safetyIntro'); q('safetyRulesTitle').textContent=tr('safetyRulesTitle'); q('safetyRules').innerHTML=tr('safetyRules').map(x=>'<li>'+esc(x)+'</li>').join(''); q('safetyProblemTitle').textContent=tr('safetyProblemTitle'); q('safetyProblemText').textContent=tr('safetyProblemText');
   const mi=q('menuOverlay').querySelectorAll('.menuItem'); q('menuOverlay').querySelector('.menuHead b').textContent=tr('menu');
-  const menuVals=[['menuNew','menuNewSub'],['menuMine','menuMineSub'],['menuSaved','menuSavedSub'],['browse','browseSub'],['guide','guideSub'],['accountMenu','accountMenuSub'],['settings','settingsSub'],['help','helpSub']];
+  const menuVals=[['menuNew','menuNewSub'],['menuMine','menuMineSub'],['menuSaved','menuSavedSub'],['browse','browseSub'],['guide','guideSub'],['accountMenu','accountMenuSub'],['help','helpSub']];
   mi.forEach((el,i)=>{if(menuVals[i]){el.childNodes[0].nodeValue=tr(menuVals[i][0]); const s=el.querySelector('small'); if(s)s.textContent=tr(menuVals[i][1]);}});
   document.querySelector('.menuSection').textContent='MALHAEBA';
   navHome.querySelector('span:last-child').textContent=tr('home'); navFeed.querySelector('span:last-child').textContent=tr('browse'); navRecords.querySelector('span:last-child').textContent=tr('records');
@@ -1446,8 +1477,14 @@ function toggleVoicePause(){
   }else{
     voicePaused=false;
     voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
-    setVoiceHint(tr('continue'));
-    setTimeout(()=>beginVoiceHints(),900);
+    if(voiceWarned){
+      setVoiceHint(currentLang==='en'
+        ?'About 1 minute left. You can keep editing as text after voice input ends.'
+        :'약 1분 남았어요. 음성 입력이 끝난 뒤에도 텍스트로 계속 수정할 수 있어요.');
+    }else{
+      setVoiceHint(tr('continue'));
+      setTimeout(()=>beginVoiceHints(),900);
+    }
     startListenerAnimation();
     startRecognitionSegment();
   }
@@ -1462,6 +1499,7 @@ function stopVoice(reachedLimit=false){
   voicePaused=false;
   draft.body=voiceTranscript.trim();
   reviewBody.value=draft.body || tr('voiceEmpty');
+  if(draft.body) localStorage.setItem('malhaebaWriteDraft',draft.body);
   show('review');
   if(reachedLimit){
     setTimeout(()=>showToast(currentLang==='en'?'Maximum recording time is 5 minutes.':'최대 녹음 시간은 5분이에요.'),120);
@@ -1485,25 +1523,24 @@ function confirmVoice(){
   if(!text){reviewBody.focus();return}
   draft.body=text;
   draft.title=generateTitle(text);
+  localStorage.setItem('malhaebaWriteDraft',text);
   show('privacy');
 }
 
 function generateTitle(text){
   if(currentLang==='en'){
-    if(/husband|wife|partner|spouse/i.test(text)) return 'I’m frustrated with my partner today';
-    if(/kid|child|baby|toddler|daycare|school/i.test(text)) return 'Parenting felt especially hard today';
+    if(/husband|wife|partner|spouse|boyfriend|girlfriend/i.test(text)) return 'Something with my partner is weighing on me';
+    if(/kid|child|baby|toddler|daycare|preschool|school|parent/i.test(text)) return 'Parenting felt especially hard today';
     if(/mother|father|parents|in.?laws|family/i.test(text)) return 'Family has been weighing on me';
     if(/work|office|boss|career|job/i.test(text)) return 'Work feels like too much right now';
     return 'Today felt especially heavy';
   }
-  if(/남편|남자|아빠/.test(text)) return '도와주지 않는 남편 때문에 너무 지쳤어요';
-  if(/아이|애|유치원|어린이집/.test(text)) return '아이 때문에 오늘 정말 마음이 복잡했어요';
-  if(/시댁|시어머니/.test(text)) return '시댁 때문에 마음이 너무 답답해요';
-  if(/엄마|아빠|부모|친정/.test(text)) return '부모님 때문에 마음이 무거워요';
-  if(/회사|복직|상사|직장/.test(text)) return '회사 생각만 하면 마음이 무거워요';
+  if(/남편|배우자|신랑|아내/.test(text)) return '배우자 때문에 마음이 답답해요';
+  if(/아이|애|아기|딸|아들|육아|유치원|어린이집/.test(text)) return '육아 때문에 오늘 마음이 복잡했어요';
+  if(/시댁|시어머니|시아버지|친정|부모님/.test(text)) return '가족 때문에 마음이 무거워요';
+  if(/회사|복직|상사|직장|업무/.test(text)) return '회사 생각에 마음이 무거워요';
   return '오늘 하루가 유난히 버거웠어요';
 }
-
 async function saveAndMatch(privacy){
   draft.privacy=privacy;
   if(!backendReady && !(await ensureSession())){
@@ -1519,7 +1556,8 @@ async function saveAndMatch(privacy){
     language:currentLang
   });
   if(error){console.error(error);alert(tr('saveFailed'));return}
-  trackEvent('story_created');
+  await trackEvent('story_created');
+  localStorage.removeItem('malhaebaWriteDraft');
   feedMode='fresh';
   show('matching');
   setTimeout(()=>show('feed'),700);
@@ -1527,7 +1565,7 @@ async function saveAndMatch(privacy){
 
 async function renderFeed(){
   feedTitle.textContent=tr('feedTitle');
-  let queryText='', queryTags=[], mineCount=0;
+  let freshText='', freshTags=[], mineCount=0;
 
   if(backendReady){
     const {data:mine}=await sb.from('posts')
@@ -1539,12 +1577,10 @@ async function renderFeed(){
   }
 
   if(feedMode==='fresh' && draft.body){
-    queryText=draft.body;
-    queryTags=inferTags(draft.body);
+    freshText=draft.body;
+    freshTags=inferTags(draft.body);
     feedSub.textContent=tr('feedFresh');
   }else if(mineCount){
-    queryText=recentOwnStories.map(x=>x.body).join(' ');
-    queryTags=[...new Set(recentOwnStories.flatMap(x=>x.tags||[]))].slice(0,8);
     feedSub.textContent=tr('feedHistory');
   }else{
     feedSub.textContent=tr('feedEmpty');
@@ -1557,10 +1593,19 @@ async function renderFeed(){
       .neq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(60);
     if(!error){
       dbStories=(data||[]).map(s=>{
-        const score=queryText?similarityScore(queryText,queryTags,s):0;
-        return {...s,matchScore:score,similarity:queryText?similarityLabel(score,queryTags,s.tags||[]):tr('recent'),comments:[],hearts:0,isDb:true};
+        if(freshText){
+          const score=similarityScore(freshText,freshTags,s);
+          return {...s,matchScore:score,similarity:similarityLabel(score,freshTags,s.tags||[]),comments:[],hearts:0,isDb:true};
+        }
+        if(mineCount){
+          const best=bestHistoryMatch(s,recentOwnStories);
+          return {...s,matchScore:best.score,similarity:similarityLabel(best.score,best.tags,s.tags||[]),comments:[],hearts:0,isDb:true};
+        }
+        return {...s,matchScore:0,similarity:tr('recent'),comments:[],hearts:0,isDb:true};
       });
-      if(queryText) dbStories.sort((a,b)=>b.matchScore-a.matchScore || new Date(b.created_at)-new Date(a.created_at));
+      if(freshText || mineCount) dbStories.sort((a,b)=>b.matchScore-a.matchScore || new Date(b.created_at)-new Date(a.created_at));
+    }else{
+      console.error('feed:',error);
     }
   }
 
@@ -1887,14 +1932,21 @@ sb.auth.onAuthStateChange((event,session)=>{
   }
 });
 applyLanguage();
-bodyInput.value=localStorage.getItem('malhaebaWriteDraft')||'';
+const savedComposeText=localStorage.getItem('malhaebaWriteDraft')||'';
+bodyInput.value=savedComposeText;
 bodyInput.addEventListener('input',()=>localStorage.setItem('malhaebaWriteDraft',bodyInput.value));
+if(savedComposeText){
+  draft.body=savedComposeText;
+  draft.title=generateTitle(savedComposeText);
+  reviewBody.value=savedComposeText;
+}
 setTimeout(()=>{if(!initialAuthHandled)ensureSession()},1200);
 window.addEventListener('focus',()=>refreshAccountFromServer(true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshAccountFromServer(true)});
 if(localStorage.getItem('malhaebaSeenIntro')){
   const savedScreen=localStorage.getItem('malhaebaLastScreen');
-  const restoreScreen=RESTORABLE_SCREENS.has(savedScreen) && savedScreen!=='intro' ? savedScreen : 'home';
+  let restoreScreen=RESTORABLE_SCREENS.has(savedScreen) && savedScreen!=='intro' ? savedScreen : 'home';
+  if((restoreScreen==='review'||restoreScreen==='privacy') && !savedComposeText) restoreScreen='home';
   show(restoreScreen);
 }else{
   localStorage.setItem('malhaebaLastScreen','intro');
