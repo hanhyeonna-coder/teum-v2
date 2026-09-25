@@ -1111,6 +1111,9 @@ async function ensureSession(){
     return false;
   }
 }
+function pendingEmailForUser(user=currentUser){
+  return String(user?.new_email||user?.email_change||'').trim().toLowerCase();
+}
 function clearAuthQueryFlag(){
   const u=new URL(location.href);
   if(!u.searchParams.has('account_login'))return;
@@ -1181,7 +1184,11 @@ async function linkEmailAccount(){
   const connectBtn=document.getElementById('accountConnectBtn');
   if(connectBtn) connectBtn.disabled=true;
   try{
-    const {error}=await sb.auth.updateUser({email});
+    const pendingEmail=pendingEmailForUser();
+    const response=pendingEmail===email.toLowerCase()
+      ? await sb.auth.resend({type:'email_change',email})
+      : await sb.auth.updateUser({email});
+    const {error}=response;
     if(error){
       console.error(error);
       localStorage.removeItem('malhaebaAwaitingEmailLink');
@@ -1200,8 +1207,8 @@ async function linkEmailAccount(){
       return;
     }
     accountLinkStatus.textContent=currentLang==='en'
-      ?'One verification email was sent. Use the newest email only.'
-      :'인증 메일을 한 번 보냈어요. 가장 최근에 받은 메일만 열어주세요.';
+      ?'Verification email sent. Open only the newest email.'
+      :'인증 메일을 보냈어요. 가장 최근에 받은 메일만 열어주세요.';
   }finally{
     accountRequestInFlight=false;
     if(connectBtn) connectBtn.disabled=false;
@@ -1229,6 +1236,17 @@ async function signInExistingEmail(){
     if(error){
       console.error(error);
       const rateLimited=error.code==='over_email_send_rate_limit' || error.status===429;
+      if(!rateLimited && (error.code==='otp_disabled' || error.status===422) && currentUser?.is_anonymous){
+        const {error:resendError}=await sb.auth.resend({type:'email_change',email});
+        if(!resendError){
+          localStorage.setItem('malhaebaAwaitingEmailLink','1');
+          accountLinkStatus.textContent=currentLang==='en'
+            ?'This account is still waiting for email verification. I resent the verification email—open the newest one.'
+            :'이 계정은 아직 이메일 인증 대기 중이에요. 인증 메일을 다시 보냈으니 가장 최근 메일을 열어주세요.';
+          return;
+        }
+        console.error(resendError);
+      }
       accountLinkStatus.textContent=rateLimited
         ? (currentLang==='en'
             ?'The test email limit has been reached. Please try again in about an hour.'
@@ -1610,8 +1628,8 @@ async function renderFeed(){
 
   if(backendReady){
     const {data:mine}=await sb.from('posts')
-      .select('id,title,body,tags,created_at,language')
-      .eq('user_id',currentUser.id).eq('language',currentLang).neq('status','deleted')
+      .select('id,title,body,tags,created_at,language,is_seed')
+      .eq('user_id',currentUser.id).eq('is_seed',false).eq('language',currentLang).neq('status','deleted')
       .order('created_at',{ascending:false}).limit(5);
     recentOwnStories=mine||[];
     mineCount=recentOwnStories.length;
@@ -1629,11 +1647,12 @@ async function renderFeed(){
 
   if(backendReady){
     const {data,error}=await sb.from('posts')
-      .select('id,user_id,title,body,tags,created_at,language')
+      .select('id,user_id,title,body,tags,created_at,language,is_seed')
       .eq('visibility','public').eq('status','active').eq('language',currentLang)
-      .neq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(60);
+      .order('created_at',{ascending:false}).limit(80);
     if(!error){
-      dbStories=(data||[]).map(s=>{
+      const candidates=(data||[]).filter(s=>s.is_seed || s.user_id!==currentUser.id);
+      dbStories=candidates.slice(0,60).map(s=>{
         if(freshText){
           const score=similarityScore(freshText,freshTags,s);
           return {...s,matchScore:score,similarity:similarityLabel(score,freshTags,s.tags||[]),comments:[],hearts:0,isDb:true};
@@ -1828,7 +1847,7 @@ async function renderRecords(type){
   tabSaved.classList.toggle('on',type==='saved');
   if(!backendReady){recordList.innerHTML='<p class="sub">'+esc(tr('serverConnecting'))+'</p>';return}
   if(type==='mine'){
-    const {data,error}=await sb.from('posts').select('*').eq('user_id',currentUser.id).eq('language',currentLang).neq('status','deleted').order('created_at',{ascending:false});
+    const {data,error}=await sb.from('posts').select('*').eq('user_id',currentUser.id).eq('is_seed',false).eq('language',currentLang).neq('status','deleted').order('created_at',{ascending:false});
     if(error){console.error(error);return}
     const ids=(data||[]).map(x=>x.id);
     let latestByPost={};
@@ -1858,9 +1877,9 @@ async function renderRecords(type){
       </div>`;
     }).join(''): `<p class="sub">${tr('emptyRecords')}</p>`;
   }else{
-    const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+    const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language,is_seed)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     if(error){console.error(error);return}
-    const arr=(data||[]).map(x=>x.posts).filter(s=>s && (s.language||'ko')===currentLang);
+    const arr=(data||[]).map(x=>x.posts).filter(s=>s && !s.is_seed && (s.language||'ko')===currentLang);
     arr.forEach(s=>{if(!dbStories.some(d=>d.id===s.id))dbStories.push({...s,similarity:tr('savedStory'),isDb:true})});
     recordList.innerHTML=arr.length?arr.map(s=>`
       <div class="card story" onclick="openStory('${s.id}','records')">
@@ -1872,7 +1891,7 @@ async function renderRecords(type){
 }
 
 async function openOwnRecord(id){
-  const {data:x,error}=await sb.from('posts').select('*').eq('id',id).single();
+  const {data:x,error}=await sb.from('posts').select('*').eq('id',id).eq('is_seed',false).single();
   if(error||!x)return;
   const isPublic=x.visibility==='public';
   let reactionCount=0, commentCount=0, ownComments=[];
