@@ -450,6 +450,28 @@ body.menuOpen{overflow:hidden;touch-action:none}
   box-shadow:0 3px 10px rgba(255,91,87,.18);
 }
 
+
+/* Keep global app header anchored while content scrolls */
+html,body{
+  overscroll-behavior-y:none;
+}
+header{
+  position:sticky!important;
+  top:0!important;
+  z-index:45!important;
+  width:100%;
+  background:rgba(255,255,255,.96)!important;
+  padding-top:max(20px,env(safe-area-inset-top))!important;
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+}
+@supports (-webkit-touch-callout:none){
+  header{
+    position:-webkit-sticky!important;
+    position:sticky!important;
+  }
+}
+
 </style>
 </head>
 <body>
