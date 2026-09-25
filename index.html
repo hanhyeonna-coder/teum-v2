@@ -536,6 +536,37 @@ header{
   border-top-color:#fff!important;
 }
 
+
+/* Mobile Safari/Android: truly fixed app header + tighter voice layout */
+header{
+  position:fixed!important;
+  top:0!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:min(430px,100%)!important;
+  z-index:45!important;
+  background:rgba(255,255,255,.97)!important;
+  padding-top:max(20px,env(safe-area-inset-top))!important;
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+}
+.app{
+  padding-top:calc(62px + env(safe-area-inset-top))!important;
+}
+.menuOverlay{z-index:70!important}
+@media(max-width:430px){
+  #voice{
+    padding-top:14px!important;
+  }
+  #voice .listenerStage{
+    min-height:245px!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    padding-top:14px!important;
+    padding-bottom:0!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -837,6 +868,8 @@ const MAX_VOICE_MS=5*60*1000;
 let voiceElapsedMs=0;
 let voiceSegmentStartedAt=0;
 let voiceLimitTimer=null;
+let voiceWarningTimer=null;
+let voiceWarned=false;
 let voiceHintSwapTimer=null;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
@@ -1096,6 +1129,7 @@ function startVoice(){
   committedVoiceText='';
   voiceElapsedMs=0;
   voiceSegmentStartedAt=0;
+  voiceWarned=false;
   clearVoiceLimitTimer();
   voiceToggleBtn.innerHTML='<span class="pauseGlyph" aria-hidden="true"><i></i><i></i></span>';
   beginVoiceHints();
@@ -1123,13 +1157,31 @@ function beginVoiceHints(){
 }
 function clearVoiceLimitTimer(){
   clearTimeout(voiceLimitTimer);
+  clearTimeout(voiceWarningTimer);
   voiceLimitTimer=null;
+  voiceWarningTimer=null;
+}
+function showVoiceLimitWarning(){
+  if(voiceWarned)return;
+  voiceWarned=true;
+  clearInterval(voiceHintTimer);
+  setVoiceHint(currentLang==='en'
+    ?'About 1 minute left. You can keep editing as text after voice input ends.'
+    :'약 1분 남았어요. 음성 입력이 끝난 뒤에도 텍스트로 계속 수정할 수 있어요.');
 }
 function startVoiceLimitSegment(){
   clearVoiceLimitTimer();
   voiceSegmentStartedAt=Date.now();
   const remaining=Math.max(0,MAX_VOICE_MS-voiceElapsedMs);
   if(remaining<=0){finishVoiceAtLimit();return}
+  const warnAt=4*60*1000;
+  if(!voiceWarned){
+    if(voiceElapsedMs>=warnAt){
+      showVoiceLimitWarning();
+    }else{
+      voiceWarningTimer=setTimeout(showVoiceLimitWarning,warnAt-voiceElapsedMs);
+    }
+  }
   voiceLimitTimer=setTimeout(finishVoiceAtLimit,remaining);
 }
 function pauseVoiceLimitSegment(){
