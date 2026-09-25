@@ -345,6 +345,111 @@ textarea,input[type=text]{background:#f8f9fa;border-color:#edf0f2}
 .toast{position:fixed;left:50%;bottom:94px;transform:translate(-50%,12px);z-index:120;max-width:calc(100% - 36px);background:#252a30;color:#fff;padding:11px 14px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.22s ease}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .safetyPage h3{font-size:16px;margin:24px 0 8px}.safetyPage p,.safetyPage li{color:#5f666e;font-size:14px;line-height:1.65}.safetyPage ul{padding-left:20px}
+
+/* Mobile typography, native-control and menu fixes */
+button{
+  -webkit-appearance:none;
+  appearance:none;
+  color:inherit;
+}
+body.menuOpen{overflow:hidden;touch-action:none}
+.menuOverlay{
+  position:fixed!important;
+  inset:0!important;
+  top:0!important;
+  bottom:auto!important;
+  left:50%!important;
+  width:min(430px,100%)!important;
+  height:100dvh!important;
+  overflow:hidden!important;
+  overscroll-behavior:contain;
+}
+.menuPanel{
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:calc(22px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom))!important;
+}
+.menuClose{
+  color:var(--ink)!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+}
+.tag{
+  font-size:13px!important;
+  line-height:1.4;
+  margin-right:10px!important;
+}
+.quick{
+  gap:8px!important;
+  padding:6px 0 8px!important;
+  -webkit-overflow-scrolling:touch;
+}
+.quick button{
+  color:#5f666e!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+  padding:10px 13px!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+}
+.comment{
+  font-size:16px!important;
+  line-height:1.65!important;
+  padding:15px 0!important;
+}
+#commentInput{
+  font-size:16px!important;
+}
+#detailContent .actions button{
+  font-size:14px!important;
+}
+#home .sub{
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif!important;
+  font-size:18px!important;
+  line-height:1.62!important;
+  letter-spacing:-.3px!important;
+  word-spacing:0!important;
+}
+.choiceText b{
+  font-size:19px!important;
+  line-height:1.35!important;
+  letter-spacing:-.35px!important;
+}
+.choiceText small{
+  font-size:14px!important;
+  line-height:1.5!important;
+  margin-top:6px!important;
+}
+.homeChoice{
+  min-height:100px!important;
+  padding:21px 20px!important;
+}
+.story{position:relative}
+.newBadge{
+  position:absolute;
+  top:15px;
+  right:15px;
+  min-width:24px;
+  height:24px;
+  padding:0 7px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--accent);
+  color:#fff;
+  font-size:12px;
+  font-weight:850;
+  line-height:1;
+  box-shadow:0 3px 10px rgba(255,91,87,.18);
+}
+
 </style>
 </head>
 <body>
@@ -809,8 +914,14 @@ function showIntroAgain(){
   dot1.classList.add('on'); dot2.classList.remove('on'); introBtn.textContent=tr('next');
   show('intro');
 }
-function openMenu(){document.getElementById('menuOverlay').classList.add('open')}
-function closeMenu(){document.getElementById('menuOverlay').classList.remove('open')}
+function openMenu(){
+  document.body.classList.add('menuOpen');
+  document.getElementById('menuOverlay').classList.add('open');
+}
+function closeMenu(){
+  document.body.classList.remove('menuOpen');
+  document.getElementById('menuOverlay').classList.remove('open');
+}
 function menuGo(id,tab){
   closeMenu();
   if(tab) currentRecordTab=tab;
@@ -1096,7 +1207,7 @@ async function renderDetail(){
     </div>
     <div class="detailBody">${esc(s.body)}</div>
     <div class="actions">
-      <button id="heartBtn" class="iconBtn ${currentStoryReacted?'selected':''}" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span id="heartLabel">${tr('same')} ${heartCount}</span></button>
+      <button id="heartBtn" class="iconBtn ${currentStoryReacted?'selected':''}" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span id="heartLabel">${tr('same')}${heartCount>0?' '+heartCount:''}</span></button>
       <button id="bookmarkBtn" class="iconBtn ${currentStoryBookmarked?'selected':''}" onclick="bookmark('${s.id}')"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>${tr('bookmark')}</span></button>
     </div>
     ${s.isDb && s.user_id && s.user_id!==currentUser?.id?`<div class="safetyActions"><button onclick="openReport()">${currentLang==='en'?'Report':'신고'}</button><button onclick="blockStoryAuthor()">${currentLang==='en'?'Block author':'작성자 차단'}</button></div>`:''}
@@ -1128,7 +1239,7 @@ async function heart(){
   currentStoryReacted=next;
   currentHeartCount=Math.max(0,currentHeartCount+(next?1:-1));
   if(btn)btn.classList.toggle('selected',next);
-  if(label)label.textContent=tr('same')+' '+currentHeartCount;
+  if(label)label.textContent=tr('same')+(currentHeartCount>0?' '+currentHeartCount:'');
   animateActionButton('heartBtn');
 
   if(!currentStory?.isDb) return;
@@ -1144,7 +1255,7 @@ async function heart(){
     currentStoryReacted=!next;
     currentHeartCount=previousCount;
     if(btn)btn.classList.toggle('selected',!next);
-    if(label)label.textContent=tr('same')+' '+currentHeartCount;
+    if(label)label.textContent=tr('same')+(currentHeartCount>0?' '+currentHeartCount:'');
   }
 }
 async function bookmark(id){
@@ -1210,6 +1321,14 @@ async function addComment(){
   renderDetail();
 }
 
+
+function ownPostSeenKey(postId){return 'malhaebaOwnPostCommentsSeen:'+postId}
+function getOwnPostSeenAt(postId){return localStorage.getItem(ownPostSeenKey(postId))||''}
+function markOwnPostCommentsSeen(postId,comments=[]){
+  const latest=(comments||[]).reduce((m,x)=>!m||new Date(x.created_at)>new Date(m)?x.created_at:m,'');
+  localStorage.setItem(ownPostSeenKey(postId),latest||new Date().toISOString());
+}
+
 async function renderRecords(type){
   currentRecordTab=type;
   tabMine.classList.toggle('on',type==='mine');
@@ -1218,12 +1337,33 @@ async function renderRecords(type){
   if(type==='mine'){
     const {data,error}=await sb.from('posts').select('*').eq('user_id',currentUser.id).eq('language',currentLang).neq('status','deleted').order('created_at',{ascending:false});
     if(error){console.error(error);return}
-    recordList.innerHTML=data.length?data.map(x=>`
+    const ids=(data||[]).map(x=>x.id);
+    let latestByPost={};
+    if(ids.length){
+      const {data:commentRows,error:commentError}=await sb.from('comments')
+        .select('post_id,user_id,created_at')
+        .in('post_id',ids)
+        .eq('status','active')
+        .neq('user_id',currentUser.id)
+        .order('created_at',{ascending:false});
+      if(!commentError){
+        (commentRows||[]).forEach(row=>{
+          if(!latestByPost[row.post_id]) latestByPost[row.post_id]=row.created_at;
+        });
+      }
+    }
+    recordList.innerHTML=data.length?data.map(x=>{
+      const latest=latestByPost[x.id]||'';
+      const seen=getOwnPostSeenAt(x.id);
+      const hasNew=!!latest && (!seen || new Date(latest)>new Date(seen));
+      return `
       <div class="card story" onclick="openOwnRecord('${x.id}')">
+        ${hasNew?'<span class="newBadge" aria-label="New comment">N</span>':''}
         <div class="title">${esc(x.title)}</div>
         <div class="excerpt">${esc(x.body)}</div>
         <div class="recordMeta">${fmtDate(x.created_at)} · ${x.visibility==='public'?tr('publicLabel'):tr('privateLabel')}</div>
-      </div>`).join(''): `<p class="sub">${tr('emptyRecords')}</p>`;
+      </div>`;
+    }).join(''): `<p class="sub">${tr('emptyRecords')}</p>`;
   }else{
     const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     if(error){console.error(error);return}
@@ -1246,11 +1386,12 @@ async function openOwnRecord(id){
   if(isPublic){
     const [r,c]=await Promise.all([
       sb.from('reactions').select('*',{count:'exact',head:true}).eq('post_id',id),
-      sb.from('comments').select('id,body,created_at').eq('post_id',id).eq('status','active').order('created_at',{ascending:true})
+      sb.from('comments').select('id,user_id,body,created_at').eq('post_id',id).eq('status','active').order('created_at',{ascending:true})
     ]);
     reactionCount=r.count||0;
     ownComments=c.data||[];
     commentCount=ownComments.length;
+    markOwnPostCommentsSeen(id,ownComments.filter(c=>c.user_id!==currentUser.id));
   }
   recordDetailContent.innerHTML=`
     <div class="detailTop">
