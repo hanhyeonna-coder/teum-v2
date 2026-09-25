@@ -601,6 +601,8 @@ header{
   color:var(--ink)!important;
 }
 
+
+.safetyPage h3{font-size:17px;margin:24px 0 8px}.safetyPage p,.safetyPage li{font-size:15px;line-height:1.7;color:#4d545d}.safetyPage ul{padding-left:21px}.safetyPage .secondary{margin-top:8px}
 </style>
 </head>
 <body>
@@ -773,6 +775,23 @@ header{
   </ul>
   <h3 id="safetyProblemTitle">문제가 있는 글을 봤다면</h3>
   <p id="safetyProblemText">이야기 상세 화면의 ‘신고’ 또는 ‘작성자 차단’을 이용해주세요. 문의가 필요하면 Instagram @malhaeba.today 로 알려주세요.</p>
+  <div class="manageBox">
+    <button id="privacyPolicyBtn" class="secondary" onclick="show('privacyPolicy')">개인정보 처리 안내</button>
+    <button id="termsBtn" class="secondary" onclick="show('terms')">이용약관</button>
+  </div>
+</section>
+
+
+<section id="privacyPolicy" class="screen safetyPage">
+  <button class="ghost" onclick="show('safety')">←</button>
+  <h2 id="privacyPolicyTitle">개인정보 처리 안내</h2>
+  <div id="privacyPolicyBody"></div>
+</section>
+
+<section id="terms" class="screen safetyPage">
+  <button class="ghost" onclick="show('safety')">←</button>
+  <h2 id="termsTitle">이용약관</h2>
+  <div id="termsBody"></div>
 </section>
 
 <div id="reportOverlay" class="reportOverlay" onclick="closeReport(event)">
@@ -786,14 +805,14 @@ header{
 <div id="menuOverlay" class="menuOverlay" onclick="closeMenu(event)">
   <div class="menuPanel" onclick="event.stopPropagation()">
     <div class="menuHead"><b>전체 메뉴</b><button class="menuClose" onclick="closeMenu()">×</button></div>
-    <button class="menuItem" onclick="menuGo('home')">새 글 남기기<small>말하거나 써서 지금 마음 털어놓기</small></button>
-    <button class="menuItem" onclick="menuGo('records','mine')">내가 쓴 이야기<small>내가 털어놓은 이야기 모아보기</small></button>
-    <button class="menuItem" onclick="menuGo('records','saved')">담아둔 이야기<small>다시 보고 싶은 다른 사람들의 이야기</small></button>
-    <button class="menuItem" onclick="menuGo('feed')">둘러보기<small>나와 비슷한 이야기 다시 보기</small></button>
+    <button id="menuNew" class="menuItem" onclick="menuGo('home')">새 글 남기기<small>말하거나 써서 지금 마음 털어놓기</small></button>
+    <button id="menuMine" class="menuItem" onclick="menuGo('records','mine')">내가 쓴 이야기<small>내가 털어놓은 이야기 모아보기</small></button>
+    <button id="menuSaved" class="menuItem" onclick="menuGo('records','saved')">담아둔 이야기<small>다시 보고 싶은 다른 사람들의 이야기</small></button>
+    <button id="menuBrowse" class="menuItem" onclick="menuGo('feed')">둘러보기<small>나와 비슷한 이야기 다시 보기</small></button>
     <div class="menuSection">말해바</div>
-    <button class="menuItem" onclick="showIntroAgain()">말해바 안내<small>말해바 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
+    <button id="menuGuide" class="menuItem" onclick="showIntroAgain()">말해바 안내<small>말해바 소개와 공개·비공개, 댓글·공감 이용 방법</small></button>
     <button id="menuAccountLink" class="menuItem" onclick="closeMenu();show('accountLink')">계정 연결<small>다른 기기에서도 내 기록 이어보기</small></button>
-    <button class="menuItem" onclick="closeMenu();show('safety')">도움말·문의<small>신고, 차단, 이용 규칙과 문의</small></button>
+    <button id="menuHelp" class="menuItem" onclick="closeMenu();show('safety')">도움말·문의<small>신고, 차단, 이용 규칙과 문의</small></button>
   </div>
 </div>
 
@@ -841,6 +860,9 @@ const I18N={
     accountSuccessTitle:'이메일 연결이 완료됐어요',accountSuccessSub:'이제 다른 기기에서도 내 이야기를 이어볼 수 있어요.<br>지금까지 남긴 기록은 그대로 유지돼요.',accountSuccessRecords:'내 기록 보기',accountSuccessFeed:'비슷한 이야기 둘러보기',
     safetyTitle:'안전하게 이용하기',safetyIntro:'말해바는 익명으로 마음을 털어놓는 공간이에요. 다른 사람의 안전과 사생활을 해치는 내용은 허용하지 않아요.',safetyRulesTitle:'올리면 안 되는 내용',safetyRules:['특정인을 위협하거나 괴롭히는 내용','혐오·차별·성적 착취성 내용','이름, 연락처, 주소 등 타인의 개인정보','불법행위 조장, 반복 스팸이나 광고'],safetyProblemTitle:'문제가 있는 글을 봤다면',safetyProblemText:'이야기 상세 화면의 ‘신고’ 또는 ‘작성자 차단’을 이용해주세요. 문의가 필요하면 Instagram @malhaeba.today 로 알려주세요.',
     menu:'전체 메뉴',menuNew:'새 글 남기기',menuNewSub:'말하거나 써서 지금 마음 털어놓기',menuMine:'내가 쓴 이야기',menuMineSub:'내가 털어놓은 이야기 모아보기',menuSaved:'담아둔 이야기',menuSavedSub:'다시 보고 싶은 다른 사람들의 이야기',browse:'둘러보기',browseSub:'나와 비슷한 이야기 다시 보기',guide:'말해바 안내',guideSub:'말해바 소개와 공개·비공개, 댓글·공감 이용 방법',accountMenu:'계정 연결',accountMenuSub:'다른 기기에서도 내 기록 이어보기',settings:'설정',settingsSub:'알림, 계정, 공개 범위 관리',help:'도움말·문의',helpSub:'신고, 차단, 문의하기',
+    privacyPolicyTitle:'개인정보 처리 안내',privacyPolicyBtn:'개인정보 처리 안내',termsTitle:'이용약관',termsBtn:'이용약관',
+    privacyPolicyHtml:'<h3>말해바가 처리하는 정보</h3><p>서비스 이용을 위해 익명 사용자 식별자, 작성한 이야기와 댓글, 공감·저장·신고·차단 기록, 언어·유입경로·접속 및 생성 시각을 처리할 수 있어요. 이메일 연결을 선택한 경우 이메일 주소가 계정에 연결돼요.</p><h3>음성 입력</h3><p>현재 음성 입력은 브라우저 또는 운영체제의 음성 인식 기능을 사용해 텍스트로 바꿔요. 말해바는 원본 음성 파일을 별도로 저장하도록 구현되어 있지 않아요. 다만 브라우저·운영체제 제공자가 음성을 처리할 수 있으며 해당 제공자의 정책이 적용될 수 있어요.</p><h3>공개 범위</h3><p>‘익명으로 공개하기’를 선택한 이야기는 다른 이용자가 볼 수 있고, ‘나만 보기’를 선택한 이야기는 본인 계정에서만 볼 수 있어요.</p><h3>보관과 삭제</h3><p>이야기는 사용자가 직접 삭제할 수 있어요. 계정 또는 기타 데이터 삭제 요청이 필요한 경우 Instagram @malhaeba.today 로 문의해주세요.</p><h3>출시 전 변경</h3><p>도메인, 인증 메일 발송 서비스, 음성 인식 방식이 변경되면 이 안내도 실제 처리 방식에 맞게 업데이트할 예정이에요.</p>',
+    termsHtml:'<h3>서비스 성격</h3><p>말해바는 익명으로 경험과 감정을 털어놓고 비슷한 이야기를 보는 커뮤니티 서비스예요. 의료·법률·긴급상담 서비스가 아니에요.</p><h3>이용자 책임</h3><p>다른 사람을 위협·괴롭히거나 혐오·차별·성적 착취를 조장하는 내용, 타인의 개인정보, 불법행위 조장, 반복 스팸·광고를 올리면 안 돼요.</p><h3>공개 콘텐츠</h3><p>익명 공개를 선택한 글과 댓글은 다른 이용자에게 표시될 수 있어요. 본인이나 타인을 식별할 수 있는 개인정보는 직접 적지 않는 것을 권장해요.</p><h3>운영</h3><p>안전한 이용을 위해 신고된 콘텐츠를 검토하고 필요한 경우 숨김·삭제 등 운영 조치를 할 수 있어요. 서비스 기능과 정책은 개선 과정에서 변경될 수 있어요.</p>' ,
     home:'홈',comments:'댓글',send:'보내기',commentPlaceholder:'한마디 건네볼까요?',same:'나도 그랬어요',bookmark:'담아두기',
     recent:'최근 올라온 이야기',example:'예시 이야기',emptyRecords:'아직 남긴 기록이 없어요.',emptySaved:'아직 담아둔 이야기가 없어요.',
     feedFresh:'방금 털어놓은 이야기와 닮은 내용부터 보여줘요.',feedHistory:'최근에 남긴 이야기와 닮은 내용부터 보여줘요.',feedEmpty:'아직 기록이 없어서 최근 공개된 이야기부터 보여줘요.',
@@ -866,6 +888,9 @@ const I18N={
     accountSuccessTitle:'Email connected',accountSuccessSub:'You can now continue with the same stories on another device.<br>Your existing records stay with this account.',accountSuccessRecords:'View my records',accountSuccessFeed:'Browse similar stories',
     safetyTitle:'Use Malhaeba safely',safetyIntro:'Malhaeba is an anonymous space to let things out. Content that harms someone’s safety or privacy is not allowed.',safetyRulesTitle:'Do not post',safetyRules:['Threats or harassment toward a specific person','Hateful, discriminatory, or sexually exploitative content','Another person’s private information such as a name, phone number, or address','Content promoting illegal activity, repeated spam, or advertising'],safetyProblemTitle:'If you see a problem',safetyProblemText:'Use “Report” or “Block author” on the story screen. For help, contact us on Instagram @malhaeba.today.',
     menu:'Menu',menuNew:'Share a story',menuNewSub:'Talk or write about what happened',menuMine:'My stories',menuMineSub:'See the stories you shared',menuSaved:'Saved stories',menuSavedSub:'Stories you want to come back to',browse:'Browse',browseSub:'See stories similar to yours',guide:'About Malhaeba',guideSub:'How anonymous sharing, reactions and comments work',accountMenu:'Connect account',accountMenuSub:'Keep your records across devices',settings:'Settings',settingsSub:'Notifications, account and visibility',help:'Help & contact',helpSub:'Report, block or contact us',
+    privacyPolicyTitle:'Privacy notice',privacyPolicyBtn:'Privacy notice',termsTitle:'Terms of use',termsBtn:'Terms of use',
+    privacyPolicyHtml:'<h3>Information Malhaeba processes</h3><p>To operate the service, Malhaeba may process an anonymous user identifier, stories and comments you create, reactions, saves, reports and blocks, language, acquisition source, and related timestamps. If you choose to connect an email, that email address is linked to your account.</p><h3>Voice input</h3><p>Voice input currently uses speech recognition provided by your browser or operating system to turn speech into text. Malhaeba is not implemented to store the original audio file. Your browser or operating-system provider may process audio under its own policies.</p><h3>Visibility</h3><p>Stories you choose to share anonymously can be seen by other users. Stories saved as private are only available to your account.</p><h3>Retention and deletion</h3><p>You can delete your own stories. For account or other data deletion requests, contact us on Instagram @malhaeba.today.</p><h3>Changes before launch</h3><p>If the domain, authentication email provider, or speech-recognition method changes, this notice will be updated to match the actual data flow.</p>',
+    termsHtml:'<h3>What Malhaeba is</h3><p>Malhaeba is an anonymous community for letting out experiences and feelings and finding similar stories. It is not a medical, legal, or emergency-support service.</p><h3>Your responsibilities</h3><p>Do not post threats or harassment, hateful or discriminatory content, sexually exploitative content, another person’s private information, content promoting illegal activity, or repeated spam or advertising.</p><h3>Public content</h3><p>Stories and comments you choose to share anonymously may be visible to other users. Avoid including information that identifies you or someone else.</p><h3>Moderation and changes</h3><p>We may review reported content and take steps such as hiding or removing content to keep the service safe. Features and policies may change as the service improves.</p>' ,
     home:'Home',comments:'Comments',send:'Send',commentPlaceholder:'Leave a kind word…',same:'Me too',bookmark:'Save',
     recent:'Recent story',example:'Example story',emptyRecords:'You haven’t shared anything yet.',emptySaved:'You haven’t saved any stories yet.',
     feedFresh:'Here are stories closest to what you just shared.',feedHistory:'Here are stories based on your recent stories.',feedEmpty:'You haven’t shared anything yet, so here are recent stories.',
@@ -901,7 +926,7 @@ let currentStory=null;
 let storyReturn='feed';
 let currentRecordTab=localStorage.getItem('malhaebaRecordTab')==='saved'?'saved':'mine';
 let feedMode='history';
-const RESTORABLE_SCREENS=new Set(['intro','home','write','review','privacy','feed','records','accountLink','accountSuccess','safety']);
+const RESTORABLE_SCREENS=new Set(['intro','home','write','review','privacy','feed','records','accountLink','safety','privacyPolicy','terms']);
 let editingRecordId=null;
 let recentOwnStories=[];
 let listenerTimer=null;
@@ -924,7 +949,8 @@ function inferTags(text){
   const rules=currentLang==='en'?[
     ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],
     ['parenting',/parent|kid|child|baby|toddler|son|daughter|daycare|preschool|school|bedtime|tantrum/i],
-    ['daycare',/daycare|preschool|school drop.?off|pick.?up/i],
+    ['daycare',/daycare|preschool|day care|school drop.?off|pick.?up/i],
+    ['school',/school|teacher|classroom|homework|school run/i],
     ['sleep',/sleep|bedtime|wake|woke|night/i],
     ['family',/mother|father|parents|in.?laws|family/i],
     ['work',/work|office|boss|career|job|return to work/i],
@@ -993,7 +1019,6 @@ function similarityLabel(score,queryTags=[],storyTags=[]){
   if(currentLang==='en'){
     const topic={
       parenting:'Parenting stress feels similar',
-      kids:'The parenting situation feels similar',
       partner:'Partner frustration feels similar',
       work:'Work stress feels similar',
       daycare:'Daycare stress feels similar',
@@ -1009,16 +1034,14 @@ function similarityLabel(score,queryTags=[],storyTags=[]){
       annoyed:'The irritation feels similar',
       lonely:'The loneliness feels similar'
     };
-    const priority=['partner','parenting','kids','work','daycare','school','housework','sleep','family','money','overwhelmed','exhausted','hurt','angry','annoyed','lonely'];
+    const priority=['partner','parenting','work','daycare','school','housework','sleep','family','money','overwhelmed','exhausted','hurt','angry','annoyed','lonely'];
     const key=priority.find(t=>overlap.includes(t));
     if(key && topic[key])return topic[key];
   }else{
     const topic={
       '남편':'남편 때문에 답답했던 포인트가 비슷해요',
       '육아':'육아로 지친 포인트가 비슷해요',
-      '아이':'아이 때문에 힘들었던 마음이 비슷해요',
       '직장':'직장에서 받은 스트레스가 비슷해요',
-      '회사':'회사 때문에 답답했던 포인트가 비슷해요',
       '등원':'등원 때문에 지친 상황이 비슷해요',
       '하원':'하원 때문에 쫓기는 상황이 비슷해요',
       '어린이집':'어린이집 때문에 신경 쓰인 포인트가 비슷해요',
@@ -1036,7 +1059,7 @@ function similarityLabel(score,queryTags=[],storyTags=[]){
       '화남':'화가 난 포인트가 비슷해요',
       '외로움':'혼자라고 느낀 마음이 비슷해요'
     };
-    const priority=['남편','육아분담','육아','아이','직장','회사','복직','등원','하원','어린이집','유치원','집안일','수면','시댁','친정','가족','돈','서운함','화남','지침','외로움'];
+    const priority=['남편','육아분담','육아','직장','복직','등원','하원','어린이집','유치원','집안일','수면','시댁','친정','가족','돈','서운함','화남','지침','외로움'];
     const key=priority.find(t=>overlap.includes(t));
     if(key && topic[key])return topic[key];
   }
@@ -1257,10 +1280,11 @@ function applyLanguage(){
   q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
   q('accountSuccessTitle').textContent=tr('accountSuccessTitle'); q('accountSuccessSub').innerHTML=tr('accountSuccessSub'); q('accountSuccessRecords').textContent=tr('accountSuccessRecords'); q('accountSuccessFeed').textContent=tr('accountSuccessFeed');
   q('safetyTitle').textContent=tr('safetyTitle'); q('safetyIntro').textContent=tr('safetyIntro'); q('safetyRulesTitle').textContent=tr('safetyRulesTitle'); q('safetyRules').innerHTML=tr('safetyRules').map(x=>'<li>'+esc(x)+'</li>').join(''); q('safetyProblemTitle').textContent=tr('safetyProblemTitle'); q('safetyProblemText').textContent=tr('safetyProblemText');
-  const mi=q('menuOverlay').querySelectorAll('.menuItem'); q('menuOverlay').querySelector('.menuHead b').textContent=tr('menu');
-  const menuVals=[['menuNew','menuNewSub'],['menuMine','menuMineSub'],['menuSaved','menuSavedSub'],['browse','browseSub'],['guide','guideSub'],['accountMenu','accountMenuSub'],['help','helpSub']];
-  mi.forEach((el,i)=>{if(menuVals[i]){el.childNodes[0].nodeValue=tr(menuVals[i][0]); const s=el.querySelector('small'); if(s)s.textContent=tr(menuVals[i][1]);}});
+  q('menuOverlay').querySelector('.menuHead b').textContent=tr('menu');
+  [['menuNew','menuNew','menuNewSub'],['menuMine','menuMine','menuMineSub'],['menuSaved','menuSaved','menuSavedSub'],['menuBrowse','browse','browseSub'],['menuGuide','guide','guideSub'],['menuHelp','help','helpSub']].forEach(([id,titleKey,subKey])=>{const el=q(id);if(el){el.childNodes[0].nodeValue=tr(titleKey);const s=el.querySelector('small');if(s)s.textContent=tr(subKey)}});
   document.querySelector('.menuSection').textContent='MALHAEBA';
+  q('privacyPolicyTitle').textContent=tr('privacyPolicyTitle'); q('privacyPolicyBody').innerHTML=tr('privacyPolicyHtml'); q('privacyPolicyBtn').textContent=tr('privacyPolicyBtn');
+  q('termsTitle').textContent=tr('termsTitle'); q('termsBody').innerHTML=tr('termsHtml'); q('termsBtn').textContent=tr('termsBtn');
   navHome.querySelector('span:last-child').textContent=tr('home'); navFeed.querySelector('span:last-child').textContent=tr('browse'); navRecords.querySelector('span:last-child').textContent=tr('records');
 }
 function nextIntro(){
@@ -1323,7 +1347,7 @@ function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   ['Home','Feed','Records'].forEach(x=>{const n=document.getElementById('nav'+x);if(n)n.classList.remove('active')});
-  const parentNav={home:'Home',write:'Home',voice:'Home',review:'Home',privacy:'Home',matching:'Home',feed:'Feed',detail:storyReturn==='records'?'Records':'Feed',records:'Records',recordDetail:'Records',accountLink:'Records',accountSuccess:'Records',safety:'Home'}[id];
+  const parentNav={home:'Home',write:'Home',voice:'Home',review:'Home',privacy:'Home',matching:'Home',feed:'Feed',detail:storyReturn==='records'?'Records':'Feed',records:'Records',recordDetail:'Records',accountLink:'Records',accountSuccess:'Records',safety:'Home',privacyPolicy:'Home',terms:'Home'}[id];
   const activeNav=parentNav&&document.getElementById('nav'+parentNav);
   if(activeNav)activeNav.classList.add('active');
   if(id==='home')resetCompose();
@@ -1907,8 +1931,6 @@ sb.auth.onAuthStateChange((event,session)=>{
       currentUser=session.user;
       backendReady=true;
       updateAccountUI();
-      if(document.getElementById('records')?.classList.contains('active')) renderRecords(currentRecordTab);
-      if(document.getElementById('feed')?.classList.contains('active')) renderFeed();
       if(document.getElementById('records')?.classList.contains('active')) renderRecords(currentRecordTab);
       if(document.getElementById('feed')?.classList.contains('active')) renderFeed();
       if(isEmailAccountLinked(currentUser)){
