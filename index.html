@@ -736,8 +736,8 @@ header{
   <p class="sub">이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.</p>
   <div class="card">
     <input id="accountEmail" type="text" inputmode="email" autocomplete="email" placeholder="이메일 주소">
-    <button class="primary" onclick="signInExistingEmail()">로그인</button>
-    <button class="secondary" onclick="linkEmailAccount()">이메일로 연결하기</button>
+    <button id="accountLoginBtn" class="primary" onclick="signInExistingEmail()">로그인</button>
+    <button id="accountConnectBtn" class="secondary" onclick="linkEmailAccount()">이메일로 연결하기</button>
     <div id="accountLinkStatus" class="accountStatus"></div>
   </div>
   <p class="sub">처음 연결하는 경우 인증 메일을 확인해주세요. 이미 연결한 이메일이라면 ‘이메일로 로그인’을 사용하면 다른 기기에서도 같은 기록을 불러올 수 있어요.</p>
@@ -832,7 +832,7 @@ const I18N={
     matchingTitle:'비슷한 이야기를 찾고 있어요.',matchingSub:'오늘 진짜 답답했겠다.<br>비슷한 일을 겪은 사람들의 이야기를 모아볼게요.',
     feedTitle:'너와 비슷한 이야기',records:'내 기록',mine:'내가 쓴 이야기',saved:'담아둔 이야기',
     accountBannerTitle:'다른 기기에서도 기록을 보고 싶다면',accountBannerSub:'지금 기록은 이 브라우저의 익명 계정에 연결되어 있어요. 이메일을 연결하면 다른 기기에서도 다시 찾을 수 있어요.',connect:'계정 연결하기',
-    accountTitle:'계정 연결하기',accountSub:'이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.',emailPlaceholder:'이메일 주소',connectEmail:'이메일 연결하기',accountFoot:'연결 메일을 확인한 뒤 인증을 완료하면 이 익명 계정이 그대로 유지돼요.',
+    accountTitle:'계정 연결하기',accountSub:'이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.',emailPlaceholder:'이메일 주소',loginExisting:'로그인',connectEmail:'이메일로 연결하기',accountFoot:'처음 연결하는 경우 인증 메일을 확인해주세요. 이미 연결한 이메일이라면 로그인하면 다른 기기에서도 같은 기록을 불러올 수 있어요.',
     menu:'전체 메뉴',menuNew:'새 글 남기기',menuNewSub:'말하거나 써서 지금 마음 털어놓기',menuMine:'내가 쓴 이야기',menuMineSub:'내가 털어놓은 이야기 모아보기',menuSaved:'담아둔 이야기',menuSavedSub:'다시 보고 싶은 다른 사람들의 이야기',browse:'둘러보기',browseSub:'나와 비슷한 이야기 다시 보기',guide:'말해바 안내',guideSub:'말해바 소개와 공개·비공개, 댓글·공감 이용 방법',accountMenu:'계정 연결',accountMenuSub:'다른 기기에서도 내 기록 이어보기',settings:'설정',settingsSub:'알림, 계정, 공개 범위 관리',help:'도움말·문의',helpSub:'신고, 차단, 문의하기',
     home:'홈',comments:'댓글',send:'보내기',commentPlaceholder:'한마디 건네볼까요?',same:'나도 그랬어요',bookmark:'담아두기',
     recent:'최근 올라온 이야기',example:'예시 이야기',emptyRecords:'아직 남긴 기록이 없어요.',emptySaved:'아직 담아둔 이야기가 없어요.',
@@ -855,7 +855,7 @@ const I18N={
     matchingTitle:'Finding stories like yours…',matchingSub:'Looking for people who’ve been through something similar.',
     feedTitle:'Stories similar to yours',records:'My records',mine:'My stories',saved:'Saved stories',
     accountBannerTitle:'Want to keep your stories across devices?',accountBannerSub:'Your stories are linked to this anonymous browser session. Connect an email to access them elsewhere.',connect:'Connect account',
-    accountTitle:'Connect account',accountSub:'Connect an email to keep the same records on another device.',emailPlaceholder:'Email address',connectEmail:'Connect email',accountFoot:'Open the verification email to finish connecting this anonymous account.',
+    accountTitle:'Connect account',accountSub:'Connect an email to keep the same records on another device.',emailPlaceholder:'Email address',loginExisting:'Log in',connectEmail:'Connect this email',accountFoot:'If this is your first time, verify the email to connect it. If it is already connected, log in to load the same records on this device.',
     menu:'Menu',menuNew:'Share a story',menuNewSub:'Talk or write about what happened',menuMine:'My stories',menuMineSub:'See the stories you shared',menuSaved:'Saved stories',menuSavedSub:'Stories you want to come back to',browse:'Browse',browseSub:'See stories similar to yours',guide:'About Malhaeba',guideSub:'How anonymous sharing, reactions and comments work',accountMenu:'Connect account',accountMenuSub:'Keep your records across devices',settings:'Settings',settingsSub:'Notifications, account and visibility',help:'Help & contact',helpSub:'Report, block or contact us',
     home:'Home',comments:'Comments',send:'Send',commentPlaceholder:'Leave a kind word…',same:'Me too',bookmark:'Save',
     recent:'Recent story',example:'Example story',emptyRecords:'You haven’t shared anything yet.',emptySaved:'You haven’t saved any stories yet.',
@@ -890,8 +890,9 @@ let voicePaused=false;
 let committedVoiceText='';
 let currentStory=null;
 let storyReturn='feed';
-let currentRecordTab='mine';
+let currentRecordTab=localStorage.getItem('malhaebaRecordTab')==='saved'?'saved':'mine';
 let feedMode='history';
+const RESTORABLE_SCREENS=new Set(['intro','home','write','feed','records','accountLink','accountSuccess','safety']);
 let editingRecordId=null;
 let recentOwnStories=[];
 let listenerTimer=null;
@@ -1175,7 +1176,7 @@ function applyLanguage(){
   q('matching').querySelector('h2').textContent=tr('matchingTitle'); q('matching').querySelector('.sub').innerHTML=tr('matchingSub');
   feedTitle.textContent=tr('feedTitle'); q('records').querySelector('h2').textContent=tr('records'); tabMine.textContent=tr('mine'); tabSaved.textContent=tr('saved');
   q('accountBanner').querySelector('b').textContent=tr('accountBannerTitle'); q('accountBanner').querySelector('.sub').textContent=tr('accountBannerSub'); q('accountBanner').querySelector('button').textContent=tr('connect');
-  q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLink').querySelector('.primary').textContent=tr('connectEmail'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
+  q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
   const mi=q('menuOverlay').querySelectorAll('.menuItem'); q('menuOverlay').querySelector('.menuHead b').textContent=tr('menu');
   const menuVals=[['menuNew','menuNewSub'],['menuMine','menuMineSub'],['menuSaved','menuSavedSub'],['browse','browseSub'],['guide','guideSub'],['accountMenu','accountMenuSub'],['settings','settingsSub'],['help','helpSub']];
   mi.forEach((el,i)=>{if(menuVals[i]){el.childNodes[0].nodeValue=tr(menuVals[i][0]); const s=el.querySelector('small'); if(s)s.textContent=tr(menuVals[i][1]);}});
@@ -1231,11 +1232,13 @@ function redoVoice(){
 function resetCompose(){
   draft={body:'',title:'',privacy:'public'};
   bodyInput.value='';
+  localStorage.removeItem('malhaebaWriteDraft');
   reviewBody.value='';
   voiceTranscript='';
 }
 
 function show(id){
+  if(RESTORABLE_SCREENS.has(id)) localStorage.setItem('malhaebaLastScreen',id);
   document.querySelector('nav').style.display=id==='intro'?'none':'grid';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1685,6 +1688,7 @@ function markOwnPostCommentsSeen(postId,comments=[]){
 
 async function renderRecords(type){
   currentRecordTab=type;
+  localStorage.setItem('malhaebaRecordTab',type);
   tabMine.classList.toggle('on',type==='mine');
   tabSaved.classList.toggle('on',type==='saved');
   if(!backendReady){recordList.innerHTML='<p class="sub">'+esc(tr('serverConnecting'))+'</p>';return}
@@ -1809,6 +1813,10 @@ sb.auth.onAuthStateChange((event,session)=>{
       currentUser=session.user;
       backendReady=true;
       updateAccountUI();
+      if(document.getElementById('records')?.classList.contains('active')) renderRecords(currentRecordTab);
+      if(document.getElementById('feed')?.classList.contains('active')) renderFeed();
+      if(document.getElementById('records')?.classList.contains('active')) renderRecords(currentRecordTab);
+      if(document.getElementById('feed')?.classList.contains('active')) renderFeed();
       if(isEmailAccountLinked(currentUser)){
         localStorage.removeItem('malhaebaAwaitingEmailLink');
         if(location.search.includes('account_login=1')) setTimeout(()=>show('accountSuccess'),0);
@@ -1830,12 +1838,17 @@ sb.auth.onAuthStateChange((event,session)=>{
   }
 });
 applyLanguage();
+bodyInput.value=localStorage.getItem('malhaebaWriteDraft')||'';
+bodyInput.addEventListener('input',()=>localStorage.setItem('malhaebaWriteDraft',bodyInput.value));
 setTimeout(()=>{if(!initialAuthHandled)ensureSession()},1200);
 window.addEventListener('focus',()=>refreshAccountFromServer(true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshAccountFromServer(true)});
 if(localStorage.getItem('malhaebaSeenIntro')){
-  show('home');
+  const savedScreen=localStorage.getItem('malhaebaLastScreen');
+  const restoreScreen=RESTORABLE_SCREENS.has(savedScreen) && savedScreen!=='intro' ? savedScreen : 'home';
+  show(restoreScreen);
 }else{
+  localStorage.setItem('malhaebaLastScreen','intro');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('intro').classList.add('active');
   document.querySelector('nav').style.display='none';
