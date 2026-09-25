@@ -67,6 +67,11 @@ nav button{border:0;background:none;padding:7px 2px;color:var(--muted);font-size
 .danger{width:100%;border:0;background:none;color:#a14d48;font-size:14px;font-weight:700;padding:14px;margin-top:8px}
 .responseBox{margin-top:24px;padding:16px;border-radius:16px;background:#faf7f1}.responseBox h3{margin:0 0 8px;font-size:16px}.responseBox .sub{margin:0}
 .accountBanner{display:none;margin:14px 0 16px;padding:16px;border-radius:16px;background:#eef4ef;border:1px solid #dce8df}.accountBanner.show{display:block}.accountBanner b{display:block;font-size:15px;margin-bottom:5px}.accountBanner .sub{margin:0 0 10px}.accountBanner button{margin-top:0}.accountStatus{font-size:13px;color:var(--green);font-weight:700;margin-top:10px}
+.otpBox{margin-top:14px;padding-top:14px;border-top:1px solid #eceff2}
+.otpTitle{font-size:14px;font-weight:700;margin-bottom:10px;color:#353b44}
+.otpBox input{letter-spacing:.28em;text-align:center;font-size:20px;font-weight:700}
+.otpBox button{margin-top:8px}
+
 @media(max-width:360px){
   .logo{font-size:20px}.langSwitch button{padding:6px 7px}
   header{padding-left:15px;padding-right:15px}.screen{padding-left:15px;padding-right:15px}
@@ -740,6 +745,12 @@ header{
     <input id="accountEmail" type="text" inputmode="email" autocomplete="email" placeholder="이메일 주소">
     <button id="accountLoginBtn" class="primary" onclick="signInExistingEmail()">로그인</button>
     <button id="accountConnectBtn" class="secondary" onclick="linkEmailAccount()">이메일로 연결하기</button>
+    <div id="accountOtpBox" class="otpBox" hidden>
+      <div id="accountOtpTitle" class="otpTitle">이메일의 6자리 코드를 입력하세요</div>
+      <input id="accountOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="6자리 코드">
+      <button id="accountOtpVerifyBtn" class="primary" onclick="verifyAccountOtp()">코드 확인</button>
+      <button id="accountOtpResendBtn" class="secondary" onclick="resendAccountOtp()">코드 다시 받기</button>
+    </div>
     <div id="accountLinkStatus" class="accountStatus"></div>
   </div>
   <p class="sub">처음 연결하는 경우 인증 메일을 확인해주세요. 이미 연결한 이메일이라면 ‘이메일로 로그인’을 사용하면 다른 기기에서도 같은 기록을 불러올 수 있어요.</p>
@@ -856,7 +867,7 @@ const I18N={
     matchingTitle:'비슷한 이야기를 찾고 있어요.',matchingSub:'오늘 진짜 답답했겠다.<br>비슷한 일을 겪은 사람들의 이야기를 모아볼게요.',
     feedTitle:'너와 비슷한 이야기',records:'내 기록',mine:'내가 쓴 이야기',saved:'담아둔 이야기',
     accountBannerTitle:'다른 기기에서도 기록을 보고 싶다면',accountBannerSub:'지금 기록은 이 브라우저의 익명 계정에 연결되어 있어요. 이메일을 연결하면 다른 기기에서도 다시 찾을 수 있어요.',connect:'계정 연결하기',
-    accountTitle:'계정 연결하기',accountSub:'이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.',emailPlaceholder:'이메일 주소',loginExisting:'로그인',connectEmail:'이메일로 연결하기',accountFoot:'처음 연결하는 경우 인증 메일을 확인해주세요. 이미 연결한 이메일이라면 로그인하면 다른 기기에서도 같은 기록을 불러올 수 있어요.',
+    accountTitle:'계정 연결하기',accountSub:'이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.',emailPlaceholder:'이메일 주소',loginExisting:'로그인',connectEmail:'이메일로 연결하기',otpTitle:'이메일의 6자리 코드를 입력하세요',otpVerify:'코드 확인',otpResend:'코드 다시 받기',accountFoot:'메일 링크를 열거나 6자리 코드를 입력해 인증할 수 있어요. 다른 기기에서 메일을 확인했다면 코드를 이 화면에 입력하세요.',
     accountSuccessTitle:'이메일 연결이 완료됐어요',accountSuccessSub:'이제 다른 기기에서도 내 이야기를 이어볼 수 있어요.<br>지금까지 남긴 기록은 그대로 유지돼요.',accountSuccessRecords:'내 기록 보기',accountSuccessFeed:'비슷한 이야기 둘러보기',
     safetyTitle:'안전하게 이용하기',safetyIntro:'말해바는 익명으로 마음을 털어놓는 공간이에요. 다른 사람의 안전과 사생활을 해치는 내용은 허용하지 않아요.',safetyRulesTitle:'올리면 안 되는 내용',safetyRules:['특정인을 위협하거나 괴롭히는 내용','혐오·차별·성적 착취성 내용','이름, 연락처, 주소 등 타인의 개인정보','불법행위 조장, 반복 스팸이나 광고'],safetyProblemTitle:'문제가 있는 글을 봤다면',safetyProblemText:'이야기 상세 화면의 ‘신고’ 또는 ‘작성자 차단’을 이용해주세요. 문의가 필요하면 Instagram @malhaeba.today 로 알려주세요.',
     menu:'전체 메뉴',menuNew:'새 글 남기기',menuNewSub:'말하거나 써서 지금 마음 털어놓기',menuMine:'내가 쓴 이야기',menuMineSub:'내가 털어놓은 이야기 모아보기',menuSaved:'담아둔 이야기',menuSavedSub:'다시 보고 싶은 다른 사람들의 이야기',browse:'둘러보기',browseSub:'나와 비슷한 이야기 다시 보기',guide:'말해바 안내',guideSub:'말해바 소개와 공개·비공개, 댓글·공감 이용 방법',accountMenu:'계정 연결',accountMenuSub:'다른 기기에서도 내 기록 이어보기',settings:'설정',settingsSub:'알림, 계정, 공개 범위 관리',help:'도움말·문의',helpSub:'신고, 차단, 문의하기',
@@ -884,7 +895,7 @@ const I18N={
     matchingTitle:'Finding stories like yours…',matchingSub:'Looking for people who’ve been through something similar.',
     feedTitle:'Stories similar to yours',records:'My records',mine:'My stories',saved:'Saved stories',
     accountBannerTitle:'Want to keep your stories across devices?',accountBannerSub:'Your stories are linked to this anonymous browser session. Connect an email to access them elsewhere.',connect:'Connect account',
-    accountTitle:'Connect account',accountSub:'Connect an email to keep the same records on another device.',emailPlaceholder:'Email address',loginExisting:'Log in',connectEmail:'Connect this email',accountFoot:'If this is your first time, verify the email to connect it. If it is already connected, log in to load the same records on this device.',
+    accountTitle:'Connect account',accountSub:'Connect an email to keep the same records on another device.',emailPlaceholder:'Email address',loginExisting:'Log in',connectEmail:'Connect this email',otpTitle:'Enter the 6-digit code from your email',otpVerify:'Verify code',otpResend:'Send code again',accountFoot:'You can verify with the email link or the 6-digit code. If you opened the email on another device, enter the code here.',
     accountSuccessTitle:'Email connected',accountSuccessSub:'You can now continue with the same stories on another device.<br>Your existing records stay with this account.',accountSuccessRecords:'View my records',accountSuccessFeed:'Browse similar stories',
     safetyTitle:'Use Malhaeba safely',safetyIntro:'Malhaeba is an anonymous space to let things out. Content that harms someone’s safety or privacy is not allowed.',safetyRulesTitle:'Do not post',safetyRules:['Threats or harassment toward a specific person','Hateful, discriminatory, or sexually exploitative content','Another person’s private information such as a name, phone number, or address','Content promoting illegal activity, repeated spam, or advertising'],safetyProblemTitle:'If you see a problem',safetyProblemText:'Use “Report” or “Block author” on the story screen. For help, contact us on Instagram @malhaeba.today.',
     menu:'Menu',menuNew:'Share a story',menuNewSub:'Talk or write about what happened',menuMine:'My stories',menuMineSub:'See the stories you shared',menuSaved:'Saved stories',menuSavedSub:'Stories you want to come back to',browse:'Browse',browseSub:'See stories similar to yours',guide:'About Malhaeba',guideSub:'How anonymous sharing, reactions and comments work',accountMenu:'Connect account',accountMenuSub:'Keep your records across devices',settings:'Settings',settingsSub:'Notifications, account and visibility',help:'Help & contact',helpSub:'Report, block or contact us',
@@ -942,6 +953,8 @@ let voiceWarningTimer=null;
 let voiceWarned=false;
 let voiceHintSwapTimer=null;
 let accountRequestInFlight=false;
+let accountOtpMode=null;
+let accountOtpEmail='';
 let storySaveInFlight=false;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
@@ -1196,6 +1209,78 @@ function confirmEmailCorrection(email){
   }
   return email;
 }
+function showAccountOtp(mode,email){
+  accountOtpMode=mode;
+  accountOtpEmail=String(email||'').trim().toLowerCase();
+  accountOtpBox.hidden=false;
+  accountOtp.value='';
+  accountOtpTitle.textContent=tr('otpTitle');
+  accountOtpVerifyBtn.textContent=tr('otpVerify');
+  accountOtpResendBtn.textContent=tr('otpResend');
+  setTimeout(()=>accountOtp.focus(),80);
+}
+function hideAccountOtp(){
+  accountOtpMode=null;
+  accountOtpEmail='';
+  accountOtpBox.hidden=true;
+  accountOtp.value='';
+}
+async function verifyAccountOtp(){
+  if(accountRequestInFlight)return;
+  const token=accountOtp.value.replace(/\D/g,'').slice(0,6);
+  if(!accountOtpEmail || token.length!==6){
+    accountLinkStatus.textContent=currentLang==='en'?'Enter the 6-digit code.':'6자리 코드를 입력해주세요.';
+    return;
+  }
+  accountRequestInFlight=true;
+  accountOtpVerifyBtn.disabled=true;
+  try{
+    const type=accountOtpMode==='link'?'email_change':'email';
+    const {data,error}=await sb.auth.verifyOtp({email:accountOtpEmail,token,type});
+    if(error){
+      console.error(error);
+      accountLinkStatus.textContent=currentLang==='en'
+        ?'That code is invalid or expired. Check the newest email and try again.'
+        :'코드가 맞지 않거나 만료됐어요. 가장 최근 메일의 코드를 확인해주세요.';
+      return;
+    }
+    if(data?.user) currentUser=data.user;
+    if(accountOtpMode==='link'){
+      try{const {data:refreshed}=await sb.auth.refreshSession();if(refreshed?.user)currentUser=refreshed.user}catch(e){}
+    }
+    localStorage.removeItem('malhaebaAwaitingEmailLink');
+    hideAccountOtp();
+    updateAccountUI();
+    show('accountSuccess');
+  }finally{
+    accountRequestInFlight=false;
+    accountOtpVerifyBtn.disabled=false;
+  }
+}
+async function resendAccountOtp(){
+  if(accountRequestInFlight || !accountOtpEmail)return;
+  accountRequestInFlight=true;
+  accountOtpResendBtn.disabled=true;
+  try{
+    const response=accountOtpMode==='link'
+      ? await sb.auth.resend({type:'email_change',email:accountOtpEmail})
+      : await sb.auth.signInWithOtp({email:accountOtpEmail,options:{shouldCreateUser:false}});
+    const {error}=response;
+    if(error){
+      console.error(error);
+      accountLinkStatus.textContent=(error.code==='over_email_send_rate_limit'||error.status===429)
+        ? (currentLang==='en'?'Email sending is temporarily rate-limited. Please wait and try again.':'이메일 발송 한도에 걸렸어요. 잠시 후 다시 시도해주세요.')
+        : (currentLang==='en'?'Couldn’t resend the code. Please try again later.':'코드를 다시 보내지 못했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+    accountLinkStatus.textContent=currentLang==='en'
+      ?'A new email was sent. Use the newest 6-digit code.'
+      :'새 메일을 보냈어요. 가장 최근 메일의 6자리 코드를 사용해주세요.';
+  }finally{
+    accountRequestInFlight=false;
+    accountOtpResendBtn.disabled=false;
+  }
+}
 async function linkEmailAccount(){
   if(accountRequestInFlight)return;
   let email=accountEmail.value.trim();
@@ -1236,9 +1321,10 @@ async function linkEmailAccount(){
       }
       return;
     }
+    showAccountOtp('link',email);
     accountLinkStatus.textContent=currentLang==='en'
-      ?'Verification email sent. Open only the newest email.'
-      :'인증 메일을 보냈어요. 가장 최근에 받은 메일만 열어주세요.';
+      ?'Verification email sent. Open the newest email or enter its 6-digit code here.'
+      :'인증 메일을 보냈어요. 가장 최근 메일의 링크를 열거나 6자리 코드를 입력해주세요.';
   }finally{
     accountRequestInFlight=false;
     if(connectBtn) connectBtn.disabled=false;
@@ -1271,6 +1357,7 @@ async function signInExistingEmail(){
         const {error:resendError}=await sb.auth.resend({type:'email_change',email});
         if(!resendError){
           localStorage.setItem('malhaebaAwaitingEmailLink','1');
+          showAccountOtp('link',email);
           accountLinkStatus.textContent=currentLang==='en'
             ?'This account is still waiting for email verification. I resent the verification email—open the newest one.'
             :'이 계정은 아직 이메일 인증 대기 중이에요. 인증 메일을 다시 보냈으니 가장 최근 메일을 열어주세요.';
@@ -1295,9 +1382,10 @@ async function signInExistingEmail(){
       }
       return;
     }
+    showAccountOtp('login',email);
     accountLinkStatus.textContent=currentLang==='en'
-      ?'Sign-in email sent. After signing in once on this browser, you’ll stay signed in here.'
-      :'로그인 메일을 보냈어요. 이 브라우저에서 한 번 로그인하면 이후에는 로그인 상태가 유지돼요.';
+      ?'Sign-in email sent. Open the link or enter the 6-digit code here.'
+      :'로그인 메일을 보냈어요. 링크를 열거나 6자리 코드를 이 화면에 입력해주세요.';
   }finally{
     accountRequestInFlight=false;
     if(loginBtn) loginBtn.disabled=false;
@@ -1333,7 +1421,7 @@ function applyLanguage(){
   q('matching').querySelector('h2').textContent=tr('matchingTitle'); q('matching').querySelector('.sub').innerHTML=tr('matchingSub');
   feedTitle.textContent=tr('feedTitle'); q('records').querySelector('h2').textContent=tr('records'); tabMine.textContent=tr('mine'); tabSaved.textContent=tr('saved');
   q('accountBanner').querySelector('b').textContent=tr('accountBannerTitle'); q('accountBanner').querySelector('.sub').textContent=tr('accountBannerSub'); q('accountBanner').querySelector('button').textContent=tr('connect');
-  q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
+  q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail'); q('accountOtpTitle').textContent=tr('otpTitle'); q('accountOtpVerifyBtn').textContent=tr('otpVerify'); q('accountOtpResendBtn').textContent=tr('otpResend'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
   q('accountSuccessTitle').textContent=tr('accountSuccessTitle'); q('accountSuccessSub').innerHTML=tr('accountSuccessSub'); q('accountSuccessRecords').textContent=tr('accountSuccessRecords'); q('accountSuccessFeed').textContent=tr('accountSuccessFeed');
   q('safetyTitle').textContent=tr('safetyTitle'); q('safetyIntro').textContent=tr('safetyIntro'); q('safetyRulesTitle').textContent=tr('safetyRulesTitle'); q('safetyRules').innerHTML=tr('safetyRules').map(x=>'<li>'+esc(x)+'</li>').join(''); q('safetyProblemTitle').textContent=tr('safetyProblemTitle'); q('safetyProblemText').textContent=tr('safetyProblemText');
   q('menuOverlay').querySelector('.menuHead b').textContent=tr('menu');
@@ -2030,6 +2118,7 @@ const savedEditingId=localStorage.getItem('malhaebaEditingRecordId');
 if(savedEditingId) editingRecordId=savedEditingId;
 bodyInput.value=savedComposeText;
 bodyInput.addEventListener('input',()=>localStorage.setItem('malhaebaWriteDraft',bodyInput.value));
+accountOtp.addEventListener('input',()=>{accountOtp.value=accountOtp.value.replace(/\D/g,'').slice(0,6)});
 if(savedComposeText){
   draft.body=savedComposeText;
   draft.title=generateTitle(savedComposeText);
