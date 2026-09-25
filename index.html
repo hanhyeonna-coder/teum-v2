@@ -737,9 +737,10 @@ header{
   <div class="card">
     <input id="accountEmail" type="text" inputmode="email" autocomplete="email" placeholder="이메일 주소">
     <button class="primary" onclick="linkEmailAccount()">이메일 연결하기</button>
+    <button class="secondary" onclick="signInExistingEmail()">이미 연결했어요 · 이메일로 로그인</button>
     <div id="accountLinkStatus" class="accountStatus"></div>
   </div>
-  <p class="sub">연결 메일을 확인한 뒤 인증을 완료하면 이 익명 계정이 그대로 유지돼요.</p>
+  <p class="sub">처음 연결하는 경우 인증 메일을 확인해주세요. 이미 연결한 이메일이라면 ‘이메일로 로그인’을 사용하면 다른 기기에서도 같은 기록을 불러올 수 있어요.</p>
 </section>
 
 <section id="accountSuccess" class="screen">
@@ -1052,7 +1053,7 @@ function isEmailAccountLinked(user=currentUser){
   if(!user)return false;
   const hasConfirmedEmail=!!(user.email && (user.email_confirmed_at || user.confirmed_at));
   const hasEmailIdentity=Array.isArray(user.identities) && user.identities.some(i=>i?.provider==='email');
-  return !user.is_anonymous || hasConfirmedEmail || hasEmailIdentity;
+  return user.is_anonymous===false || hasConfirmedEmail || hasEmailIdentity;
 }
 function updateAccountUI(){
   const linked=isEmailAccountLinked(currentUser);
@@ -1073,9 +1074,36 @@ function updateAccountUI(){
           : '계정 연결<small>다른 기기에서도 내 기록 이어보기</small>');
   }
 }
+async function refreshAccountFromServer(showSuccess=false){
+  if(!backendReady)return false;
+  try{
+    const {data:{user},error}=await sb.auth.getUser();
+    if(error||!user)return false;
+    const wasLinked=isEmailAccountLinked(currentUser);
+    currentUser=user;
+    const linked=isEmailAccountLinked(user);
+    if(linked){
+      try{
+        const {data}=await sb.auth.refreshSession();
+        if(data?.user) currentUser=data.user;
+      }catch(e){}
+      localStorage.removeItem('malhaebaAwaitingEmailLink');
+    }
+    updateAccountUI();
+    if(showSuccess && linked && !wasLinked) show('accountSuccess');
+    return linked;
+  }catch(e){
+    console.error('account refresh:',e);
+    return false;
+  }
+}
 async function linkEmailAccount(){
   const email=accountEmail.value.trim();
   accountLinkStatus.textContent='';
+  if(await refreshAccountFromServer(false)){
+    show('accountSuccess');
+    return;
+  }
   if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';
     return;
@@ -1085,10 +1113,37 @@ async function linkEmailAccount(){
   if(error){
     console.error(error);
     localStorage.removeItem('malhaebaAwaitingEmailLink');
-    accountLinkStatus.textContent=currentLang==='en'?'Couldn’t start account linking. Please try again.':'연결을 시작하지 못했어요. 잠시 후 다시 시도해주세요.';
+    accountLinkStatus.textContent=currentLang==='en'
+      ?'If this email is already connected, use “Email sign in” below.'
+      :'이미 연결한 이메일이라면 아래 ‘이메일로 로그인’을 이용해주세요.';
     return;
   }
-  accountLinkStatus.textContent=currentLang==='en'?'Verification email sent. Open it to finish connecting your account.':'인증 메일을 보냈어요. 메일에서 연결을 완료해주세요.';
+  accountLinkStatus.textContent=currentLang==='en'
+    ?'Verification email sent. After confirming it, return to this device.'
+    :'인증 메일을 보냈어요. 메일에서 확인한 뒤 이 기기로 돌아오면 연결 상태를 자동으로 확인해요.';
+}
+async function signInExistingEmail(){
+  const email=accountEmail.value.trim();
+  accountLinkStatus.textContent='';
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';
+    return;
+  }
+  const {error}=await sb.auth.signInWithOtp({
+    email,
+    options:{
+      shouldCreateUser:false,
+      emailRedirectTo:location.origin+'/?account_login=1'
+    }
+  });
+  if(error){
+    console.error(error);
+    accountLinkStatus.textContent=currentLang==='en'?'Couldn’t send the sign-in email. Please try again.':'로그인 메일을 보내지 못했어요. 잠시 후 다시 시도해주세요.';
+    return;
+  }
+  accountLinkStatus.textContent=currentLang==='en'
+    ?'Sign-in email sent. Open the link on the device you want to use.'
+    :'로그인 메일을 보냈어요. 사용할 기기에서 메일의 링크를 열어주세요.';
 }
 
 function setLanguage(lang){
@@ -1145,7 +1200,8 @@ function showIntroAgain(){
   dot1.classList.add('on'); dot2.classList.remove('on'); introBtn.textContent=tr('next');
   show('intro');
 }
-function openMenu(){
+async function openMenu(){
+  await refreshAccountFromServer(false);
   document.body.classList.add('menuOpen');
   document.getElementById('menuOverlay').classList.add('open');
 }
@@ -1189,7 +1245,7 @@ function show(id){
   if(activeNav)activeNav.classList.add('active');
   if(id==='home')resetCompose();
   if(id==='feed')renderFeed();
-  if(id==='records'){updateAccountUI();renderRecords(currentRecordTab)}
+  if(id==='records'){refreshAccountFromServer(false).finally(()=>{updateAccountUI();renderRecords(currentRecordTab)})}
   window.scrollTo(0,0);
 }
 
@@ -1745,17 +1801,38 @@ async function deleteOwnRecord(id){
   show('records');
 }
 
-sb.auth.onAuthStateChange((_event,session)=>{
+let initialAuthHandled=false;
+sb.auth.onAuthStateChange((event,session)=>{
+  if(event==='INITIAL_SESSION'){
+    initialAuthHandled=true;
+    if(session?.user){
+      currentUser=session.user;
+      backendReady=true;
+      updateAccountUI();
+      if(isEmailAccountLinked(currentUser)){
+        localStorage.removeItem('malhaebaAwaitingEmailLink');
+        if(location.search.includes('account_login=1')) setTimeout(()=>show('accountSuccess'),0);
+      }
+    }else{
+      ensureSession();
+    }
+    return;
+  }
   if(session?.user){
-    currentUser=session.user;backendReady=true;updateAccountUI();
-    if(localStorage.getItem('malhaebaAwaitingEmailLink')==='1' && !currentUser.is_anonymous){
+    currentUser=session.user;
+    backendReady=true;
+    updateAccountUI();
+    if((event==='USER_UPDATED'||event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && isEmailAccountLinked(currentUser)){
+      const awaiting=localStorage.getItem('malhaebaAwaitingEmailLink')==='1';
       localStorage.removeItem('malhaebaAwaitingEmailLink');
-      show('accountSuccess');
+      if(awaiting || location.search.includes('account_login=1')) setTimeout(()=>show('accountSuccess'),0);
     }
   }
 });
 applyLanguage();
-ensureSession().then(()=>{});
+setTimeout(()=>{if(!initialAuthHandled)ensureSession()},1200);
+window.addEventListener('focus',()=>refreshAccountFromServer(true));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshAccountFromServer(true)});
 if(localStorage.getItem('malhaebaSeenIntro')){
   show('home');
 }else{
