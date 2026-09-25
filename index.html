@@ -567,6 +567,40 @@ header{
   }
 }
 
+
+/* Voice spacing + fixed menu header */
+@media(max-width:430px){
+  .voiceHint{
+    margin-top:0!important;
+    margin-bottom:10px!important;
+    transform:translateY(-6px);
+  }
+  .voiceHint.changing{
+    transform:translateY(-3px);
+  }
+  #voiceToggleBtn{
+    transform:translateY(-6px);
+    margin-bottom:24px!important;
+  }
+}
+.menuPanel{
+  padding-top:0!important;
+}
+.menuHead{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  margin:0 -20px 14px!important;
+  padding:calc(18px + env(safe-area-inset-top)) 20px 14px!important;
+  background:rgba(255,255,255,.98)!important;
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid #eef0f2;
+}
+.menuClose{
+  color:var(--ink)!important;
+}
+
 </style>
 </head>
 <body>
