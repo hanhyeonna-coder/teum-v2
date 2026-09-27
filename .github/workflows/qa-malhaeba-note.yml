@@ -12,38 +12,65 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Structural checks
+      - name: Structural and regression checks
         shell: python
         run: |
           from pathlib import Path
           from html.parser import HTMLParser
+          from collections import Counter
           import re
           s=Path('index.html').read_text()
 
-          class IDs(HTMLParser):
+          class AuditParser(HTMLParser):
               def __init__(self):
-                  super().__init__(); self.ids=[]
+                  super().__init__(); self.ids=[]; self.onclick=[]
               def handle_starttag(self,tag,attrs):
                   for k,v in attrs:
                       if k=='id' and v: self.ids.append(v)
-          parser=IDs(); parser.feed(s)
-          dup=sorted({x for x in parser.ids if parser.ids.count(x)>1})
+                      if k=='onclick' and v: self.onclick.append(v)
+          parser=AuditParser(); parser.feed(s)
+          id_counts=Counter(parser.ids)
+          dup=sorted(k for k,v in id_counts.items() if v>1)
           assert not dup, f'Duplicate ids: {dup}'
 
           scripts=re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S)
           inline=[x for x in scripts if x.strip()]
           if not inline: raise SystemExit('No inline script found')
-          Path('/tmp/app.js').write_text(inline[-1])
+          js=inline[-1]
+          Path('/tmp/app.js').write_text(js)
 
+          # Every static inline handler must resolve to a function in the app script.
+          handlers=set()
+          for code in parser.onclick:
+              m=re.match(r'\s*([A-Za-z_$][\w$]*)\s*\(',code)
+              if m: handlers.add(m.group(1))
+          missing_handlers=sorted(h for h in handlers if not re.search(rf'function\s+{re.escape(h)}\s*\(',js))
+          assert not missing_handlers, f'Missing onclick handlers: {missing_handlers}'
+
+          # Every literal show('screen') target must exist as an HTML id.
+          show_targets=set(re.findall(r"show\('([A-Za-z0-9_-]+)'\)",js))
+          missing_screens=sorted(x for x in show_targets if x not in id_counts)
+          assert not missing_screens, f'Missing show() screen ids: {missing_screens}'
+
+          # Duplicate named function declarations are usually accidental in this single-file app.
+          fn_counts=Counter(re.findall(r'\bfunction\s+([A-Za-z_$][\w$]*)\s*\(',js))
+          dup_functions=sorted(k for k,v in fn_counts.items() if v>1)
+          assert not dup_functions, f'Duplicate function declarations: {dup_functions}'
+
+          # Regression guards for bugs already found during mobile QA.
           assert 'const MALHAEBA_NOTES={' in s
           assert s.count('${malhaebaNoteHtml(x)}')==1
           assert '\\nconst MALHAEBA_NOTES=' not in s
           assert '/* Malhaeba note on my story */' in s
           assert "filter(s=>s && (s.language||'ko')===currentLang)" in s, 'Saved stories must allow explicitly bookmarked seed stories'
+          assert "filter(s=>s && !s.is_seed && (s.language||'ko')===currentLang)" not in s
           assert 'function handleDetailSwipeEnd' in s, 'Detail swipe-back handler missing'
           assert "replace(/[.!?。！？]\\s*$/, '!')" in s, 'Malhaeba note impact ending missing'
           assert "eq('is_seed',false)" in s, 'Own-story seed exclusion missing'
           assert 'if(storySaveInFlight)return' in s, 'Duplicate story-save guard missing'
-          print(f'HTML structural QA passed; {len(parser.ids)} ids checked')
+          assert "clearAuthQueryFlag" in s, 'Auth callback cleanup missing'
+          assert "malhaebaEditingRecordId" in s, 'Edit-state recovery missing'
+          assert 'TODO' not in s and 'FIXME' not in s
+          print(f'QA passed: {len(parser.ids)} ids, {len(handlers)} inline handlers, {len(fn_counts)} functions')
       - name: JavaScript syntax check
         run: node --check /tmp/app.js
