@@ -1750,6 +1750,11 @@ async function saveAndMatch(privacy){
 async function renderFeed(){
   feedTitle.textContent=tr('feedTitle');
   let freshText='', freshTags=[], mineCount=0;
+  let blockedUserIds=new Set();
+  if(backendReady){
+    const {data:blockedRows}=await sb.from('blocks').select('blocked_user_id').eq('blocker_id',currentUser.id);
+    blockedUserIds=new Set((blockedRows||[]).map(x=>x.blocked_user_id));
+  }
 
   if(backendReady){
     const {data:mine}=await sb.from('posts')
@@ -1776,7 +1781,7 @@ async function renderFeed(){
       .eq('visibility','public').eq('status','active').eq('language',currentLang)
       .order('created_at',{ascending:false}).limit(80);
     if(!error){
-      const candidates=(data||[]).filter(s=>s.is_seed || s.user_id!==currentUser.id);
+      const candidates=(data||[]).filter(s=>(s.is_seed || s.user_id!==currentUser.id) && (s.is_seed || !blockedUserIds.has(s.user_id)));
       dbStories=candidates.slice(0,60).map(s=>{
         if(freshText){
           const score=similarityScore(freshText,freshTags,s);
@@ -1868,6 +1873,7 @@ function animateActionButton(id){
   setTimeout(()=>btn.classList.remove('iconPop'),460);
 }
 async function heart(){
+  if(!currentStory?.isDb){showToast(tr('sampleReact'));return}
   const btn=document.getElementById('heartBtn');
   const label=document.getElementById('heartLabel');
   const next=!currentStoryReacted;
@@ -1895,6 +1901,7 @@ async function heart(){
   }
 }
 async function bookmark(id){
+  if(!currentStory?.isDb){showToast(tr('sampleSave'));return}
   const btn=document.getElementById('bookmarkBtn');
   const next=!currentStoryBookmarked;
   currentStoryBookmarked=next;
