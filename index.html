@@ -1851,7 +1851,7 @@ async function renderDetail(){
       <button id="heartBtn" class="iconBtn ${currentStoryReacted?'selected':''}" onclick="heart()"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></svg><span id="heartLabel">${tr('same')}${heartCount>0?' '+heartCount:''}</span></button>
       <button id="bookmarkBtn" class="iconBtn ${currentStoryBookmarked?'selected':''}" onclick="bookmark('${s.id}')"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12a1.5 1.5 0 0 1 1.5 1.5v14l-7.5-4-7.5 4V6A1.5 1.5 0 0 1 6 4.5Z"/></svg><span>${tr('bookmark')}</span></button>
     </div>
-    ${s.isDb && s.user_id && s.user_id!==currentUser?.id?`<div class="safetyActions"><button onclick="openReport()">${currentLang==='en'?'Report':'신고'}</button><button onclick="blockStoryAuthor()">${currentLang==='en'?'Block author':'작성자 차단'}</button></div>`:''}
+    ${s.isDb && !s.is_seed && s.user_id && s.user_id!==currentUser?.id?`<div class="safetyActions"><button onclick="openReport()">${currentLang==='en'?'Report':'신고'}</button><button onclick="blockStoryAuthor()">${currentLang==='en'?'Block author':'작성자 차단'}</button></div>`:''}
     <h3 style="margin-top:28px">${tr('comments')}</h3>
     <div class="quick">
       <button onclick="quick(currentLang==='en'?'I’ve been there too.':'나도 비슷했어요')">${currentLang==='en'?'I’ve been there too.':'나도 비슷했어요'}</button>
