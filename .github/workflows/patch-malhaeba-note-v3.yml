@@ -14,75 +14,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply release fixes
+      - name: Finish audited interaction cleanup
         shell: python
         run: |
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
-
-          old="const arr=(data||[]).map(x=>x.posts).filter(s=>s && !s.is_seed && (s.language||'ko')===currentLang);"
-          new="const arr=(data||[]).map(x=>x.posts).filter(s=>s && (s.language||'ko')===currentLang);"
+          old="s.isDb && s.user_id && s.user_id!==currentUser?.id"
+          new="s.isDb && !s.is_seed && s.user_id && s.user_id!==currentUser?.id"
           if old in s: s=s.replace(old,new,1)
-          elif new not in s: raise SystemExit('Saved-story filter anchor not found')
-
-          old_note="function malhaebaNoteFor(post){\n  const lang=currentLang==='en'?'en':'ko';\n  const category=malhaebaNoteCategory(post);\n  const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;\n  return list[stableNoteIndex(post.id,list.length)];\n}"
-          new_note="function malhaebaNoteFor(post){\n  const lang=currentLang==='en'?'en':'ko';\n  const category=malhaebaNoteCategory(post);\n  const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;\n  const raw=list[stableNoteIndex(post.id,list.length)];\n  return raw.replace(/[.!?。！？]\\s*$/, '!');\n}"
-          if old_note in s: s=s.replace(old_note,new_note,1)
-          elif "replace(/[.!?。！？]\\s*$/, '!')" not in s: raise SystemExit('Malhaeba note anchor not found')
-
-          swipe=(
-              "\n\nlet detailSwipeStartX=null;\nlet detailSwipeStartY=null;\nlet detailSwipeScreen='';\n"
-              "function handleDetailSwipeStart(e){\n  if(e.touches.length!==1)return;\n  const active=document.querySelector('.screen.active');\n  if(!active || !['detail','recordDetail'].includes(active.id))return;\n  if(e.target.closest('input,textarea,button,a'))return;\n  detailSwipeStartX=e.touches[0].clientX;\n  detailSwipeStartY=e.touches[0].clientY;\n  detailSwipeScreen=active.id;\n}\n"
-              "function handleDetailSwipeEnd(e){\n  if(detailSwipeStartX===null || !detailSwipeScreen)return;\n  const touch=e.changedTouches&&e.changedTouches[0];\n  if(!touch){detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';return}\n  const dx=touch.clientX-detailSwipeStartX;\n  const dy=touch.clientY-detailSwipeStartY;\n  const startedAtLeftEdge=detailSwipeStartX<=38;\n  const horizontal=Math.abs(dx)>=72 && Math.abs(dx)>Math.abs(dy)*1.25;\n  const requestedLeftSwipe=dx<=-72;\n  const iosEdgeBack=dx>=72 && startedAtLeftEdge;\n  const screen=detailSwipeScreen;\n  detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';\n  if(!horizontal || (!requestedLeftSwipe && !iosEdgeBack))return;\n  if(screen==='detail') backFromStory();\n  else if(screen==='recordDetail') show('records');\n}\n"
-              "document.addEventListener('touchstart',handleDetailSwipeStart,{passive:true});\ndocument.addEventListener('touchend',handleDetailSwipeEnd,{passive:true});\n"
-          )
-          anchor="let initialAuthHandled=false;"
-          if 'function handleDetailSwipeEnd' not in s:
-              if anchor not in s: raise SystemExit('Swipe anchor not found')
-              s=s.replace(anchor,swipe+'\n'+anchor,1)
-
-          # Sample fallback cards must never look as if a reaction/bookmark was persisted.
-          heart_old="async function heart(){\n  const btn=document.getElementById('heartBtn');"
-          heart_new="async function heart(){\n  if(!currentStory?.isDb){showToast(tr('sampleReact'));return}\n  const btn=document.getElementById('heartBtn');"
-          if heart_old in s: s=s.replace(heart_old,heart_new,1)
-          bookmark_old="async function bookmark(id){\n  const btn=document.getElementById('bookmarkBtn');"
-          bookmark_new="async function bookmark(id){\n  if(!currentStory?.isDb){showToast(tr('sampleSave'));return}\n  const btn=document.getElementById('bookmarkBtn');"
-          if bookmark_old in s: s=s.replace(bookmark_old,bookmark_new,1)
-
-          # Make author blocking effective for real user posts in Browse.
-          feed_anchor="async function renderFeed(){\n  feedTitle.textContent=tr('feedTitle');\n  let freshText='', freshTags=[], mineCount=0;"
-          feed_repl="async function renderFeed(){\n  feedTitle.textContent=tr('feedTitle');\n  let freshText='', freshTags=[], mineCount=0;\n  let blockedUserIds=new Set();\n  if(backendReady){\n    const {data:blockedRows}=await sb.from('blocks').select('blocked_user_id').eq('blocker_id',currentUser.id);\n    blockedUserIds=new Set((blockedRows||[]).map(x=>x.blocked_user_id));\n  }"
-          if feed_anchor in s: s=s.replace(feed_anchor,feed_repl,1)
-          candidate_old="const candidates=(data||[]).filter(s=>s.is_seed || s.user_id!==currentUser.id);"
-          candidate_new="const candidates=(data||[]).filter(s=>(s.is_seed || s.user_id!==currentUser.id) && (s.is_seed || !blockedUserIds.has(s.user_id)));"
-          if candidate_old in s: s=s.replace(candidate_old,candidate_new,1)
-
-          # Seed/demo stories share a synthetic author, so do not expose author-block/report controls on them.
-          safety_old="${s.isDb && s.user_id && s.user_id!==currentUser?.id?`<div class=\\\"safetyActions\\\">"
-          safety_new="${s.isDb && !s.is_seed && s.user_id && s.user_id!==currentUser?.id?`<div class=\\\"safetyActions\\\">"
-          if safety_old in s: s=s.replace(safety_old,safety_new,1)
-
+          elif new not in s: raise SystemExit('Seed safety-control anchor not found')
           p.write_text(s)
-
-      - name: Verify patched source
+      - name: Verify current release guards
         shell: python
         run: |
           from pathlib import Path
           import re
           s=Path('index.html').read_text()
-          assert "filter(s=>s && (s.language||'ko')===currentLang)" in s
-          assert "filter(s=>s && !s.is_seed && (s.language||'ko')===currentLang)" not in s
-          assert "replace(/[.!?。！？]\\s*$/, '!')" in s
-          assert 'function handleDetailSwipeEnd' in s
-          assert "if(!currentStory?.isDb){showToast(tr('sampleReact'));return}" in s
-          assert "if(!currentStory?.isDb){showToast(tr('sampleSave'));return}" in s
-          assert 'blockedUserIds=new Set' in s
+          checks=[
+            "filter(s=>s && (s.language||'ko')===currentLang)",
+            "replace(/[.!?。！？]\\s*$/, '!')",
+            "function handleDetailSwipeEnd",
+            "if(!currentStory?.isDb){showToast(tr('sampleReact'));return}",
+            "if(!currentStory?.isDb){showToast(tr('sampleSave'));return}",
+            "blockedUserIds=new Set",
+            "s.isDb && !s.is_seed && s.user_id && s.user_id!==currentUser?.id"
+          ]
+          for x in checks: assert x in s, x
           scripts=re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S)
           inline=[x for x in scripts if x.strip()]
-          if not inline: raise SystemExit('No inline script')
           Path('/tmp/app.js').write_text(inline[-1])
-          print('release patch assertions passed')
       - name: JavaScript syntax check
         run: node --check /tmp/app.js
       - name: Commit patch
@@ -91,5 +52,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Fix sample actions and blocked-author filtering"
+          git commit -m "Hide synthetic author moderation controls"
           git push
