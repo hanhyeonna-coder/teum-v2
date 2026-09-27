@@ -21,7 +21,6 @@ jobs:
           p=Path('index.html')
           s=p.read_text()
 
-          # 1) Saved stories: seeded stories are valid when the user explicitly bookmarks them.
           old="const arr=(data||[]).map(x=>x.posts).filter(s=>s && !s.is_seed && (s.language||'ko')===currentLang);"
           new="const arr=(data||[]).map(x=>x.posts).filter(s=>s && (s.language||'ko')===currentLang);"
           if old in s:
@@ -29,60 +28,45 @@ jobs:
           elif new not in s:
               raise SystemExit('Saved-story filter anchor not found')
 
-          # 2) Give the second/final sentence of each Malhaeba note a stronger ending.
-          old_note="""function malhaebaNoteFor(post){
-  const lang=currentLang==='en'?'en':'ko';
-  const category=malhaebaNoteCategory(post);
-  const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;
-  return list[stableNoteIndex(post.id,list.length)];
-}"""
-          new_note="""function malhaebaNoteFor(post){
-  const lang=currentLang==='en'?'en':'ko';
-  const category=malhaebaNoteCategory(post);
-  const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;
-  const raw=list[stableNoteIndex(post.id,list.length)];
-  return raw.replace(/[.!?。！？]\\s*$/, '!');
-}"""
+          old_note="function malhaebaNoteFor(post){\n  const lang=currentLang==='en'?'en':'ko';\n  const category=malhaebaNoteCategory(post);\n  const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;\n  return list[stableNoteIndex(post.id,list.length)];\n}"
+          new_note="function malhaebaNoteFor(post){\n  const lang=currentLang==='en'?'en':'ko';\n  const category=malhaebaNoteCategory(post);\n  const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;\n  const raw=list[stableNoteIndex(post.id,list.length)];\n  return raw.replace(/[.!?。！？]\\s*$/, '!');\n}"
           if old_note in s:
               s=s.replace(old_note,new_note,1)
           elif "replace(/[.!?。！？]\\s*$/, '!')" not in s:
               raise SystemExit('Malhaeba note function anchor not found')
 
-          # 3) Swipe back from story detail. Supports the requested left swipe anywhere,
-          #    plus the familiar iOS-style right swipe from the left edge.
-          swipe="""
-
-let detailSwipeStartX=null;
-let detailSwipeStartY=null;
-let detailSwipeScreen='';
-function handleDetailSwipeStart(e){
-  if(e.touches.length!==1)return;
-  const active=document.querySelector('.screen.active');
-  if(!active || !['detail','recordDetail'].includes(active.id))return;
-  if(e.target.closest('input,textarea,button,a'))return;
-  detailSwipeStartX=e.touches[0].clientX;
-  detailSwipeStartY=e.touches[0].clientY;
-  detailSwipeScreen=active.id;
-}
-function handleDetailSwipeEnd(e){
-  if(detailSwipeStartX===null || !detailSwipeScreen)return;
-  const touch=e.changedTouches&&e.changedTouches[0];
-  if(!touch){detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';return}
-  const dx=touch.clientX-detailSwipeStartX;
-  const dy=touch.clientY-detailSwipeStartY;
-  const startedAtLeftEdge=detailSwipeStartX<=38;
-  const horizontal=Math.abs(dx)>=72 && Math.abs(dx)>Math.abs(dy)*1.25;
-  const requestedLeftSwipe=dx<=-72;
-  const iosEdgeBack=dx>=72 && startedAtLeftEdge;
-  const screen=detailSwipeScreen;
-  detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';
-  if(!horizontal || (!requestedLeftSwipe && !iosEdgeBack))return;
-  if(screen==='detail') backFromStory();
-  else if(screen==='recordDetail') show('records');
-}
-document.addEventListener('touchstart',handleDetailSwipeStart,{passive:true});
-document.addEventListener('touchend',handleDetailSwipeEnd,{passive:true});
-"""
+          swipe=(
+              "\n\nlet detailSwipeStartX=null;\n"
+              "let detailSwipeStartY=null;\n"
+              "let detailSwipeScreen='';\n"
+              "function handleDetailSwipeStart(e){\n"
+              "  if(e.touches.length!==1)return;\n"
+              "  const active=document.querySelector('.screen.active');\n"
+              "  if(!active || !['detail','recordDetail'].includes(active.id))return;\n"
+              "  if(e.target.closest('input,textarea,button,a'))return;\n"
+              "  detailSwipeStartX=e.touches[0].clientX;\n"
+              "  detailSwipeStartY=e.touches[0].clientY;\n"
+              "  detailSwipeScreen=active.id;\n"
+              "}\n"
+              "function handleDetailSwipeEnd(e){\n"
+              "  if(detailSwipeStartX===null || !detailSwipeScreen)return;\n"
+              "  const touch=e.changedTouches&&e.changedTouches[0];\n"
+              "  if(!touch){detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';return}\n"
+              "  const dx=touch.clientX-detailSwipeStartX;\n"
+              "  const dy=touch.clientY-detailSwipeStartY;\n"
+              "  const startedAtLeftEdge=detailSwipeStartX<=38;\n"
+              "  const horizontal=Math.abs(dx)>=72 && Math.abs(dx)>Math.abs(dy)*1.25;\n"
+              "  const requestedLeftSwipe=dx<=-72;\n"
+              "  const iosEdgeBack=dx>=72 && startedAtLeftEdge;\n"
+              "  const screen=detailSwipeScreen;\n"
+              "  detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';\n"
+              "  if(!horizontal || (!requestedLeftSwipe && !iosEdgeBack))return;\n"
+              "  if(screen==='detail') backFromStory();\n"
+              "  else if(screen==='recordDetail') show('records');\n"
+              "}\n"
+              "document.addEventListener('touchstart',handleDetailSwipeStart,{passive:true});\n"
+              "document.addEventListener('touchend',handleDetailSwipeEnd,{passive:true});\n"
+          )
           anchor="let initialAuthHandled=false;"
           if 'function handleDetailSwipeEnd' not in s:
               if anchor not in s: raise SystemExit('Swipe insertion anchor not found')
