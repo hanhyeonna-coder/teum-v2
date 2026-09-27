@@ -1,0 +1,61 @@
+name: Patch Malhaeba note
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-malhaeba-note.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch own-story note
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+
+          css='''\n/* Malhaeba note on my story */\n.malhaebaNote{margin:22px 0 4px;padding:18px 17px;border-radius:18px;background:var(--accent-soft);border:1px solid #ffd9d7}\n.malhaebaNoteLabel{font-size:12px;font-weight:800;color:var(--accent-deep);margin-bottom:8px}\n.malhaebaNoteText{font-size:16px;line-height:1.68;color:#3f444a;letter-spacing:-.2px}\n'''
+          if '/* Malhaeba note on my story */' not in s:
+              s=s.replace('</style>',css+'\n</style>',1)
+
+          js=r'''\nconst MALHAEBA_NOTES={\n  ko:{\n    coparenting:[\n      '같이 키우는데 왜 나만 바쁜가 싶은 순간, 정말 지쳐요. 혼자 삭이지 말고 여기다 털어놔요.',\n      '누가 시키지 않아도 계속 챙겨야 하는 사람이 되는 건 피곤한 일이에요. 답답할 때 또 와요.',\n      '육아의 무게가 한쪽으로 쏠렸다고 느끼는 사람이 적지 않아요. 여기서는 그 불만 그대로 말해도 돼요.',\n      '“도와주는 것” 말고 같이 했으면 좋겠다는 마음, 이상한 거 아니에요. 쌓이면 여기다 풀어요.'\n    ],\n    partner:[\n      '가까운 사람이라 더 서운한 것도 있어요. 혼자 곱씹지 말고 또 답답하면 여기다 말해버려요.',\n      '“왜 나만 이러고 있지?” 싶은 순간이 있어요. 여기서는 눈치 보지 말고 다 말해요.',\n      '별일 아닌 것처럼 보여도 계속 쌓이면 진짜 화나죠. 다음에도 참지 말고 여기다 털어놔요.',\n      '배우자한테 바로 말하기 어려운 마음도 있잖아요. 일단 여기서 먼저 꺼내놔도 돼요.'\n    ],\n    parenting:[\n      '육아로 지친 사람이 한두 명이 아니에요. 너무 혼자 끌어안지 말고, 힘들 때마다 여기다 털어놔버려요.',\n      '아이를 키우다 보면 별것 아닌 일에도 진이 다 빠지는 날이 있어요. 그런 날은 여기서 그냥 다 말해요.',\n      '매일 잘해내려고 버티지 않아도 돼요. 오늘 힘들었던 건 오늘 여기 두고 가요.',\n      '육아는 끝나는 시간이 없잖아요. 쌓이기 전에 여기다 한 번씩 털어놔요.'\n    ],\n    returnwork:[\n      '일도 놓치고 싶지 않고 아이도 잘 챙기고 싶은 마음 사이에서 지치는 사람이 많아요. 너무 혼자 끌어안지 마요.',\n      '회사에 있어도 아이 생각, 아이랑 있어도 회사 생각. 머리가 복잡한 날엔 여기다 그냥 풀어놔요.',\n      '둘 다 잘하려고 하면 내가 제일 먼저 지치기도 해요. 버거운 날에는 여기서 한 번 쉬어가요.',\n      '복직하면서 생기는 죄책감이나 부담감, 혼자만 느끼는 감정은 아니에요. 또 복잡해지면 여기 와요.'\n    ],\n    work:[\n      '회사에서 받은 스트레스까지 집에 들고 가기 싫잖아요. 여기다 내려놓고 가요.',\n      '일하다 보면 대체 내가 왜 이걸 참나 싶은 날도 있어요. 그런 날은 여기서 마음껏 투덜거려요.',\n      '오늘 회사에서 있었던 일이 계속 생각난다면 아직 마음에 남아 있는 거예요. 더 말하고 싶으면 또 와요.',\n      '회사에서는 못 했던 말, 여기서는 해도 돼요. 누구 눈치 볼 필요 없어요.'\n    ],\n    family:[\n      '가족이라서 더 쉽게 말하지 못하는 것도 있어요. 여기서는 굳이 좋은 사람처럼 말하지 않아도 돼요.',\n      '가까운 사람에게 받은 말이 오히려 오래 남을 때가 있어요. 계속 생각나면 여기다 더 말해요.',\n      '가족 문제는 누구 편을 들기도 어렵고 그래서 더 답답하죠. 여기서는 내 마음부터 말해도 돼요.',\n      '이해해야 한다는 생각 때문에 참지 않아도 돼요. 서운했던 건 서운했다고 말해도 돼요.'\n    ],\n    housework:[\n      '해도 해도 다시 생기는 일이 집안일이죠. 오늘 유난히 지쳤다면 여기다 투덜거려도 돼요.',\n      '아무도 알아주지 않는 일을 계속 챙기는 것도 노동이에요. 힘든 날은 그냥 힘들다고 해요.',\n      '사소한 일이 계속 쌓이면 사소하지 않게 돼요. 또 쌓이기 시작하면 여기다 먼저 풀어놔요.',\n      '집에서는 왜 퇴근이 없나 싶은 날이 있죠. 오늘 못 한 건 좀 남겨둬도 돼요.'\n    ],\n    money:[\n      '돈 걱정은 머릿속에서 계속 계산하게 만들죠. 답답한 마음까지 혼자 계산하지는 마요.',\n      '돈 때문에 선택지가 좁아지는 기분은 꽤 답답해요. 여기서는 그 마음부터 그냥 말해도 돼요.',\n      '숫자 문제처럼 보여도 돈 걱정에는 감정이 많이 따라와요. 복잡하면 여기다 풀어놔요.',\n      '누구한테 말하기 애매한 돈 고민도 있죠. 여기는 눈치 볼 사람이 없어요.'\n    ],\n    exhausted:[\n      '너무 오래 버티다 보면 뭐가 힘든지도 모르겠는 날이 있어요. 그럴 때는 그냥 생각나는 것부터 말해요.',\n      '피곤하면 평소엔 넘길 일도 훨씬 크게 느껴져요. 오늘은 스스로를 좀 덜 몰아붙여도 돼요.',\n      '쉬고 싶은데 쉴 수 없는 날이 계속되면 진짜 지쳐요. 잠깐이라도 여기다 내려놓고 가요.',\n      '오늘 하루를 버틴 것만으로도 이미 할 만큼 한 날일 수 있어요. 또 벅차면 여기 와요.'\n    ],\n    feelings:[\n      '말하고 나니까 조금이라도 덜 답답했으면 좋겠어요. 아직 남아 있으면 더 말해도 돼요.',\n      '혼자 계속 생각하면 마음속에서 일이 더 커질 때가 있어요. 여기다 몇 번이고 털어놔도 돼요.',\n      '누군가에게 설명하기도 귀찮은 날 있잖아요. 여기는 정리해서 말할 필요 없어요.',\n      '오늘 마음에 남은 게 있다면 굳이 괜찮은 척 끝내지 않아도 돼요. 또 생각나면 여기 와요.'\n    ]\n  },\n  en:{\n    coparenting:['When parenting feels one-sided, it can wear you down fast. You can leave that frustration here.','Being the person who notices and manages everything is exhausting. Come back when it piles up again.','It is hard when the weight of parenting feels uneven. You do not have to soften that feeling here.','Wanting a partner to share the load is different from wanting “help.” You can say that plainly here.'],\n    partner:['The closest person can also be the one who hurts or frustrates you most. You can leave some of that here.','That “why am I the only one doing this?” feeling can build up. You do not have to edit it here.','Small things stop feeling small when they keep piling up. Come back and let it out before it all stacks up.','Some feelings are hard to say directly to a partner. It is okay to put them into words here first.'],\n    parenting:['You are far from the only person worn out by parenting. When it builds up, you can unload it here.','Parenting can drain you even on days when nothing dramatic happened. You can just say all of it here.','You do not have to hold yourself to “doing it well” every day. Leave some of today here.','Parenting does not really have an off switch. Come back before everything piles up.'],\n    returnwork:['Trying to care about work and your child at the same time can pull you in two directions. You do not have to carry all of that alone.','Thinking about your child at work and work when you are with your child is exhausting. You can untangle it here.','Trying to do both perfectly can leave you as the first person running on empty. It is okay to pause here.','Returning to work can bring guilt, pressure and mixed feelings. You can come back whenever it gets complicated again.'],\n    work:['You do not have to carry today’s work stress all the way home. Leave some of it here.','Some workdays make you wonder why you are putting up with any of it. You can complain freely here.','If something from work keeps replaying in your head, it probably still has a hold on you. Come back if you need to say more.','The things you could not say at work can be said here without managing anyone else’s reaction.'],\n    family:['Family can be the hardest place to say what you really feel. You do not have to sound nice here.','Words from people close to us can linger the longest. If it keeps bothering you, say more here.','Family problems can make it hard to take anyone’s side. Here, you can start with your own feelings.','You do not have to swallow hurt just because you think you should understand them.'],\n    housework:['Housework has a way of coming back the moment you finish it. You are allowed to complain about being tired of it.','Keeping track of invisible household work is still work. You can say you are tired.','Small chores stop feeling small when they never end. Come back before they pile up.','Home can feel like the place where work never ends. Some things can wait today.'],\n    money:['Money worries can keep your brain calculating long after you want to stop. You do not have to calculate your feelings too.','It is frustrating when money narrows your choices. You can start by saying what that feels like here.','Money can look like a numbers problem while carrying a lot of emotion underneath. You can unpack that here.','Some money worries are awkward to tell anyone. You do not have to manage anyone’s reaction here.'],\n    exhausted:['When you have been pushing for too long, it can be hard to even name what is wrong. Start with whatever comes to mind.','Exhaustion can make everything hit harder. You do not have to push yourself quite so hard today.','Wanting rest and not being able to get it is exhausting in itself. Leave a little of that weight here.','Getting through today may already have been enough. Come back when it feels heavy again.'],\n    feelings:['I hope saying it out loud made things even a little less tight inside. If there is more, you can keep going.','Thoughts can grow louder when you keep them to yourself. You can unload them here more than once.','Some days you do not even want to explain yourself. You do not have to organize the story here.','If something is still sitting with you, you do not have to end the day pretending it is fine. Come back when you need to.']\n  }\n};\nfunction malhaebaNoteCategory(post){\n  const text=((post.body||'')+' '+(post.title||'')+' '+((post.tags||[]).join(' '))).toLowerCase();\n  const has=(re)=>re.test(text);\n  if(has(/육아분담|독박|안 도와|안도와|나만.*육아|같이.*키우|coparent|co-parent|parenting load|mental load|doesn.t help|does not help/)) return 'coparenting';\n  if(has(/남편|아내|배우자|신랑|partner|husband|wife|spouse|boyfriend|girlfriend/)) return 'partner';\n  if(has(/육아|아이|아기|딸|아들|어린이집|유치원|등원|하원|parenting|kid|child|baby|toddler|daycare|preschool/)) return 'parenting';\n  if(has(/복직|워킹맘|육아휴직|return.*work|working mom|working mum|maternity leave/)) return 'returnwork';\n  if(has(/회사|직장|업무|상사|일 때문에|work|office|boss|career|job/)) return 'work';\n  if(has(/시댁|친정|시어머니|시아버지|부모님|가족|in-laws|inlaws|mother-in-law|father-in-law|family|parents/)) return 'family';\n  if(has(/집안일|설거지|청소|빨래|밥.*준비|housework|chores|laundry|dishes|cleaning/)) return 'housework';\n  if(has(/돈|생활비|대출|월급|경제|재정|money|financial|salary|debt|mortgage|bills/)) return 'money';\n  if(has(/지침|지쳤|피곤|번아웃|수면|잠을|잠이|exhausted|tired|burnout|sleep/)) return 'exhausted';\n  return 'feelings';\n}\nfunction stableNoteIndex(id,len){\n  const str=String(id||'malhaeba'); let h=0;\n  for(let i=0;i<str.length;i++) h=((h<<5)-h+str.charCodeAt(i))|0;\n  return Math.abs(h)%len;\n}\nfunction malhaebaNoteFor(post){\n  const lang=currentLang==='en'?'en':'ko';\n  const category=malhaebaNoteCategory(post);\n  const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;\n  return list[stableNoteIndex(post.id,list.length)];\n}\nfunction malhaebaNoteHtml(post){\n  return `<div class="malhaebaNote"><div class="malhaebaNoteLabel">${currentLang==='en'?'A note from Malhaeba':'말해바의 한마디'}</div><div class="malhaebaNoteText">${esc(malhaebaNoteFor(post))}</div></div>`;\n}\n'''
+          anchor='async function openOwnRecord(id){'
+          if 'const MALHAEBA_NOTES=' not in s:
+              if anchor not in s: raise SystemExit('openOwnRecord anchor missing')
+              s=s.replace(anchor,js+'\n'+anchor,1)
+
+          detail='<div class=\\"detailBody\\">${esc(x.body)}</div>'
+          replacement=detail+'\n    ${malhaebaNoteHtml(x)}'
+          if '${malhaebaNoteHtml(x)}' not in s:
+              if detail not in s: raise SystemExit('own detail body anchor missing')
+              # Only patch the own-record detail occurrence nearest openOwnRecord.
+              pos=s.index('async function openOwnRecord(id){')
+              before=s[:pos]; after=s[pos:]
+              after=after.replace(detail,replacement,1)
+              s=before+after
+
+          p.write_text(s)
+      - name: Verify patch
+        shell: python
+        run: |
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          assert 'const MALHAEBA_NOTES=' in s
+          assert '${malhaebaNoteHtml(x)}' in s
+          assert '/* Malhaeba note on my story */' in s
+          print('patch verified')
+      - name: Commit patch
+        run: |
+          git config user.name "malhaeba-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add contextual Malhaeba note to own stories"
+          git push
