@@ -2004,7 +2004,7 @@ async function renderRecords(type){
   }else{
     const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language,is_seed)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     if(error){console.error(error);return}
-    const arr=(data||[]).map(x=>x.posts).filter(s=>s && !s.is_seed && (s.language||'ko')===currentLang);
+    const arr=(data||[]).map(x=>x.posts).filter(s=>s && (s.language||'ko')===currentLang);
     arr.forEach(s=>{if(!dbStories.some(d=>d.id===s.id))dbStories.push({...s,similarity:tr('savedStory'),isDb:true})});
     recordList.innerHTML=arr.length?arr.map(s=>`
       <div class="card story" onclick="openStory('${s.id}','records')">
@@ -2115,7 +2115,8 @@ function malhaebaNoteFor(post){
   const lang=currentLang==='en'?'en':'ko';
   const category=malhaebaNoteCategory(post);
   const list=MALHAEBA_NOTES[lang][category]||MALHAEBA_NOTES[lang].feelings;
-  return list[stableNoteIndex(post.id,list.length)];
+  const raw=list[stableNoteIndex(post.id,list.length)];
+  return raw.replace(/[.!?。！？]\s*$/, '!');
 }
 function malhaebaNoteHtml(post){
   return `<div class="malhaebaNote"><div class="malhaebaNoteLabel">${currentLang==='en'?'A note from Malhaeba':'말해바의 한마디'}</div><div class="malhaebaNoteText">${esc(malhaebaNoteFor(post))}</div></div>`;
@@ -2194,6 +2195,39 @@ async function deleteOwnRecord(id){
   currentRecordTab='mine';
   show('records');
 }
+
+
+
+let detailSwipeStartX=null;
+let detailSwipeStartY=null;
+let detailSwipeScreen='';
+function handleDetailSwipeStart(e){
+  if(e.touches.length!==1)return;
+  const active=document.querySelector('.screen.active');
+  if(!active || !['detail','recordDetail'].includes(active.id))return;
+  if(e.target.closest('input,textarea,button,a'))return;
+  detailSwipeStartX=e.touches[0].clientX;
+  detailSwipeStartY=e.touches[0].clientY;
+  detailSwipeScreen=active.id;
+}
+function handleDetailSwipeEnd(e){
+  if(detailSwipeStartX===null || !detailSwipeScreen)return;
+  const touch=e.changedTouches&&e.changedTouches[0];
+  if(!touch){detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';return}
+  const dx=touch.clientX-detailSwipeStartX;
+  const dy=touch.clientY-detailSwipeStartY;
+  const startedAtLeftEdge=detailSwipeStartX<=38;
+  const horizontal=Math.abs(dx)>=72 && Math.abs(dx)>Math.abs(dy)*1.25;
+  const requestedLeftSwipe=dx<=-72;
+  const iosEdgeBack=dx>=72 && startedAtLeftEdge;
+  const screen=detailSwipeScreen;
+  detailSwipeStartX=null;detailSwipeStartY=null;detailSwipeScreen='';
+  if(!horizontal || (!requestedLeftSwipe && !iosEdgeBack))return;
+  if(screen==='detail') backFromStory();
+  else if(screen==='recordDetail') show('records');
+}
+document.addEventListener('touchstart',handleDetailSwipeStart,{passive:true});
+document.addEventListener('touchend',handleDetailSwipeEnd,{passive:true});
 
 let initialAuthHandled=false;
 sb.auth.onAuthStateChange((event,session)=>{
