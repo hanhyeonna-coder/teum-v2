@@ -1,0 +1,76 @@
+name: Patch Malhaeba note v3 repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-malhaeba-note-v3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair patch formatting
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+          recipe=Path('.github/workflows/patch-malhaeba-note.yml').read_text()
+          css_raw=re.search(r"css='''(.*?)'''",recipe,re.S).group(1)
+          js_raw=re.search(r"js=r'''(.*?)'''",recipe,re.S).group(1)
+          css=css_raw.replace('\\n','\n')
+          js=js_raw.replace('\\n','\n')
+
+          # Remove malformed literal-backslash payload inserted by v2.
+          start=s.find('\\nconst MALHAEBA_NOTES=')
+          if start!=-1:
+              end=s.find('async function openOwnRecord(id){',start)
+              if end==-1: raise SystemExit('Could not find end of malformed block')
+              s=s[:start]+s[end:]
+
+          # Replace malformed CSS literal-backslash payload if present.
+          bad_css='\\n/* Malhaeba note on my story */'
+          if bad_css in s:
+              cs=s.index(bad_css)
+              ce=s.index('</style>',cs)
+              s=s[:cs]+s[ce:]
+
+          if '/* Malhaeba note on my story */' not in s:
+              s=s.replace('</style>',css+'\n</style>',1)
+
+          anchor='async function openOwnRecord(id){'
+          if 'const MALHAEBA_NOTES=' not in s:
+              s=s.replace(anchor,js+'\n'+anchor,1)
+
+          if '${malhaebaNoteHtml(x)}' not in s:
+              pos=s.index(anchor)
+              bodypos=s.index('${esc(x.body)}',pos)
+              close=s.index('</div>',bodypos)+len('</div>')
+              s=s[:close]+'\n    ${malhaebaNoteHtml(x)}'+s[close:]
+
+          p.write_text(s)
+      - name: Verify repaired source
+        shell: python
+        run: |
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          assert '\\nconst MALHAEBA_NOTES=' not in s
+          assert '\\n/* Malhaeba note on my story */' not in s
+          assert 'const MALHAEBA_NOTES={' in s
+          assert s.count('${malhaebaNoteHtml(x)}') == 1
+          assert 'function malhaebaNoteFor(post)' in s
+          print('source repaired')
+      - name: Commit repair
+        run: |
+          git config user.name "malhaeba-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Repair contextual note source formatting"
+          git push
