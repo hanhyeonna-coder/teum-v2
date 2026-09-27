@@ -1,0 +1,65 @@
+name: Patch Malhaeba note v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-malhaeba-note-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply contextual note patch
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+          recipe=Path('.github/workflows/patch-malhaeba-note.yml').read_text()
+
+          css_match=re.search(r"css='''(.*?)'''",recipe,re.S)
+          js_match=re.search(r"js=r'''(.*?)'''",recipe,re.S)
+          if not css_match or not js_match:
+              raise SystemExit('Could not read patch payload')
+          css=css_match.group(1)
+          js=js_match.group(1)
+
+          if '/* Malhaeba note on my story */' not in s:
+              s=s.replace('</style>',css+'\n</style>',1)
+
+          own_anchor='async function openOwnRecord(id){'
+          if 'const MALHAEBA_NOTES=' not in s:
+              if own_anchor not in s: raise SystemExit('openOwnRecord anchor missing')
+              s=s.replace(own_anchor,js+'\n'+own_anchor,1)
+
+          if '${malhaebaNoteHtml(x)}' not in s:
+              pos=s.index(own_anchor)
+              bodypos=s.index('${esc(x.body)}',pos)
+              close=s.index('</div>',bodypos)+len('</div>')
+              s=s[:close]+'\n    ${malhaebaNoteHtml(x)}'+s[close:]
+
+          p.write_text(s)
+      - name: Verify patch
+        shell: python
+        run: |
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          assert 'const MALHAEBA_NOTES=' in s
+          assert '${malhaebaNoteHtml(x)}' in s
+          assert '/* Malhaeba note on my story */' in s
+          assert s.count('${malhaebaNoteHtml(x)}') == 1
+          print('Malhaeba note patch verified')
+      - name: Commit patch
+        run: |
+          git config user.name "malhaeba-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add contextual Malhaeba note to own stories"
+          git push
