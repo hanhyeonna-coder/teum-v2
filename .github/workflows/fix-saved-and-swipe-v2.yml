@@ -1,0 +1,101 @@
+name: Fix saved stories v2
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-saved-and-swipe-v2.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch app
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          start=s.index("  }else{\n    const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language,is_seed)')", s.index('async function renderRecords'))
+          end=s.index("\n  }\n}\n\n\nconst MALHAEBA_NOTES", start)+4
+          new='''  }else{
+            const {data:bookmarkRows,error:bookmarkError}=await sb.from('bookmarks')
+              .select('post_id,created_at')
+              .eq('user_id',currentUser.id)
+              .order('created_at',{ascending:false});
+            if(bookmarkError){
+              console.error('saved bookmarks:',bookmarkError);
+              recordList.innerHTML='<p class="sub">'+esc(currentLang==='en'?'Could not load saved stories. Please try again.':'담아둔 이야기를 불러오지 못했어요. 잠시 후 다시 열어주세요.')+'</p>';
+              return;
+            }
+            const ids=(bookmarkRows||[]).map(x=>x.post_id).filter(Boolean);
+            if(!ids.length){recordList.innerHTML=`<p class="sub">${tr('emptySaved')}</p>`;return}
+            const {data:postRows,error:postError}=await sb.from('posts')
+              .select('id,user_id,title,body,tags,created_at,language,is_seed,status,visibility')
+              .in('id',ids);
+            if(postError){
+              console.error('saved posts:',postError);
+              recordList.innerHTML='<p class="sub">'+esc(currentLang==='en'?'Could not load saved stories. Please try again.':'담아둔 이야기를 불러오지 못했어요. 잠시 후 다시 열어주세요.')+'</p>';
+              return;
+            }
+            const postMap=new Map((postRows||[]).map(x=>[String(x.id),x]));
+            const arr=ids.map(id=>postMap.get(String(id))).filter(s=>s && s.status==='active' && s.visibility==='public' && (s.language||'ko')===currentLang);
+            arr.forEach(s=>{if(!dbStories.some(d=>String(d.id)===String(s.id)))dbStories.push({...s,similarity:tr('savedStory'),isDb:true})});
+            recordList.innerHTML=arr.length?arr.map(s=>`
+              <div class="card story" onclick="openStory('${s.id}','records')">
+                <div class="title">${esc(s.title)}</div>
+                <div class="excerpt">${esc(s.body)}</div>
+                <div style="margin-top:10px">${(s.tags||[]).map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
+              </div>`).join(''): `<p class="sub">${tr('emptySaved')}</p>`;
+          }
+          }'''
+          s=s[:start]+new+s[end:]
+          old='''  if(error){
+            console.error(error);
+            currentStoryBookmarked=!next;
+            if(btn)btn.classList.toggle('selected',!next);
+          }
+          }'''
+          # target only inside bookmark()
+          b=s.index('async function bookmark(id)')
+          e=s.index('function openReport()',b)
+          chunk=s[b:e]
+          old_local='''  if(error){
+            console.error(error);
+            currentStoryBookmarked=!next;
+            if(btn)btn.classList.toggle('selected',!next);
+          }
+          }'''
+          new_local='''  if(error){
+            console.error(error);
+            currentStoryBookmarked=!next;
+            if(btn)btn.classList.toggle('selected',!next);
+            showToast(currentLang==='en'?'Could not update saved stories.':'담아두기를 저장하지 못했어요.');
+            return;
+          }
+          showToast(next?tr('savedAlert'):(currentLang==='en'?'Removed from saved stories.':'담아두기에서 뺐어요.'));
+          }'''
+          if old_local not in chunk: raise SystemExit('bookmark block not found')
+          chunk=chunk.replace(old_local,new_local,1)
+          s=s[:b]+chunk+s[e:]
+          s=s.replace("const horizontal=Math.abs(dx)>=72 && Math.abs(dx)>Math.abs(dy)*1.25;","const horizontal=Math.abs(dx)>=78 && Math.abs(dx)>Math.abs(dy)*1.45;",1)
+          p.write_text(s)
+          PY
+      - name: Syntax check
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text()
+          blocks=re.findall(r'<script(?:[^>]*)>([\s\S]*?)</script>',s,re.I)
+          Path('/tmp/app.js').write_text([b for b in blocks if b.strip()][-1])
+          PY
+          node --check /tmp/app.js
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix saved stories loading and swipe back"
+          git push
