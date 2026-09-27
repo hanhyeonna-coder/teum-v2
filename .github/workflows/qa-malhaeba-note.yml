@@ -1,0 +1,29 @@
+name: QA Malhaeba note
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/qa-malhaeba-note.yml'
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract inline app script
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S)
+          inline=[x for x in scripts if x.strip()]
+          if not inline: raise SystemExit('No inline script found')
+          Path('/tmp/app.js').write_text(inline[-1])
+          assert 'const MALHAEBA_NOTES={' in s
+          assert s.count('${malhaebaNoteHtml(x)}')==1
+          assert '\\nconst MALHAEBA_NOTES=' not in s
+          assert '/* Malhaeba note on my story */' in s
+      - name: JavaScript syntax check
+        run: node --check /tmp/app.js
