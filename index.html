@@ -1011,7 +1011,9 @@ function primaryTopic(text=''){
     ['남편',/남편|배우자|신랑|아내/],
     ['직장',/회사|직장|상사|출근|퇴근|업무|커리어|이직|복직/],
     ['육아',/육아|아이|애|아기|딸|아들|등원|하원|유치원|어린이집|재우|훈육/],
-    ['가족',/시댁|시어머니|시아버지|친정|친정엄마|친정아빠|부모님|가족/],
+    ['시댁',/시댁|시어머니|시어머님|시아버지|시아버님|시부모|시부모님|며느리/],
+    ['친정',/친정|친정엄마|친정아빠|친정부모|친정부모님/],
+    ['가족',/부모님|가족/],
     ['집안일',/집안일|설거지|청소|빨래|가사/]
   ];
   for(const [topic,re] of groups){if(re.test(t))return topic}
@@ -1049,6 +1051,8 @@ function similarityScore(queryText,queryTags,story){
   const topicGroups=currentLang==='en'
     ? ['adult','money','partner','parenting','work','daycare','school','family','housework','sleep']
     : ['19','돈','남편','육아','육아분담','직장','복직','등원','하원','유치원','어린이집','가족','시댁','친정','집안일','수면'];
+  const queryPrimary=primaryTopic(queryText);
+  const storyPrimary=primaryTopic((story.title||'')+' '+(story.body||'')) || storyTags[0] || '';
   const queryTopics=topicGroups.filter(x=>q.has(x));
   const storyTopics=topicGroups.filter(x=>st.has(x));
   const topicOverlap=queryTopics.filter(x=>st.has(x)).length;
@@ -1058,6 +1062,8 @@ function similarityScore(queryText,queryTags,story){
   // Topic is the gate. Emotion/text similarity only refines results inside the same topic.
   let score=tags*.58 + text*.12;
   if(topicOverlap>0) score += .30 + Math.min(.12,(topicOverlap-1)*.06);
+  if(queryPrimary && storyPrimary===queryPrimary) score += .38;
+  else if(queryPrimary && storyPrimary && queryPrimary!==storyPrimary) score *= .12;
   if(hasQueryTopic && storyTopics.length===0) score *= .28;
   if(conflictingTopic) score *= .035;
   return Math.min(1,score);
@@ -1770,6 +1776,8 @@ function generateTitle(text){
   if(topic==='남편') return '배우자 때문에 마음이 답답해요';
   if(topic==='직장') return '회사 생각에 마음이 무거워요';
   if(topic==='육아') return '육아 때문에 오늘 마음이 복잡했어요';
+  if(topic==='시댁') return '시댁 때문에 마음이 복잡해요';
+  if(topic==='친정') return '친정 때문에 마음이 복잡해요';
   if(topic==='가족') return '가족 때문에 마음이 무거워요';
   return '오늘 하루가 유난히 버거웠어요';
 }
