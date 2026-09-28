@@ -1,13 +1,10 @@
-name: Fix saved stories and swipe back
-
+name: Apply unified account flow patch
 on:
   push:
     paths:
       - '.github/workflows/fix-saved-and-swipe.yml'
-
 permissions:
   contents: write
-
 jobs:
   patch:
     if: github.actor != 'github-actions[bot]'
@@ -18,104 +15,60 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text()
-
-          old="""  }else{
-    const {data,error}=await sb.from('bookmarks').select('post_id, posts(id,user_id,title,body,tags,created_at,language,is_seed)').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-    if(error){console.error(error);return}
-    const arr=(data||[]).map(x=>x.posts).filter(s=>s && (s.language||'ko')===currentLang);
-    arr.forEach(s=>{if(!dbStories.some(d=>d.id===s.id))dbStories.push({...s,similarity:tr('savedStory'),isDb:true})});
-    recordList.innerHTML=arr.length?arr.map(s=>`
-      <div class=\"card story\" onclick=\"openStory('${s.id}','records')\">
-        <div class=\"title\">${esc(s.title)}</div>
-        <div class=\"excerpt\">${esc(s.body)}</div>
-        <div style=\"margin-top:10px\">${(s.tags||[]).map(t=>`<span class=\"tag\">#${esc(t)}</span>`).join('')}</div>
-      </div>`).join(''): `<p class=\"sub\">${tr('emptySaved')}</p>`;
-  }
-}"""
-          new="""  }else{
-    const {data:bookmarkRows,error:bookmarkError}=await sb.from('bookmarks')
-      .select('post_id,created_at')
-      .eq('user_id',currentUser.id)
-      .order('created_at',{ascending:false});
-    if(bookmarkError){
-      console.error('saved bookmarks:',bookmarkError);
-      recordList.innerHTML='<p class=\"sub\">'+esc(currentLang==='en'?'Could not load saved stories. Please try again.':'담아둔 이야기를 불러오지 못했어요. 잠시 후 다시 열어주세요.')+'</p>';
-      return;
-    }
-    const ids=(bookmarkRows||[]).map(x=>x.post_id).filter(Boolean);
-    if(!ids.length){recordList.innerHTML=`<p class=\"sub\">${tr('emptySaved')}</p>`;return}
-    const {data:postRows,error:postError}=await sb.from('posts')
-      .select('id,user_id,title,body,tags,created_at,language,is_seed,status,visibility')
-      .in('id',ids);
-    if(postError){
-      console.error('saved posts:',postError);
-      recordList.innerHTML='<p class=\"sub\">'+esc(currentLang==='en'?'Could not load saved stories. Please try again.':'담아둔 이야기를 불러오지 못했어요. 잠시 후 다시 열어주세요.')+'</p>';
-      return;
-    }
-    const postMap=new Map((postRows||[]).map(x=>[String(x.id),x]));
-    const arr=ids.map(id=>postMap.get(String(id))).filter(s=>s && s.status==='active' && s.visibility==='public' && (s.language||'ko')===currentLang);
-    arr.forEach(s=>{if(!dbStories.some(d=>String(d.id)===String(s.id)))dbStories.push({...s,similarity:tr('savedStory'),isDb:true})});
-    recordList.innerHTML=arr.length?arr.map(s=>`
-      <div class=\"card story\" onclick=\"openStory('${s.id}','records')\">
-        <div class=\"title\">${esc(s.title)}</div>
-        <div class=\"excerpt\">${esc(s.body)}</div>
-        <div style=\"margin-top:10px\">${(s.tags||[]).map(t=>`<span class=\"tag\">#${esc(t)}</span>`).join('')}</div>
-      </div>`).join(''): `<p class=\"sub\">${tr('emptySaved')}</p>`;
-  }
-}"""
-          if old not in s:
-              raise SystemExit('saved block anchor not found')
+          p=Path('index.html'); s=p.read_text()
+          old='''    <button id="accountLoginBtn" class="primary" onclick="signInExistingEmail()">로그인</button>\n    <button id="accountConnectBtn" class="secondary" onclick="linkEmailAccount()">이메일로 연결하기</button>'''
+          new='''    <button id="accountConnectBtn" class="primary" onclick="connectEmailSmart()">인증코드 받기</button>\n    <button id="accountSkipBtn" class="secondary" onclick="continueAfterAccountPrompt()" hidden>나중에 할게</button>'''
+          if old not in s: raise SystemExit('account buttons block not found')
           s=s.replace(old,new,1)
-
-          old2="""  if(error){
-    console.error(error);
-    currentStoryBookmarked=!next;
-    if(btn)btn.classList.toggle('selected',!next);
-  }
-}"""
-          new2="""  if(error){
-    console.error(error);
-    currentStoryBookmarked=!next;
-    if(btn)btn.classList.toggle('selected',!next);
-    showToast(currentLang==='en'?'Could not update saved stories.':'담아두기를 저장하지 못했어요.');
-    return;
-  }
-  showToast(next?tr('savedAlert'):(currentLang==='en'?'Removed from saved stories.':'담아두기에서 뺐어요.'));
-}"""
-          if old2 not in s:
-              raise SystemExit('bookmark error block anchor not found')
-          s=s.replace(old2,new2,1)
-
-          # The app already supports left-swipe from story detail and own-story detail.
-          # Tighten gesture detection so vertical scrolling does not accidentally navigate.
-          s=s.replace("const horizontal=Math.abs(dx)>=72 && Math.abs(dx)>Math.abs(dy)*1.25;","const horizontal=Math.abs(dx)>=78 && Math.abs(dx)>Math.abs(dy)*1.45;",1)
-
-          # Keep the second/final sentence of Malhaeba's two-sentence note punchy.
-          old3="return raw.replace(/[.!?。！？]\\s*$/, '!');"
-          if old3 not in s:
-              raise SystemExit('note punctuation anchor not found')
-          s=s.replace(old3,"return raw.replace(/[.!?。！？]\\s*$/, '!');",1)
-
+          old="q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail');"
+          new="q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountConnectBtn').textContent=currentLang==='en'?'Send verification code':'인증코드 받기'; const skipBtn=q('accountSkipBtn'); if(skipBtn)skipBtn.textContent=currentLang==='en'?'Maybe later':'나중에 할게';"
+          if old not in s: raise SystemExit('translation line not found')
+          s=s.replace(old,new,1)
+          old="""    feedMode='fresh';\n    show('matching');\n    setTimeout(()=>show('feed'),700);"""
+          new="""    feedMode='fresh';\n    if(currentUser?.is_anonymous){\n      localStorage.setItem('malhaebaPendingAfterAccount','1');\n      const skipBtn=document.getElementById('accountSkipBtn'); if(skipBtn)skipBtn.hidden=false;\n      show('accountLink');\n    }else{\n      show('matching');\n      setTimeout(()=>show('feed'),700);\n    }"""
+          if old not in s: raise SystemExit('publish flow not found')
+          s=s.replace(old,new,1)
+          old="""function similarityScore(queryText,queryTags,story){\n  const text=jaccard(charGrams(queryText),charGrams((story.title||'')+' '+(story.body||'')));\n  const tags=tagScore(queryTags,story.tags||[]);\n  return Math.min(1,tags*.65+text*.35);\n}"""
+          new="""function similarityScore(queryText,queryTags,story){\n  const text=jaccard(charGrams(queryText),charGrams((story.title||'')+' '+(story.body||'')));\n  const tags=tagScore(queryTags,story.tags||[]);\n  const q=new Set(queryTags||[]), st=new Set(story.tags||[]);\n  const specific=['육아','아이','자녀','유치원','어린이집','등원','워킹맘','복직','남편','시댁','친정','연애','이별','직장','상사','회사','parenting','kids','daycare','partner','work'];\n  const unsupportedSpecific=specific.some(x=>st.has(x)) && !specific.some(x=>st.has(x)&&q.has(x));\n  let score=tags*.82+text*.18;\n  if(unsupportedSpecific && tags===0) score*=.12;\n  return Math.min(1,score);\n}"""
+          if old not in s: raise SystemExit('similarity function not found')
+          s=s.replace(old,new,1)
+          addon=r'''
+async function connectEmailSmart(){
+  if(accountRequestInFlight)return;
+  let email=accountEmail.value.trim(); accountLinkStatus.textContent='';
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';return;}
+  email=confirmEmailCorrection(email); accountRequestInFlight=true;
+  const btn=document.getElementById('accountConnectBtn'); if(btn)btn.disabled=true;
+  try{
+    if(currentUser?.is_anonymous){
+      const {error}=await sb.auth.updateUser({email},{emailRedirectTo:location.origin+'/?account_linked=1'});
+      if(!error){showAccountOtp('link',email);accountLinkStatus.textContent=currentLang==='en'?'We sent a verification code to your email.':'이메일로 인증코드를 보냈어요.';return;}
+      if(error.code!=='email_exists' && error.status!==422)throw error;
+    }
+    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/?account_login=1'}});
+    if(error)throw error;
+    showAccountOtp('login',email);accountLinkStatus.textContent=currentLang==='en'?'We sent a verification code to your email.':'이메일로 인증코드를 보냈어요.';
+  }catch(error){console.error(error);accountLinkStatus.textContent=(error?.code==='over_email_send_rate_limit'||error?.status===429)?(currentLang==='en'?'Please wait a little before requesting another code.':'인증 메일을 너무 자주 요청했어요. 잠시 후 다시 시도해주세요.'):(currentLang==='en'?'Could not start email verification. Please try once more.':'이메일 인증을 시작하지 못했어요. 잠시 후 한 번만 다시 시도해주세요.');}
+  finally{accountRequestInFlight=false;if(btn)btn.disabled=false;}
+}
+function continueAfterAccountPrompt(){localStorage.removeItem('malhaebaPendingAfterAccount');const skipBtn=document.getElementById('accountSkipBtn');if(skipBtn)skipBtn.hidden=true;show('matching');setTimeout(()=>show('feed'),700);}
+'''
+          pos=s.rfind('</script>')
+          if pos<0: raise SystemExit('script end not found')
+          s=s[:pos]+addon+s[pos:]
           p.write_text(s)
-      - name: Extract inline JavaScript
+      - name: Syntax check
         shell: python
         run: |
           from pathlib import Path
           import re
-          s=Path('index.html').read_text()
-          blocks=re.findall(r'<script(?:[^>]*)>([\\s\\S]*?)</script>',s,re.I)
-          inline=[b for b in blocks if b.strip()]
-          if not inline: raise SystemExit('no inline script')
-          Path('/tmp/app.js').write_text(inline[-1])
-      - name: Syntax check
-        run: node --check /tmp/app.js
+          s=Path('index.html').read_text(); blocks=re.findall(r'<script(?:[^>]*)>([\s\S]*?)</script>',s,re.I)
+          Path('/tmp/app.js').write_text([b for b in blocks if b.strip()][-1])
+      - run: node --check /tmp/app.js
       - name: Commit fix
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git diff --cached --quiet && exit 0
-          git commit -m "Fix saved stories loading and swipe back"
+          git commit -m "Unify account linking and improve story matching"
           git push
