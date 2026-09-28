@@ -1,0 +1,37 @@
+from pathlib import Path
+p=Path('index.html'); s=p.read_text()
+old='''    <button id="accountLoginBtn" class="primary" onclick="signInExistingEmail()">로그인</button>\n    <button id="accountConnectBtn" class="secondary" onclick="linkEmailAccount()">이메일로 연결하기</button>'''
+new='''    <button id="accountConnectBtn" class="primary" onclick="connectEmailSmart()">인증코드 받기</button>\n    <button id="accountSkipBtn" class="secondary" onclick="continueAfterAccountPrompt()" hidden>나중에 할게</button>'''
+assert old in s, 'account buttons block not found'; s=s.replace(old,new,1)
+old="q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail');"
+new="q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountConnectBtn').textContent=currentLang==='en'?'Send verification code':'인증코드 받기'; const skipBtn=q('accountSkipBtn'); if(skipBtn)skipBtn.textContent=currentLang==='en'?'Maybe later':'나중에 할게';"
+assert old in s, 'translation line not found'; s=s.replace(old,new,1)
+old="    feedMode='fresh';\n    show('matching');\n    setTimeout(()=>show('feed'),700);"
+new="    feedMode='fresh';\n    if(currentUser?.is_anonymous){\n      localStorage.setItem('malhaebaPendingAfterAccount','1');\n      const skipBtn=document.getElementById('accountSkipBtn'); if(skipBtn)skipBtn.hidden=false;\n      show('accountLink');\n    }else{\n      show('matching');\n      setTimeout(()=>show('feed'),700);\n    }"
+assert old in s, 'publish flow not found'; s=s.replace(old,new,1)
+old="function similarityScore(queryText,queryTags,story){\n  const text=jaccard(charGrams(queryText),charGrams((story.title||'')+' '+(story.body||'')));\n  const tags=tagScore(queryTags,story.tags||[]);\n  return Math.min(1,tags*.65+text*.35);\n}"
+new="function similarityScore(queryText,queryTags,story){\n  const text=jaccard(charGrams(queryText),charGrams((story.title||'')+' '+(story.body||'')));\n  const tags=tagScore(queryTags,story.tags||[]);\n  const q=new Set(queryTags||[]), st=new Set(story.tags||[]);\n  const specific=['육아','아이','자녀','유치원','어린이집','등원','워킹맘','복직','남편','시댁','친정','연애','이별','직장','상사','회사','parenting','kids','daycare','partner','work'];\n  const unsupportedSpecific=specific.some(x=>st.has(x)) && !specific.some(x=>st.has(x)&&q.has(x));\n  let score=tags*.82+text*.18;\n  if(unsupportedSpecific && tags===0) score*=.12;\n  return Math.min(1,score);\n}"
+assert old in s, 'similarity function not found'; s=s.replace(old,new,1)
+addon=r'''
+async function connectEmailSmart(){
+  if(accountRequestInFlight)return;
+  let email=accountEmail.value.trim(); accountLinkStatus.textContent='';
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';return;}
+  email=confirmEmailCorrection(email); accountRequestInFlight=true;
+  const btn=document.getElementById('accountConnectBtn'); if(btn)btn.disabled=true;
+  try{
+    if(currentUser?.is_anonymous){
+      const {error}=await sb.auth.updateUser({email},{emailRedirectTo:location.origin+'/?account_linked=1'});
+      if(!error){showAccountOtp('link',email);accountLinkStatus.textContent=currentLang==='en'?'We sent a verification code to your email.':'이메일로 인증코드를 보냈어요.';return;}
+      if(error.code!=='email_exists' && error.status!==422)throw error;
+    }
+    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/?account_login=1'}});
+    if(error)throw error;
+    showAccountOtp('login',email);accountLinkStatus.textContent=currentLang==='en'?'We sent a verification code to your email.':'이메일로 인증코드를 보냈어요.';
+  }catch(error){console.error(error);accountLinkStatus.textContent=(error?.code==='over_email_send_rate_limit'||error?.status===429)?(currentLang==='en'?'Please wait a little before requesting another code.':'인증 메일을 너무 자주 요청했어요. 잠시 후 다시 시도해주세요.'):(currentLang==='en'?'Could not start email verification. Please try once more.':'이메일 인증을 시작하지 못했어요. 잠시 후 한 번만 다시 시도해주세요.');}
+  finally{accountRequestInFlight=false;if(btn)btn.disabled=false;}
+}
+function continueAfterAccountPrompt(){localStorage.removeItem('malhaebaPendingAfterAccount');const skipBtn=document.getElementById('accountSkipBtn');if(skipBtn)skipBtn.hidden=true;show('matching');setTimeout(()=>show('feed'),700);}
+'''
+pos=s.rfind('</script>'); assert pos>=0, 'script end not found'; s=s[:pos]+addon+s[pos:]
+p.write_text(s)
