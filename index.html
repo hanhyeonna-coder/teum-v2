@@ -967,6 +967,7 @@ function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
 function inferTags(text){
   const rules=currentLang==='en'?[
+    ['adult',/sex|sexual|sexless|intimacy|intimate|haven.?t had sex|physical intimacy|libido/i],
     ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],
     ['parenting',/parent|kid|child|baby|toddler|son|daughter|daycare|preschool|school|bedtime|tantrum/i],
     ['daycare',/daycare|preschool|day care|school drop.?off|pick.?up/i],
@@ -981,6 +982,7 @@ function inferTags(text){
     ['hurt',/hurt|resent|upset|unappreciated/i],
     ['annoyed',/annoyed|irritated/i],['angry',/angry|mad|furious|pissed/i],['lonely',/lonely|alone/i]
   ]:[
+    ['19',/19금|섹스|성관계|잠자리|부부관계|성생활|성욕|리스부부|섹스리스|관계를 안|관계가 없|관계 안 한|관계 안한|스킨십이 없|스킨십을 안|성적 만족|성적인|관계 횟수/],
     ['남편',/남편|배우자|신랑|아내/],
     ['육아',/육아|아이|애|아기|딸|아들|등원|하원|유치원|어린이집|재우|훈육/],
     ['등원',/등원/],['하원',/하원/],['유치원',/유치원/],['어린이집',/어린이집/],
@@ -990,7 +992,7 @@ function inferTags(text){
     ['돈',/돈|생활비|카드값?|신용카드|대출|빚|부채|월세|전세|주거비|소비|지출|예산|저축|적금|월급|연봉|소득|재테크|투자|경제적|금전|물가|비용|돈이 부족|돈이 없|돈 때문에/],
     ['집안일',/집안일|설거지|청소|빨래|밥|가사/],
     ['육아분담',/육아.*분담|분담|독박|혼자.*육아|나만.*육아|도와주지/],
-    ['성격차이',/성격|안 맞|대화가 안/],['폭력',/때렸|폭력|밀쳤|협박/],['19',/섹스|성관계|잠자리|부부관계/],
+    ['성격차이',/성격|안 맞|대화가 안/],['폭력',/때렸|폭력|밀쳤|협박/],['19',/19금|섹스|성관계|잠자리|부부관계|성생활|성욕|리스부부|섹스리스|관계를 안|관계가 없|관계 안 한|관계 안한|스킨십이 없|스킨십을 안|성적 만족|성적인|관계 횟수/],
     ['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶|버겁/],['서운함',/서운|섭섭/],['화남',/화나|빡쳤|짜증|열받|분노/],['외로움',/외롭|혼자인 것 같|혼자라는 생각/]
   ];
   return [...new Set(rules.filter(([,r])=>r.test(text)).map(([t])=>t))].slice(0,8);
@@ -1045,8 +1047,8 @@ function similarityScore(queryText,queryTags,story){
   const tags=tagScore(queryTags,storyTags);
   const q=new Set(queryTags||[]), st=new Set(storyTags||[]);
   const topicGroups=currentLang==='en'
-    ? ['money','partner','parenting','work','daycare','school','family','housework','sleep']
-    : ['돈','남편','육아','육아분담','직장','복직','등원','하원','유치원','어린이집','가족','시댁','친정','집안일','수면'];
+    ? ['adult','money','partner','parenting','work','daycare','school','family','housework','sleep']
+    : ['19','돈','남편','육아','육아분담','직장','복직','등원','하원','유치원','어린이집','가족','시댁','친정','집안일','수면'];
   const queryTopics=topicGroups.filter(x=>q.has(x));
   const storyTopics=topicGroups.filter(x=>st.has(x));
   const topicOverlap=queryTopics.filter(x=>st.has(x)).length;
@@ -1754,6 +1756,7 @@ function confirmVoice(){
 function generateTitle(text){
   if(currentLang==='en'){
     const topic=primaryTopic(text);
+    if(topic==='adult') return 'I have concerns about intimacy in my relationship';
     if(topic==='money') return 'Money has been weighing on me';
     if(topic==='partner') return 'Something with my partner is weighing on me';
     if(topic==='work') return 'Work feels like too much right now';
@@ -1762,6 +1765,7 @@ function generateTitle(text){
     return 'Today felt especially heavy';
   }
   const topic=primaryTopic(text);
+  if(topic==='19') return '부부 관계 때문에 고민이 있어요';
   if(topic==='돈') return '돈 문제 때문에 마음이 무거워요';
   if(topic==='남편') return '배우자 때문에 마음이 답답해요';
   if(topic==='직장') return '회사 생각에 마음이 무거워요';
