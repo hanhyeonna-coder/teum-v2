@@ -749,8 +749,8 @@ header{
   <p class="sub">이메일을 연결해두면 다른 기기에서도 같은 기록을 이어볼 수 있어요.</p>
   <div class="card">
     <input id="accountEmail" type="text" inputmode="email" autocomplete="email" placeholder="이메일 주소">
-    <button id="accountLoginBtn" class="primary" onclick="signInExistingEmail()">로그인</button>
-    <button id="accountConnectBtn" class="secondary" onclick="linkEmailAccount()">이메일로 연결하기</button>
+    <button id="accountConnectBtn" class="primary" onclick="connectEmailSmart()">인증코드 받기</button>
+    <button id="accountSkipBtn" class="secondary" onclick="continueAfterAccountPrompt()" hidden>나중에 할게</button>
     <div id="accountOtpBox" class="otpBox" hidden>
       <div id="accountOtpTitle" class="otpTitle">이메일의 6자리 코드를 입력하세요</div>
       <input id="accountOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="6자리 코드">
@@ -1021,7 +1021,12 @@ function tagScore(a=[],b=[]){
 function similarityScore(queryText,queryTags,story){
   const text=jaccard(charGrams(queryText),charGrams((story.title||'')+' '+(story.body||'')));
   const tags=tagScore(queryTags,story.tags||[]);
-  return Math.min(1,tags*.65+text*.35);
+  const q=new Set(queryTags||[]), st=new Set(story.tags||[]);
+  const specific=['육아','아이','자녀','유치원','어린이집','등원','워킹맘','복직','남편','시댁','친정','연애','이별','직장','상사','회사','parenting','kids','daycare','partner','work'];
+  const unsupportedSpecific=specific.some(x=>st.has(x)) && !specific.some(x=>st.has(x)&&q.has(x));
+  let score=tags*.82+text*.18;
+  if(unsupportedSpecific && tags===0) score*=.12;
+  return Math.min(1,score);
 }
 function bestHistoryMatch(story,ownStories=[]){
   let best={score:0,tags:[]};
@@ -1427,7 +1432,7 @@ function applyLanguage(){
   q('matching').querySelector('h2').textContent=tr('matchingTitle'); q('matching').querySelector('.sub').innerHTML=tr('matchingSub');
   feedTitle.textContent=tr('feedTitle'); q('records').querySelector('h2').textContent=tr('records'); tabMine.textContent=tr('mine'); tabSaved.textContent=tr('saved');
   q('accountBanner').querySelector('b').textContent=tr('accountBannerTitle'); q('accountBanner').querySelector('.sub').textContent=tr('accountBannerSub'); q('accountBanner').querySelector('button').textContent=tr('connect');
-  q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountLoginBtn').textContent=tr('loginExisting'); q('accountConnectBtn').textContent=tr('connectEmail'); q('accountOtpTitle').textContent=tr('otpTitle'); q('accountOtpVerifyBtn').textContent=tr('otpVerify'); q('accountOtpResendBtn').textContent=tr('otpResend'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
+  q('accountLink').querySelector('h2').textContent=tr('accountTitle'); q('accountLink').querySelector('.sub').textContent=tr('accountSub'); accountEmail.placeholder=tr('emailPlaceholder'); q('accountConnectBtn').textContent=currentLang==='en'?'Send verification code':'인증코드 받기'; const skipBtn=q('accountSkipBtn'); if(skipBtn)skipBtn.textContent=currentLang==='en'?'Maybe later':'나중에 할게'; q('accountOtpTitle').textContent=tr('otpTitle'); q('accountOtpVerifyBtn').textContent=tr('otpVerify'); q('accountOtpResendBtn').textContent=tr('otpResend'); q('accountLink').querySelectorAll('.sub')[1].textContent=tr('accountFoot');
   q('accountSuccessTitle').textContent=tr('accountSuccessTitle'); q('accountSuccessSub').innerHTML=tr('accountSuccessSub'); q('accountSuccessRecords').textContent=tr('accountSuccessRecords'); q('accountSuccessFeed').textContent=tr('accountSuccessFeed');
   q('safetyTitle').textContent=tr('safetyTitle'); q('safetyIntro').textContent=tr('safetyIntro'); q('safetyRulesTitle').textContent=tr('safetyRulesTitle'); q('safetyRules').innerHTML=tr('safetyRules').map(x=>'<li>'+esc(x)+'</li>').join(''); q('safetyProblemTitle').textContent=tr('safetyProblemTitle'); q('safetyProblemText').textContent=tr('safetyProblemText');
   q('menuOverlay').querySelector('.menuHead b').textContent=tr('menu');
@@ -1739,8 +1744,14 @@ async function saveAndMatch(privacy){
     await trackEvent('story_created');
     localStorage.removeItem('malhaebaWriteDraft');
     feedMode='fresh';
-    show('matching');
-    setTimeout(()=>show('feed'),700);
+    if(currentUser?.is_anonymous){
+      localStorage.setItem('malhaebaPendingAfterAccount','1');
+      const skipBtn=document.getElementById('accountSkipBtn'); if(skipBtn)skipBtn.hidden=false;
+      show('accountLink');
+    }else{
+      show('matching');
+      setTimeout(()=>show('feed'),700);
+    }
   }finally{
     storySaveInFlight=false;
     choiceButtons.forEach(b=>b.disabled=false);
@@ -2310,6 +2321,26 @@ if(localStorage.getItem('malhaebaSeenIntro')){
   document.getElementById('intro').classList.add('active');
   document.querySelector('nav').style.display='none';
 }
+
+async function connectEmailSmart(){
+  if(accountRequestInFlight)return;
+  let email=accountEmail.value.trim(); accountLinkStatus.textContent='';
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){accountLinkStatus.textContent=currentLang==='en'?'Please check your email address.':'이메일 주소를 확인해주세요.';return;}
+  email=confirmEmailCorrection(email); accountRequestInFlight=true;
+  const btn=document.getElementById('accountConnectBtn'); if(btn)btn.disabled=true;
+  try{
+    if(currentUser?.is_anonymous){
+      const {error}=await sb.auth.updateUser({email},{emailRedirectTo:location.origin+'/?account_linked=1'});
+      if(!error){showAccountOtp('link',email);accountLinkStatus.textContent=currentLang==='en'?'We sent a verification code to your email.':'이메일로 인증코드를 보냈어요.';return;}
+      if(error.code!=='email_exists' && error.status!==422)throw error;
+    }
+    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/?account_login=1'}});
+    if(error)throw error;
+    showAccountOtp('login',email);accountLinkStatus.textContent=currentLang==='en'?'We sent a verification code to your email.':'이메일로 인증코드를 보냈어요.';
+  }catch(error){console.error(error);accountLinkStatus.textContent=(error?.code==='over_email_send_rate_limit'||error?.status===429)?(currentLang==='en'?'Please wait a little before requesting another code.':'인증 메일을 너무 자주 요청했어요. 잠시 후 다시 시도해주세요.'):(currentLang==='en'?'Could not start email verification. Please try once more.':'이메일 인증을 시작하지 못했어요. 잠시 후 한 번만 다시 시도해주세요.');}
+  finally{accountRequestInFlight=false;if(btn)btn.disabled=false;}
+}
+function continueAfterAccountPrompt(){localStorage.removeItem('malhaebaPendingAfterAccount');const skipBtn=document.getElementById('accountSkipBtn');if(skipBtn)skipBtn.hidden=true;show('matching');setTimeout(()=>show('feed'),700);}
 </script>
 </body>
 </html>
