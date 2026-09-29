@@ -1371,6 +1371,22 @@ async function linkEmailAccount(){
       console.error(error);
       localStorage.removeItem('malhaebaAwaitingEmailLink');
       const rateLimited=error.code==='over_email_send_rate_limit' || error.status===429;
+      const emailTaken=error.code==='email_exists' || error.code==='user_already_exists' || /already.*registered|already.*exists|email.*exists/i.test(String(error.message||''));
+      if(emailTaken){
+        if(currentUser?.is_anonymous){
+          try{
+            const {data:transferData,error:transferError}=await sb.functions.invoke('account-transfer',{body:{action:'prepare'}});
+            if(!transferError && transferData?.token) localStorage.setItem('malhaebaAccountTransferToken',transferData.token);
+          }catch(e){console.error('account transfer prepare',e)}
+        }
+        const {error:loginError}=await captchaSignInWithOtp(email,{shouldCreateUser:false,emailRedirectTo:location.origin+'/?account_login=1'});
+        if(!loginError){
+          showAccountOtp('login',email);
+          accountLinkStatus.textContent=currentLang==='en'?'This email already has an account. I sent a sign-in code; your current anonymous activity will be carried over after sign-in.':'이미 가입된 이메일이에요. 로그인 코드를 보냈어요. 로그인 후 지금 익명으로 쓴 기록도 이어서 가져올게요.';
+          return;
+        }
+        console.error(loginError);
+      }
       accountLinkStatus.textContent=rateLimited
         ? (currentLang==='en'
             ?'The test email limit has been reached. Please try again in about an hour.'
