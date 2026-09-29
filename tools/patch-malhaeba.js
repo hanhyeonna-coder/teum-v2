@@ -15,3 +15,41 @@ rep("  if(topicOverlap>0) score += .30 + Math.min(.12,(topicOverlap-1)*.06);", "
 
 fs.writeFileSync(p,s);
 console.log('Applied',changed,'in-law classification/recommendation patches');
+
+
+// Cloudflare Turnstile CAPTCHA for Supabase Auth.
+// Site key is public; Supabase stores the secret separately.
+rep("async function ensureSession(){", `const TURNSTILE_SITE_KEY='0x4AAAAAAFIrqgACJf0-ZCa0';
+async function getCaptchaToken(){
+  if(!window.turnstile) throw new Error('CAPTCHA is still loading. Please try again.');
+  let host=document.getElementById('malhaeba-turnstile');
+  if(!host){
+    host=document.createElement('div');
+    host.id='malhaeba-turnstile';
+    host.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:100000;background:#fff;padding:16px;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.18)';
+    document.body.appendChild(host);
+  }
+  host.style.display='block';
+  return await new Promise((resolve,reject)=>{
+    let done=false;
+    const timer=setTimeout(()=>{if(!done){done=true;host.style.display='none';reject(new Error('CAPTCHA timeout'));}},30000);
+    turnstile.render(host,{
+      sitekey:TURNSTILE_SITE_KEY,
+      theme:'light',
+      callback:(token)=>{if(done)return;done=true;clearTimeout(timer);host.style.display='none';host.innerHTML='';resolve(token);},
+      'error-callback':()=>{if(done)return;done=true;clearTimeout(timer);host.style.display='none';host.innerHTML='';reject(new Error('CAPTCHA failed'));},
+      'expired-callback':()=>{}
+    });
+  });
+}
+async function ensureSession(){`, 'captcha helper');
+
+rep("    const {data,error}=await sb.auth.signInAnonymously();", "    const captchaToken=await getCaptchaToken();\n    const {data,error}=await sb.auth.signInAnonymously({options:{captchaToken}});", 'anonymous auth captcha');
+
+rep("async function linkEmailAccount(){", "async function captchaSignInWithOtp(email,options){\n  const captchaToken=await getCaptchaToken();\n  return sb.auth.signInWithOtp({email,options:{...(options||{}),captchaToken}});\n}\nasync function linkEmailAccount(){", 'otp captcha helper');
+
+s=s.replaceAll("await sb.auth.signInWithOtp({email:accountOtpEmail,options:{shouldCreateUser:false}})", "await captchaSignInWithOtp(accountOtpEmail,{shouldCreateUser:false})");
+s=s.replaceAll("await sb.auth.signInWithOtp({\n      email,\n      options:{\n        shouldCreateUser:false,\n        emailRedirectTo:location.origin+'/?account_login=1'\n      }\n    })", "await captchaSignInWithOtp(email,{shouldCreateUser:false,emailRedirectTo:location.origin+'/?account_login=1'})");
+s=s.replaceAll("await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/?account_login=1'}})", "await captchaSignInWithOtp(email,{shouldCreateUser:true,emailRedirectTo:location.origin+'/?account_login=1'})");
+
+rep("</head>", "  <script src=\"https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit\" async defer></script>\n</head>", 'turnstile script');
