@@ -1328,7 +1328,7 @@ async function resendAccountOtp(){
   try{
     const response=accountOtpMode==='link'
       ? await sb.auth.resend({type:'email_change',email:accountOtpEmail})
-      : await sb.auth.signInWithOtp({email:accountOtpEmail,options:{shouldCreateUser:false}});
+      : await captchaSignInWithOtp(accountOtpEmail,{shouldCreateUser:false});
     const {error}=response;
     if(error){
       console.error(error);
@@ -2456,7 +2456,7 @@ async function connectEmailSmart(){
       if(transferError||!transferData?.token) throw transferError||new Error('Could not prepare account transfer');
       localStorage.setItem('malhaebaAccountTransferToken',transferData.token);
     }
-    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/?account_login=1'}});
+    const {error}=await captchaSignInWithOtp(email,{shouldCreateUser:true,emailRedirectTo:location.origin+'/?account_login=1'});
     if(error)throw error;
     showAccountOtp('login',email);accountLinkStatus.textContent=currentLang==='en'?'We sent a verification code to your email.':'이메일로 인증코드를 보냈어요.';
   }catch(error){console.error(error);accountLinkStatus.textContent=(error?.code==='over_email_send_rate_limit'||error?.status===429)?(currentLang==='en'?'Please wait a little before requesting another code.':'인증 메일을 너무 자주 요청했어요. 잠시 후 다시 시도해주세요.'):(currentLang==='en'?'Could not start email verification. Please try once more.':'이메일 인증을 시작하지 못했어요. 잠시 후 한 번만 다시 시도해주세요.');}
