@@ -968,63 +968,70 @@ let storySaveInFlight=false;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function fmtDate(v){return new Date(v).toLocaleDateString(currentLang==='en'?'en-US':'ko-KR')}
-function inferTags(text){
-  const rules=currentLang==='en'?[
-    ['adult',/sex|sexual|sexless|intimacy|intimate|haven.?t had sex|physical intimacy|libido/i],
-    ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],
-    ['parenting',/parent|kid|child|baby|toddler|son|daughter|daycare|preschool|school|bedtime|tantrum/i],
-    ['daycare',/daycare|preschool|day care|school drop.?off|pick.?up/i],
-    ['school',/school|teacher|classroom|homework|school run/i],
-    ['sleep',/sleep|bedtime|wake|woke|night/i],
-    ['family',/mother|father|parents|in.?laws|family/i],
-    ['work',/work|office|boss|career|job|return to work/i],
-    ['money',/money|bill|bills|debt|loan|mortgage|rent|salary|income|spending|budget|saving|savings|credit card|financial|finance|cost of living/i],
-    ['housework',/dishes|laundry|clean|housework|chores|cooking/i],
-    ['overwhelmed',/overwhelmed|too much|can.?t handle/i],
-    ['exhausted',/tired|exhausted|burnt out|burned out|worn out/i],
-    ['hurt',/hurt|resent|upset|unappreciated/i],
-    ['annoyed',/annoyed|irritated/i],['angry',/angry|mad|furious|pissed/i],['lonely',/lonely|alone/i]
-  ]:[
-    ['19',/19금|섹스|성관계|잠자리|부부관계|성생활|성욕|리스부부|섹스리스|관계를 안|관계가 없|관계 안 한|관계 안한|스킨십이 없|스킨십을 안|성적 만족|성적인|관계 횟수/],
-    ['남편',/남편|배우자|신랑|아내/],
-    ['육아',/육아|아이|애|아기|딸|아들|등원|하원|유치원|어린이집|재우|훈육/],
-    ['등원',/등원/],['하원',/하원/],['유치원',/유치원/],['어린이집',/어린이집/],
-    ['수면',/잠|수면|재우|밤잠|새벽/],
-    ['가족',/가족/],['시댁',/시댁|시어머니|시아버지/],['친정',/친정|친정엄마|친정아빠|부모님/],
-    ['직장',/회사|직장|상사|출근|퇴근|업무|커리어|이직/],['복직',/복직/],
-    ['돈',/돈|생활비|카드값?|신용카드|대출|빚|부채|월세|전세|주거비|소비|지출|예산|저축|적금|월급|연봉|소득|재테크|투자|경제적|금전|물가|비용|돈이 부족|돈이 없|돈 때문에/],
-    ['집안일',/집안일|설거지|청소|빨래|밥|가사/],
-    ['육아분담',/육아.*분담|분담|독박|혼자.*육아|나만.*육아|도와주지/],
-    ['성격차이',/성격|안 맞|대화가 안/],['폭력',/때렸|폭력|밀쳤|협박/],['19',/19금|섹스|성관계|잠자리|부부관계|성생활|성욕|리스부부|섹스리스|관계를 안|관계가 없|관계 안 한|관계 안한|스킨십이 없|스킨십을 안|성적 만족|성적인|관계 횟수/],
-    ['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶|버겁/],['서운함',/서운|섭섭/],['화남',/화나|빡쳤|짜증|열받|분노/],['외로움',/외롭|혼자인 것 같|혼자라는 생각/]
-  ];
-  return [...new Set(rules.filter(([,r])=>r.test(text)).map(([t])=>t))].slice(0,8);
-}
-function primaryTopic(text=''){
+function topicScores(text=''){
   const t=String(text).toLowerCase();
-  const groups=currentLang==='en'?[
-    ['money',/money|bill|bills|debt|loan|mortgage|rent|salary|income|spending|budget|saving|savings|credit card|financial|finance|cost of living/i],
-    ['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],
-    ['work',/work|office|boss|career|job|return to work/i],
-    ['parenting',/parenting|kid|child|baby|toddler|son|daughter|daycare|preschool|school|bedtime|tantrum/i],
-    ['family',/mother|father|parents|in.?laws|family/i],
-    ['housework',/dishes|laundry|clean|housework|chores|cooking/i]
-  ]:[
-    ['돈',/돈|생활비|카드값?|신용카드|대출|빚|부채|월세|전세|주거비|소비|지출|예산|저축|적금|월급|연봉|소득|재테크|투자|경제적|금전|물가|비용|돈이 부족|돈이 없|돈 때문에/],
+  const score={};
+  const add=(k,n)=>score[k]=(score[k]||0)+n;
+  if(currentLang==='en'){
+    const rules={money:/money|bills?|debt|loan|mortgage|rent|salary|income|budget|saving|credit card|financial|finance|cost of living/i,partner:/husband|wife|partner|spouse|boyfriend|girlfriend/i,work:/boss|coworker|colleague|meeting|deadline|workload|overtime|career|job|office politics|return to work/i,parenting:/parenting|kid|child|baby|toddler|son|daughter|daycare|preschool|tantrum/i,family:/mother|father|parents|in.?laws|family/i,housework:/dishes|laundry|clean|housework|chores|cooking/i};
+    Object.entries(rules).forEach(([k,re])=>{if(re.test(t))add(k,3)});
+    if(/\b(work|office)\b/i.test(t))add('work',1);
+    if(/on my way to work|late for work|got to work|went to work/i.test(t) && !rules.work.test(t.replace(/on my way to work|late for work|got to work|went to work/ig,''))) score.work=Math.max(0,(score.work||0)-2);
+    return score;
+  }
+  const strong=[
+    ['19',/19금|섹스|성관계|잠자리|부부관계|성생활|성욕|리스부부|섹스리스|성적 만족|관계 횟수/],
+    ['돈',/생활비|카드값?|신용카드|대출|빚|부채|월세|전세|주거비|예산|저축|적금|월급|연봉|소득|재테크|투자|금전|물가|돈이 부족|돈이 없|돈 때문에/],
     ['남편',/남편|배우자|신랑|아내/],
-    ['직장',/회사|직장|상사|출근|퇴근|업무|커리어|이직|복직/],
-    ['육아',/육아|아이|애|아기|딸|아들|등원|하원|유치원|어린이집|재우|훈육/],
     ['시댁',/시댁|시어머니|시어머님|시아버지|시아버님|시부모|시부모님|며느리/],
     ['친정',/친정|친정엄마|친정아빠|친정부모|친정부모님/],
-    ['가족',/부모님|가족/],
-    ['집안일',/집안일|설거지|청소|빨래|가사/]
+    ['육아',/육아|아이|아기|딸|아들|등원|하원|유치원|어린이집|재우|훈육/],
+    ['직장',/상사|팀장|부장|동료|직장동료|회의|업무|야근|퇴사|이직|커리어|복직|직장생활|회사생활|프로젝트|성과평가/],
+    ['집안일',/집안일|설거지|청소|빨래|가사/],
+    ['가족',/부모님|가족/]
   ];
-  for(const [topic,re] of groups){if(re.test(t))return topic}
-  return '';
+  strong.forEach(([k,re])=>{if(re.test(t))add(k,3)});
+  // Generic nouns are weak context, not enough to decide the story's subject by themselves.
+  if(/회사|직장/.test(t))add('직장',1);
+  if(/출근|퇴근/.test(t))add('직장',1);
+  if(/\b돈\b|비용|지출|소비/.test(t))add('돈',1);
+  // Commuting/arrival phrases usually describe where an unrelated event happened.
+  if(/회사(?:에|까지|로)?\s*(?:늦|가|도착)|출근(?:길|하다가|하는 길|중)|퇴근(?:길|하다가|하는 길|중)/.test(t)
+     && !/상사|팀장|부장|동료|회의|업무|야근|퇴사|이직|커리어|복직|직장생활|회사생활|프로젝트|성과평가/.test(t)){
+    score['직장']=Math.max(0,(score['직장']||0)-2);
+  }
+  return score;
+}
+function primaryTopic(text=''){
+  const scores=topicScores(text);
+  const priority=currentLang==='en'?['adult','money','partner','parenting','family','work','housework']:['19','돈','남편','시댁','친정','육아','가족','직장','집안일'];
+  let best='',bestScore=0;
+  for(const k of priority){const s=scores[k]||0;if(s>bestScore){best=k;bestScore=s}}
+  return bestScore>=2?best:'';
+}
+function inferTags(text){
+  const t=String(text);
+  const primary=primaryTopic(t);
+  const rules=currentLang==='en'?[
+    ['adult',/sex|sexual|sexless|intimacy|libido/i],['partner',/husband|wife|partner|spouse|boyfriend|girlfriend/i],
+    ['parenting',/parent|kid|child|baby|toddler|son|daughter|daycare|preschool/i],['daycare',/daycare|preschool/i],['school',/school|teacher|classroom|homework/i],
+    ['sleep',/sleep|bedtime|wake|woke|night/i],['family',/mother|father|parents|in.?laws|family/i],['work',/boss|coworker|meeting|deadline|workload|overtime|career|job|office politics/i],
+    ['money',/money|bills?|debt|loan|mortgage|rent|salary|income|budget|saving|credit card|financial/i],['housework',/dishes|laundry|clean|housework|chores|cooking/i],
+    ['overwhelmed',/overwhelmed|too much|can.?t handle/i],['exhausted',/tired|exhausted|burnt out|worn out/i],['hurt',/hurt|resent|upset|unappreciated/i],['angry',/angry|mad|furious|pissed/i],['lonely',/lonely|alone/i]
+  ]:[
+    ['19',/19금|섹스|성관계|잠자리|부부관계|성생활|성욕|리스부부|섹스리스|성적 만족/],['남편',/남편|배우자|신랑|아내/],
+    ['육아',/육아|아이|아기|딸|아들|등원|하원|유치원|어린이집|재우|훈육/],['등원',/등원/],['하원',/하원/],['유치원',/유치원/],['어린이집',/어린이집/],
+    ['수면',/수면|재우|밤잠|새벽|잠을 못|잠이 안/],['가족',/가족|부모님/],['시댁',/시댁|시어머니|시아버지|시부모/],['친정',/친정|친정엄마|친정아빠|친정부모/],
+    ['직장',/상사|팀장|부장|동료|회의|업무|야근|퇴사|이직|커리어|복직|직장생활|회사생활|프로젝트|성과평가/],
+    ['돈',/생활비|카드값?|신용카드|대출|빚|부채|월세|전세|주거비|예산|저축|적금|월급|연봉|소득|재테크|투자|금전|물가|돈이 부족|돈이 없|돈 때문에/],
+    ['집안일',/집안일|설거지|청소|빨래|가사/],['육아분담',/육아.*분담|분담|독박|혼자.*육아|나만.*육아|도와주지/],
+    ['성격차이',/성격|안 맞|대화가 안/],['폭력',/때렸|폭력|밀쳤|협박/],['지침',/지쳤|힘들|번아웃|피곤|쉬고 싶|버겁/],['서운함',/서운|섭섭/],['화남',/화나|빡쳤|짜증|열받|분노/],['외로움',/외롭|혼자인 것 같|혼자라는 생각/]
+  ];
+  const tags=rules.filter(([,re])=>re.test(t)).map(([tag])=>tag);
+  return [...new Set(primary?[primary,...tags]:tags)].slice(0,8);
 }
 function orderedTags(text=''){
-  const tags=inferTags(text);
-  const primary=primaryTopic(text);
+  const tags=inferTags(text),primary=primaryTopic(text);
   return primary?[primary,...tags.filter(x=>x!==primary)]:tags;
 }
 function normalizeForMatch(text=''){
