@@ -1365,7 +1365,7 @@ async function getCaptchaToken(){
 }
 async function captchaSignInWithOtp(email,options){
   const captchaToken=await getCaptchaToken();
-  return sb.auth.signInWithOtp({email,options:{...(options||{}),captchaToken}});
+  return sb.auth.signInWithOtp({email,options:{...(options||{}),captchaToken},captchaToken});
 }
 async function linkEmailAccount(){
   if(accountRequestInFlight)return;
