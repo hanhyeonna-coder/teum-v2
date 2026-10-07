@@ -23,7 +23,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 .app{width:100%;max-width:430px;margin:0 auto;min-height:100dvh;background:var(--surface);position:relative;padding-bottom:82px;overflow-x:hidden}
 header{padding:17px 18px 9px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .logo{font-weight:850;font-size:22px;letter-spacing:-.7px}.ghost{border:0;background:none;font-size:20px;color:var(--ink);padding:8px;border-radius:10px;line-height:1}
-.headerActions{display:flex;align-items:center;gap:8px}.langSwitch{display:flex;padding:3px;background:#f0ece5;border-radius:999px}.langSwitch button{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800;padding:6px 8px;border-radius:999px}.langSwitch button.on{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(31,43,39,.08)}
+.headerActions{display:flex;align-items:center;gap:8px}.langSwitch{display:none;padding:3px;background:#f0ece5;border-radius:999px}.langSwitch.showTester{display:flex}.langSwitch button{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:800;padding:6px 8px;border-radius:999px}.langSwitch button.on{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(31,43,39,.08)}
 .menuTrigger{display:grid;place-items:center}.menuTrigger svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
 .icon{width:19px;height:19px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.iconBtn{display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .screen{display:none;padding:10px 18px 28px;min-width:0}.screen.active{display:block}
@@ -857,8 +857,28 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 let currentUser=null;
 let backendReady=false;
 let dbStories=[];
-let currentLang=localStorage.getItem('malhaebaLang') || ((navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en');
-const sourceParam=(new URLSearchParams(location.search).get('src')||'').toLowerCase();
+const pageParams=new URLSearchParams(location.search);
+const forcedLang=['ko','en'].includes((pageParams.get('lang')||'').toLowerCase())?(pageParams.get('lang')||'').toLowerCase():'';
+const savedLang=localStorage.getItem('malhaebaLang');
+const storedLang=['ko','en'].includes(savedLang)?savedLang:'';
+const browserLanguages=[...(navigator.languages||[]),navigator.language||'']
+  .map(x=>String(x||'').toLowerCase())
+  .filter(Boolean);
+const autoLang=browserLanguages.some(x=>x==='ko'||x.startsWith('ko-'))?'ko':'en';
+let currentLang=forcedLang||storedLang||autoLang;
+localStorage.setItem('malhaebaLang',currentLang);
+
+const langUiParam=pageParams.get('lang_ui');
+if(langUiParam==='1') localStorage.setItem('malhaebaLangTester','1');
+if(langUiParam==='0') localStorage.removeItem('malhaebaLangTester');
+const languageTester=localStorage.getItem('malhaebaLangTester')==='1';
+document.querySelector('.langSwitch')?.classList.toggle('showTester',languageTester);
+if(langUiParam!==null){
+  const cleanUrl=new URL(location.href);
+  cleanUrl.searchParams.delete('lang_ui');
+  history.replaceState(null,'',cleanUrl.pathname+(cleanUrl.search?'?'+cleanUrl.searchParams.toString():'')+cleanUrl.hash);
+}
+const sourceParam=(pageParams.get('src')||'').toLowerCase();
 if(/^[a-z0-9_-]{1,32}$/.test(sourceParam)) localStorage.setItem('malhaebaSource',sourceParam);
 const acquisitionSource=localStorage.getItem('malhaebaSource')||'direct';
 
